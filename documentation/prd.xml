@@ -1,0 +1,1074 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<prd>
+  <!-- ============================================
+       DISAPPRENT - Product Requirements Document
+       Version: 2.0.0
+       Last Updated: Based on founder clarifications
+       ============================================ -->
+
+  <project>
+    <name>Disciprin</name>
+    <tagline>Daily habit tracking for the disciplined</tagline>
+    <type>Web Application</type>
+    <version>2.0.0</version>
+    <core_concept>
+      Weekly accountability periods as the fundamental unit of measurement.
+      Users track daily "pills" (habits) against weekly frequency goals.
+      Streaks are measured per-pill on a weekly basis.
+    </core_concept>
+  </project>
+
+  <!-- ============================================
+       TECHNOLOGY STACK
+       ============================================ -->
+
+  <tech_stack>
+    <frontend>
+      <framework>React</framework>
+      <build_tool>Vite</build_tool>
+      <styling>Tailwind CSS 4</styling>
+      <language>TypeScript</language>
+    </frontend>
+
+    <backend>
+      <platform>Convex</platform>
+      <notes>
+        <note>Real-time data synchronization</note>
+        <note>User table synced from Clerk via webhooks</note>
+      </notes>
+    </backend>
+
+    <authentication>
+      <provider>Clerk</provider>
+      <integration>Clerk webhooks to sync user data to Convex</integration>
+      <methods>
+        <method id="email_password">Email and Password</method>
+        <method id="google_oauth">Google OAuth</method>
+        <method id="twitter_oauth">Twitter OAuth</method>
+      </methods>
+    </authentication>
+
+    <email>
+      <provider>Resend</provider>
+      <use_cases>
+        <use_case>Notifications (future)</use_case>
+      </use_cases>
+    </email>
+  </tech_stack>
+
+  <!-- ============================================
+       CORE CONCEPTS
+       ============================================ -->
+
+  <core_concepts>
+    <concept id="pill">
+      <name>Pill</name>
+      <description>
+        A "pill" is Disciprin's branded term for a trackable habit or task.
+        Users "take their pills" by logging completion of habits.
+      </description>
+    </concept>
+
+    <concept id="period">
+      <name>Period</name>
+      <description>
+        The week is the fundamental unit of accountability in Disciprin.
+        Periods are first-class entities with their own IDs.
+        All analytics, journals, and streaks reference periods.
+      </description>
+      <default_boundaries>Sunday to Saturday</default_boundaries>
+      <user_configurable>true</user_configurable>
+    </concept>
+
+    <concept id="streak">
+      <name>Streak</name>
+      <description>
+        Streaks are tracked per-pill on a weekly basis.
+        A streak increments when a user meets their weekly frequency goal for a pill.
+        Consecutive weeks of meeting the goal builds the streak.
+      </description>
+    </concept>
+
+    <concept id="timezone">
+      <name>Timezone Handling</name>
+      <description>
+        All timestamps stored in UTC.
+        User's timezone detected during onboarding and stored in settings.
+        "Today" and period boundaries determined by user's configured timezone.
+        Users can update timezone in settings.
+      </description>
+    </concept>
+  </core_concepts>
+
+  <!-- ============================================
+       PAGES & ROUTES
+       ============================================ -->
+
+  <pages>
+    <page id="landing">
+      <route>/</route>
+      <name>Landing Page</name>
+      <description>Marketing landing page for unauthenticated users</description>
+      <authenticated>false</authenticated>
+    </page>
+
+    <page id="login">
+      <route>/login</route>
+      <name>Login</name>
+      <description>User login page via Clerk</description>
+      <authenticated>false</authenticated>
+      <auth_methods>
+        <method>email_password</method>
+        <method>google_oauth</method>
+        <method>twitter_oauth</method>
+      </auth_methods>
+    </page>
+
+    <page id="signup">
+      <route>/signup</route>
+      <name>Sign Up</name>
+      <description>User registration page via Clerk</description>
+      <authenticated>false</authenticated>
+      <auth_methods>
+        <method>email_password</method>
+        <method>google_oauth</method>
+        <method>twitter_oauth</method>
+      </auth_methods>
+    </page>
+
+    <page id="onboarding">
+      <route>/onboarding</route>
+      <name>Onboarding</name>
+      <description>New user onboarding flow</description>
+      <authenticated>true</authenticated>
+      <flow>
+        <step number="1">
+          <action>Collect user's name</action>
+          <field>
+            <label>What's your name?</label>
+            <type>text</type>
+            <note>Single field - can be first name, full name, or nickname</note>
+          </field>
+        </step>
+        <step number="2">
+          <action>Detect and confirm timezone</action>
+          <description>Auto-detect from browser, allow user to confirm or change</description>
+        </step>
+        <step number="3">
+          <action>Set week start preference</action>
+          <description>Sunday (default) or Monday</description>
+        </step>
+        <step number="4">
+          <action>Define 3 initial pills to track</action>
+          <description>For each pill, collect: name, measurement type, target value, frequency per week</description>
+        </step>
+        <step number="5">
+          <action>Create initial period and redirect to dashboard</action>
+          <description>Creates the user's first (potentially partial) week period</description>
+        </step>
+      </flow>
+    </page>
+
+    <page id="dashboard">
+      <route>/dashboard</route>
+      <name>Dashboard</name>
+      <description>Main user dashboard with calendar grid view</description>
+      <authenticated>true</authenticated>
+      <features>
+        <feature id="calendar_grid">
+          <name>Calendar Grid</name>
+          <description>Grid showing pills vs days</description>
+          <axes>
+            <x_axis>Days of the period/timeframe</x_axis>
+            <y_axis>Pills (ordered alphabetically by default, user-reorderable via drag-drop)</y_axis>
+          </axes>
+          <views>
+            <view id="weekly" default="true">Weekly View (current period)</view>
+            <view id="monthly">Monthly View</view>
+            <view id="quarterly">Quarterly View</view>
+            <view id="yearly">Yearly View</view>
+          </views>
+          <cell_states>
+            <state id="logged">Shows logged value and completion indicator</state>
+            <state id="not_logged">Empty, available for input</state>
+            <state id="future">Greyed out (future dates)</state>
+            <state id="before_pill_created">Greyed out (before pill existed)</state>
+          </cell_states>
+        </feature>
+        <feature id="analytics_summary">
+          <name>Analytics Summary</name>
+          <description>Quick analytics overview on dashboard</description>
+          <metrics>
+            <metric>Weekly completion percentage (aggregate)</metric>
+            <metric>Per-pill weekly progress</metric>
+            <metric>Current streak per pill</metric>
+          </metrics>
+        </feature>
+        <feature id="journal_visibility">
+          <name>Journal Access</name>
+          <description>Journal entries visible/accessible from dashboard</description>
+        </feature>
+      </features>
+    </page>
+
+    <page id="analytics">
+      <route>/analytics</route>
+      <name>Analytics</name>
+      <description>Dedicated analytics and statistics page</description>
+      <authenticated>true</authenticated>
+      <time_periods>
+        <period id="today">Today</period>
+        <period id="this_week">This Week (current period)</period>
+        <period id="this_month">This Month</period>
+        <period id="this_quarter">This Quarter</period>
+        <period id="this_year">This Year</period>
+      </time_periods>
+      <analytics_types>
+        <type id="aggregate">Overall completion across all pills</type>
+        <type id="per_pill">Individual pill analytics and streaks</type>
+      </analytics_types>
+      <metrics>
+        <metric>Completion percentage (raw data)</metric>
+        <metric>Streak count per pill</metric>
+        <note>Additional metrics and visual treatments (grades, colors) deferred to frontend implementation</note>
+      </metrics>
+    </page>
+
+    <page id="journal">
+      <route>/journal</route>
+      <name>Journal / Review</name>
+      <description>Review and reflection journal for users to reflect on their progress</description>
+      <authenticated>true</authenticated>
+      <features>
+        <format>Free-form text (prompts deferred to future)</format>
+        <period_association>Journals are mapped to period IDs</period_association>
+        <entries_per_period>One entry per period for v1 (data model supports multiple for future)</entries_per_period>
+      </features>
+      <reflection_periods>
+        <period id="daily">Daily</period>
+        <period id="weekly">Weekly (maps to period entity)</period>
+        <period id="monthly">Monthly</period>
+        <period id="quarterly">Quarterly</period>
+        <period id="annual">Annual</period>
+      </reflection_periods>
+    </page>
+
+    <page id="settings">
+      <route>/settings</route>
+      <name>Settings / Account</name>
+      <description>Account and application settings</description>
+      <authenticated>true</authenticated>
+      <sections>
+        <section id="profile">
+          <name>Profile</name>
+          <fields>
+            <field id="name">
+              <label>Name</label>
+              <type>text</type>
+            </field>
+            <field id="email">
+              <label>Email Address</label>
+              <type>email</type>
+            </field>
+            <field id="password">
+              <label>Password</label>
+              <type>password</type>
+              <note>Managed via Clerk</note>
+            </field>
+          </fields>
+        </section>
+        <section id="preferences">
+          <name>Preferences</name>
+          <fields>
+            <field id="timezone">
+              <label>Timezone</label>
+              <type>timezone_select</type>
+              <description>Used to determine "today" and period boundaries</description>
+            </field>
+            <field id="week_start">
+              <label>Week Starts On</label>
+              <type>select</type>
+              <options>
+                <option value="sunday" default="true">Sunday</option>
+                <option value="monday">Monday</option>
+              </options>
+            </field>
+          </fields>
+        </section>
+        <section id="account">
+          <name>Account</name>
+          <actions>
+            <action id="delete_account">
+              <label>Delete Account</label>
+              <description>Permanently delete account and all data</description>
+              <requires_confirmation>true</requires_confirmation>
+            </action>
+          </actions>
+        </section>
+      </sections>
+    </page>
+  </pages>
+
+  <!-- ============================================
+       DATA MODELS
+       ============================================ -->
+
+  <data_models>
+    <!-- User Model -->
+    <model id="user">
+      <name>User</name>
+      <description>User account information, synced from Clerk via webhooks</description>
+      <fields>
+        <field id="id">
+          <name>id</name>
+          <type>string</type>
+          <description>Unique user identifier (Clerk user ID)</description>
+          <required>true</required>
+        </field>
+        <field id="clerk_id">
+          <name>clerk_id</name>
+          <type>string</type>
+          <description>Clerk's user ID for webhook sync</description>
+          <required>true</required>
+          <unique>true</unique>
+        </field>
+        <field id="name">
+          <name>name</name>
+          <type>string</type>
+          <description>User's display name</description>
+          <required>true</required>
+        </field>
+        <field id="email">
+          <name>email</name>
+          <type>string</type>
+          <description>User's email address (synced from Clerk)</description>
+          <required>true</required>
+        </field>
+        <field id="timezone">
+          <name>timezone</name>
+          <type>string</type>
+          <description>IANA timezone identifier (e.g., "America/New_York")</description>
+          <required>true</required>
+        </field>
+        <field id="week_start_day">
+          <name>week_start_day</name>
+          <type>enum</type>
+          <values>
+            <value>sunday</value>
+            <value>monday</value>
+          </values>
+          <default>sunday</default>
+          <description>Which day the user's week begins</description>
+          <required>true</required>
+        </field>
+        <field id="pill_order">
+          <name>pill_order</name>
+          <type>array[string]</type>
+          <description>Ordered array of pill IDs for custom dashboard ordering. Null means alphabetical.</description>
+          <nullable>true</nullable>
+        </field>
+        <field id="onboarding_completed">
+          <name>onboarding_completed</name>
+          <type>boolean</type>
+          <default>false</default>
+          <required>true</required>
+        </field>
+        <field id="created_at">
+          <name>created_at</name>
+          <type>timestamp</type>
+          <description>Account creation date (UTC)</description>
+          <required>true</required>
+        </field>
+      </fields>
+      <indexes>
+        <index>clerk_id (unique)</index>
+        <index>email</index>
+      </indexes>
+    </model>
+
+    <!-- Period Model -->
+    <model id="period">
+      <name>Period</name>
+      <description>
+        A week-based accountability period. First-class entity that journals, 
+        analytics, and streaks reference. Created automatically at week start.
+      </description>
+      <fields>
+        <field id="id">
+          <name>id</name>
+          <type>string</type>
+          <description>Unique period identifier</description>
+          <required>true</required>
+        </field>
+        <field id="user_id">
+          <name>user_id</name>
+          <type>string</type>
+          <description>Reference to the user</description>
+          <required>true</required>
+        </field>
+        <field id="start_date">
+          <name>start_date</name>
+          <type>date</type>
+          <description>Start date of the period (UTC date, interpreted via user timezone)</description>
+          <required>true</required>
+        </field>
+        <field id="end_date">
+          <name>end_date</name>
+          <type>date</type>
+          <description>End date of the period (UTC date, interpreted via user timezone)</description>
+          <required>true</required>
+        </field>
+        <field id="is_partial">
+          <name>is_partial</name>
+          <type>boolean</type>
+          <description>True if this period started mid-week (e.g., user's first week)</description>
+          <default>false</default>
+          <required>true</required>
+        </field>
+        <field id="created_at">
+          <name>created_at</name>
+          <type>timestamp</type>
+          <description>When the period record was created (UTC)</description>
+          <required>true</required>
+        </field>
+      </fields>
+      <indexes>
+        <index>user_id + start_date (unique)</index>
+        <index>user_id + end_date</index>
+      </indexes>
+      <notes>
+        <note>Periods are created proactively at the start of each week</note>
+        <note>A user's first period may be partial (fewer than 7 days)</note>
+        <note>Period boundaries respect user's week_start_day preference</note>
+      </notes>
+    </model>
+
+    <!-- Pill Model -->
+    <model id="pill">
+      <name>Pill</name>
+      <description>A trackable habit or task</description>
+      <fields>
+        <field id="id">
+          <name>id</name>
+          <type>string</type>
+          <description>Unique pill identifier</description>
+          <required>true</required>
+        </field>
+        <field id="user_id">
+          <name>user_id</name>
+          <type>string</type>
+          <description>Reference to the user who owns this pill</description>
+          <required>true</required>
+        </field>
+        <field id="name">
+          <name>name</name>
+          <type>string</type>
+          <description>Name/title of the pill</description>
+          <required>true</required>
+        </field>
+        <field id="measurement_type">
+          <name>measurement_type</name>
+          <type>enum</type>
+          <description>How this pill is measured</description>
+          <required>true</required>
+          <values>
+            <value id="time">
+              <name>Time</name>
+              <description>Measured in minutes per session</description>
+              <examples>Sleep, Meditation, Reading, Exercise</examples>
+            </value>
+            <value id="quantity">
+              <name>Quantity</name>
+              <description>Measured as integer count per session</description>
+              <examples>Glasses of water, Meals, Push-ups</examples>
+            </value>
+            <value id="boolean">
+              <name>Boolean</name>
+              <description>Did or didn't do (pass/fail)</description>
+              <examples>Took vitamins, Made bed, Journaled</examples>
+            </value>
+          </values>
+        </field>
+        <field id="target_value">
+          <name>target_value</name>
+          <type>number</type>
+          <description>Target/goal value per entry. Required for all pills.</description>
+          <required>true</required>
+          <examples>
+            <example measurement_type="time">30 (minutes of meditation per session)</example>
+            <example measurement_type="quantity">8 (glasses of water per day)</example>
+            <example measurement_type="boolean">1 (completed = 1)</example>
+          </examples>
+        </field>
+        <field id="unit">
+          <name>unit</name>
+          <type>string</type>
+          <description>Optional display unit label</description>
+          <nullable>true</nullable>
+          <examples>minutes, hours, glasses, reps, meals</examples>
+        </field>
+        <field id="frequency_per_week">
+          <name>frequency_per_week</name>
+          <type>integer</type>
+          <description>How many times per week user intends to complete this pill (1-7)</description>
+          <required>true</required>
+          <min>1</min>
+          <max>7</max>
+        </field>
+        <field id="current_streak">
+          <name>current_streak</name>
+          <type>integer</type>
+          <description>Current streak count (consecutive weeks meeting frequency goal)</description>
+          <default>0</default>
+          <required>true</required>
+        </field>
+        <field id="longest_streak">
+          <name>longest_streak</name>
+          <type>integer</type>
+          <description>Longest streak ever achieved for this pill</description>
+          <default>0</default>
+          <required>true</required>
+        </field>
+        <field id="is_active">
+          <name>is_active</name>
+          <type>boolean</type>
+          <description>Whether the pill is active (false = soft deleted)</description>
+          <default>true</default>
+          <required>true</required>
+        </field>
+        <field id="created_at">
+          <name>created_at</name>
+          <type>timestamp</type>
+          <description>When the pill was created (UTC)</description>
+          <required>true</required>
+        </field>
+        <field id="deleted_at">
+          <name>deleted_at</name>
+          <type>timestamp</type>
+          <description>When the pill was soft-deleted (UTC). Null if active.</description>
+          <nullable>true</nullable>
+        </field>
+      </fields>
+      <indexes>
+        <index>user_id + is_active</index>
+        <index>user_id + name</index>
+      </indexes>
+      <constraints>
+        <constraint>No editing of pills in v1 - only create and soft-delete</constraint>
+        <constraint>Soft-deleted pills appear in historical views but not in current tracking</constraint>
+        <constraint>No limit on number of pills per user</constraint>
+      </constraints>
+    </model>
+
+    <!-- Pill Entry Model -->
+    <model id="pill_entry">
+      <name>Pill Entry</name>
+      <description>A single day's log for a pill</description>
+      <fields>
+        <field id="id">
+          <name>id</name>
+          <type>string</type>
+          <description>Unique entry identifier</description>
+          <required>true</required>
+        </field>
+        <field id="pill_id">
+          <name>pill_id</name>
+          <type>string</type>
+          <description>Reference to the pill</description>
+          <required>true</required>
+        </field>
+        <field id="user_id">
+          <name>user_id</name>
+          <type>string</type>
+          <description>Reference to the user (denormalized for query efficiency)</description>
+          <required>true</required>
+        </field>
+        <field id="period_id">
+          <name>period_id</name>
+          <type>string</type>
+          <description>Reference to the period this entry belongs to</description>
+          <required>true</required>
+        </field>
+        <field id="date">
+          <name>date</name>
+          <type>date</type>
+          <description>The date of this entry (UTC date)</description>
+          <required>true</required>
+        </field>
+        <field id="value">
+          <name>value</name>
+          <type>number</type>
+          <description>The logged value</description>
+          <required>true</required>
+          <interpretation>
+            <for_type type="time">Minutes logged</for_type>
+            <for_type type="quantity">Count logged</for_type>
+            <for_type type="boolean">1 for done, 0 for not done</for_type>
+          </interpretation>
+        </field>
+        <field id="created_at">
+          <name>created_at</name>
+          <type>timestamp</type>
+          <description>When the entry was created (UTC)</description>
+          <required>true</required>
+        </field>
+        <field id="updated_at">
+          <name>updated_at</name>
+          <type>timestamp</type>
+          <description>When the entry was last modified (UTC)</description>
+          <required>true</required>
+        </field>
+      </fields>
+      <indexes>
+        <index>pill_id + date (unique)</index>
+        <index>user_id + date</index>
+        <index>period_id + pill_id</index>
+      </indexes>
+      <behaviors>
+        <behavior>Users can log entries on any day (not restricted to specific days)</behavior>
+        <behavior>Users can backdate entries (log for past dates)</behavior>
+        <behavior>Any logged entry counts toward weekly frequency goal</behavior>
+        <behavior>Completion % calculated as: (value / target_value) * 100</behavior>
+      </behaviors>
+    </model>
+
+    <!-- Period Pill Summary Model -->
+    <model id="period_pill_summary">
+      <name>Period Pill Summary</name>
+      <description>
+        Aggregated stats for a pill within a specific period.
+        Calculated/updated when entries are logged or period ends.
+      </description>
+      <fields>
+        <field id="id">
+          <name>id</name>
+          <type>string</type>
+          <description>Unique summary identifier</description>
+          <required>true</required>
+        </field>
+        <field id="period_id">
+          <name>period_id</name>
+          <type>string</type>
+          <description>Reference to the period</description>
+          <required>true</required>
+        </field>
+        <field id="pill_id">
+          <name>pill_id</name>
+          <type>string</type>
+          <description>Reference to the pill</description>
+          <required>true</required>
+        </field>
+        <field id="user_id">
+          <name>user_id</name>
+          <type>string</type>
+          <description>Reference to the user</description>
+          <required>true</required>
+        </field>
+        <field id="entries_count">
+          <name>entries_count</name>
+          <type>integer</type>
+          <description>Number of days with logged entries this period</description>
+          <required>true</required>
+        </field>
+        <field id="frequency_goal">
+          <name>frequency_goal</name>
+          <type>integer</type>
+          <description>The frequency goal at the time of this period (snapshot)</description>
+          <required>true</required>
+        </field>
+        <field id="frequency_completion_pct">
+          <name>frequency_completion_pct</name>
+          <type>number</type>
+          <description>Percentage of frequency goal met: (entries_count / frequency_goal) * 100</description>
+          <required>true</required>
+        </field>
+        <field id="target_completion_pct">
+          <name>target_completion_pct</name>
+          <type>number</type>
+          <description>Average target completion across entries</description>
+          <required>true</required>
+        </field>
+        <field id="goal_met">
+          <name>goal_met</name>
+          <type>boolean</type>
+          <description>Whether the weekly frequency goal was met</description>
+          <required>true</required>
+        </field>
+        <field id="updated_at">
+          <name>updated_at</name>
+          <type>timestamp</type>
+          <description>Last calculation time (UTC)</description>
+          <required>true</required>
+        </field>
+      </fields>
+      <indexes>
+        <index>period_id + pill_id (unique)</index>
+        <index>user_id + pill_id</index>
+      </indexes>
+      <notes>
+        <note>Used for efficient analytics queries</note>
+        <note>goal_met determines if streak continues</note>
+      </notes>
+    </model>
+
+    <!-- Journal Entry Model -->
+    <model id="journal_entry">
+      <name>Journal Entry</name>
+      <description>A reflection entry associated with a period</description>
+      <fields>
+        <field id="id">
+          <name>id</name>
+          <type>string</type>
+          <description>Unique journal entry identifier</description>
+          <required>true</required>
+        </field>
+        <field id="user_id">
+          <name>user_id</name>
+          <type>string</type>
+          <description>Reference to the user</description>
+          <required>true</required>
+        </field>
+        <field id="period_id">
+          <name>period_id</name>
+          <type>string</type>
+          <description>Reference to the associated period</description>
+          <required>true</required>
+          <note>For daily entries, still references the week period but includes specific date</note>
+        </field>
+        <field id="period_type">
+          <name>period_type</name>
+          <type>enum</type>
+          <description>Granularity of this journal entry</description>
+          <required>true</required>
+          <values>
+            <value>daily</value>
+            <value>weekly</value>
+            <value>monthly</value>
+            <value>quarterly</value>
+            <value>annual</value>
+          </values>
+        </field>
+        <field id="date">
+          <name>date</name>
+          <type>date</type>
+          <description>
+            Specific date for daily entries, or start date for other period types.
+            Used to identify which specific day/week/month/etc this entry is for.
+          </description>
+          <required>true</required>
+        </field>
+        <field id="content">
+          <name>content</name>
+          <type>string</type>
+          <description>Free-form journal text content</description>
+          <required>true</required>
+        </field>
+        <field id="created_at">
+          <name>created_at</name>
+          <type>timestamp</type>
+          <description>When the entry was created (UTC)</description>
+          <required>true</required>
+        </field>
+        <field id="updated_at">
+          <name>updated_at</name>
+          <type>timestamp</type>
+          <description>When the entry was last modified (UTC)</description>
+          <required>true</required>
+        </field>
+      </fields>
+      <indexes>
+        <index>user_id + period_type + date (unique for v1)</index>
+        <index>period_id</index>
+      </indexes>
+      <constraints>
+        <constraint>One entry per period_type + date combination in v1</constraint>
+        <constraint>Data model supports multiple entries per period for future</constraint>
+      </constraints>
+    </model>
+  </data_models>
+
+  <!-- ============================================
+       FEATURES BREAKDOWN
+       ============================================ -->
+
+  <features>
+    <feature_set id="mvp">
+      <name>Minimum Viable Product (v1)</name>
+
+      <feature id="authentication">
+        <name>User Authentication</name>
+        <description>Complete auth flow via Clerk</description>
+        <implementation>
+          <item>Clerk handles all auth UI and flows</item>
+          <item>Clerk webhooks sync user data to Convex</item>
+          <item>Support email/password, Google OAuth, Twitter OAuth</item>
+        </implementation>
+      </feature>
+
+      <feature id="onboarding">
+        <name>User Onboarding</name>
+        <requirements>
+          <requirement>Collect user's name</requirement>
+          <requirement>Detect and confirm timezone</requirement>
+          <requirement>Set week start preference (Sunday default)</requirement>
+          <requirement>Create 3 initial pills</requirement>
+          <requirement>Create first (potentially partial) period</requirement>
+          <requirement>Redirect to dashboard</requirement>
+        </requirements>
+      </feature>
+
+      <feature id="pill_management">
+        <name>Pill Management</name>
+        <operations>
+          <operation>Create new pill (name, measurement type, target value, frequency/week)</operation>
+          <operation>Soft-delete pill (stops appearing in current tracking, remains in history)</operation>
+        </operations>
+        <constraints>
+          <constraint>No editing pills in v1</constraint>
+          <constraint>No pill limit</constraint>
+          <constraint>Pills ordered alphabetically by default</constraint>
+          <constraint>User can reorder via drag-drop (stored in user.pill_order)</constraint>
+        </constraints>
+      </feature>
+
+      <feature id="period_management">
+        <name>Period Management</name>
+        <behaviors>
+          <behavior>Periods created automatically at week start</behavior>
+          <behavior>First period may be partial</behavior>
+          <behavior>Period boundaries respect user's week_start_day setting</behavior>
+        </behaviors>
+      </feature>
+
+      <feature id="daily_tracking">
+        <name>Daily Pill Tracking</name>
+        <behaviors>
+          <behavior>Log value for any pill on any day</behavior>
+          <behavior>Can backdate entries</behavior>
+          <behavior>Each entry counts toward weekly frequency</behavior>
+          <behavior>Completion % = (logged value / target value) * 100</behavior>
+        </behaviors>
+      </feature>
+
+      <feature id="dashboard_views">
+        <name>Dashboard Views</name>
+        <views>
+          <view id="weekly" default="true">Current period grid</view>
+          <view id="monthly">Monthly view</view>
+          <view id="quarterly">Quarterly view</view>
+          <view id="yearly">Yearly view</view>
+        </views>
+        <grid_features>
+          <feature>X-axis: days</feature>
+          <feature>Y-axis: pills (user-orderable)</feature>
+          <feature>Future days greyed out</feature>
+          <feature>Days before pill creation greyed out</feature>
+          <feature>Soft-deleted pills appear in historical views only</feature>
+        </grid_features>
+      </feature>
+
+      <feature id="streak_tracking">
+        <name>Streak Tracking</name>
+        <description>Per-pill weekly streaks</description>
+        <logic>
+          <item>At period end, calculate if frequency goal was met for each pill</item>
+          <item>If met, increment current_streak</item>
+          <item>If not met, reset current_streak to 0</item>
+          <item>Update longest_streak if current exceeds it</item>
+        </logic>
+      </feature>
+
+      <feature id="analytics">
+        <name>Analytics</name>
+        <metrics>
+          <metric>Completion percentage (raw)</metric>
+          <metric>Per-pill stats</metric>
+          <metric>Aggregate stats across all pills</metric>
+          <metric>Current and longest streaks</metric>
+        </metrics>
+        <time_periods>Today, This Week, This Month, This Quarter, This Year</time_periods>
+      </feature>
+
+      <feature id="journal">
+        <name>Journal</name>
+        <features>
+          <feature>Free-form text entries</feature>
+          <feature>Associated with periods</feature>
+          <feature>Daily, weekly, monthly, quarterly, annual granularity</feature>
+          <feature>One entry per period type per date (v1)</feature>
+          <feature>Visible from dashboard</feature>
+        </features>
+      </feature>
+
+      <feature id="settings">
+        <name>Settings</name>
+        <editable>
+          <field>Name</field>
+          <field>Email (via Clerk)</field>
+          <field>Password (via Clerk)</field>
+          <field>Timezone</field>
+          <field>Week start day</field>
+        </editable>
+        <actions>
+          <action>Delete account</action>
+        </actions>
+      </feature>
+    </feature_set>
+
+    <feature_set id="deferred">
+      <name>Deferred Features</name>
+      <note>Explicitly not in v1, pending user feedback</note>
+
+      <feature id="pill_editing">
+        <name>Pill Editing</name>
+        <status>Deferred - complexity with historical data</status>
+      </feature>
+
+      <feature id="pill_restore">
+        <name>Pill Restoration</name>
+        <status>Deferred - soft delete infrastructure in place</status>
+      </feature>
+
+      <feature id="notifications">
+        <name>Email Notifications</name>
+        <provider>Resend (already in stack)</provider>
+        <status>Deferred - awaiting user feedback</status>
+      </feature>
+
+      <feature id="journal_prompts">
+        <name>Journal Prompts</name>
+        <status>Deferred - starting with free-form</status>
+      </feature>
+
+      <feature id="multiple_journal_entries">
+        <name>Multiple Journal Entries per Period</name>
+        <status>Deferred - data model supports it</status>
+      </feature>
+
+      <feature id="data_export">
+        <name>Data Export</name>
+        <status>Deferred</status>
+      </feature>
+
+      <feature id="advanced_analytics">
+        <name>Advanced Analytics (trends, correlations)</name>
+        <status>Deferred</status>
+      </feature>
+    </feature_set>
+  </features>
+
+  <!-- ============================================
+       USER FLOWS
+       ============================================ -->
+
+  <user_flows>
+    <flow id="new_user">
+      <name>New User Registration</name>
+      <steps>
+        <step number="1">User lands on landing page</step>
+        <step number="2">User clicks "Sign Up"</step>
+        <step number="3">User completes auth via Clerk (email/Google/Twitter)</step>
+        <step number="4">Clerk webhook creates user record in Convex</step>
+        <step number="5">User enters name</step>
+        <step number="6">System detects timezone, user confirms</step>
+        <step number="7">User sets week start preference</step>
+        <step number="8">User creates 3 initial pills</step>
+        <step number="9">System creates first period (potentially partial week)</step>
+        <step number="10">User redirected to dashboard</step>
+      </steps>
+    </flow>
+
+    <flow id="daily_logging">
+      <name>Daily Pill Logging</name>
+      <steps>
+        <step number="1">User views dashboard (default: current week)</step>
+        <step number="2">User locates today's column and desired pill row</step>
+        <step number="3">User clicks cell to input value</step>
+        <step number="4">User enters value appropriate to measurement type</step>
+        <step number="5">System saves entry, calculates completion %</step>
+        <step number="6">System updates period_pill_summary</step>
+        <step number="7">Cell updates to reflect logged state</step>
+      </steps>
+    </flow>
+
+    <flow id="week_rollover">
+      <name>Weekly Period Rollover</name>
+      <trigger>Start of new week (based on user's timezone and week_start_day)</trigger>
+      <steps>
+        <step number="1">System creates new period record for user</step>
+        <step number="2">System finalizes previous period's summaries</step>
+        <step number="3">For each active pill, check if frequency goal was met</step>
+        <step number="4">Update streak counts (increment if met, reset if not)</step>
+        <step number="5">Update longest_streak if applicable</step>
+      </steps>
+    </flow>
+
+    <flow id="pill_deletion">
+      <name>Pill Soft Deletion</name>
+      <steps>
+        <step number="1">User initiates pill deletion</step>
+        <step number="2">System sets is_active = false, deleted_at = now</step>
+        <step number="3">Pill no longer appears in current tracking grid</step>
+        <step number="4">Pill continues to appear in historical views</step>
+        <step number="5">Historical analytics unchanged</step>
+      </steps>
+    </flow>
+  </user_flows>
+
+  <!-- ============================================
+       TECHNICAL IMPLEMENTATION NOTES
+       ============================================ -->
+
+  <technical_notes>
+    <note category="timezone">
+      <title>Timezone Handling</title>
+      <items>
+        <item>All timestamps stored in UTC in database</item>
+        <item>User's timezone stored as IANA identifier (e.g., "America/New_York")</item>
+        <item>Frontend converts UTC to user's timezone for display</item>
+        <item>"Today" determined by user's configured timezone</item>
+        <item>Period boundaries calculated using user's timezone and week_start_day</item>
+      </items>
+    </note>
+
+    <note category="clerk_sync">
+      <title>Clerk-Convex Integration</title>
+      <items>
+        <item>Use Clerk webhooks for user.created, user.updated, user.deleted events</item>
+        <item>Convex user table mirrors essential Clerk data</item>
+        <item>clerk_id field links Convex user to Clerk user</item>
+        <item>Email/password changes handled entirely by Clerk</item>
+      </items>
+    </note>
+
+    <note category="period_creation">
+      <title>Period Creation Strategy</title>
+      <items>
+        <item>Option A: Convex scheduled function runs at start of each week (per user timezone)</item>
+        <item>Option B: Lazy creation when user first accesses the app in a new week</item>
+        <item>Recommendation: Hybrid - scheduled function for active users, lazy for returning users</item>
+      </items>
+    </note>
+
+    <note category="analytics_calculation">
+      <title>Analytics Calculation</title>
+      <items>
+        <item>period_pill_summary updated on each entry create/update</item>
+        <item>Weekly aggregates computed from summaries (efficient)</item>
+        <item>Monthly/quarterly/yearly computed by aggregating weekly summaries</item>
+        <item>Consider caching frequently accessed analytics</item>
+      </items>
+    </note>
+
+    <note category="soft_delete">
+      <title>Soft Delete Implementation</title>
+      <items>
+        <item>Deleted pills: is_active = false, deleted_at = timestamp</item>
+        <item>Active pill queries filter: is_active = true</item>
+        <item>Historical queries include all pills (regardless of is_active)</item>
+        <item>Pill restoration (future): set is_active = true, deleted_at = null</item>
+      </items>
+    </note>
+  </technical_notes>
+
+</prd>
