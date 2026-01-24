@@ -24,6 +24,7 @@ export default defineSchema({
         timezone: v.string(), // e.g., "America/New_York"
         pill_order: v.optional(v.array(v.string())), // Ordered array of pill IDs
         onboarding_completed: v.boolean(),
+        week_start_day: v.optional(v.string()), // 'monday' | 'sunday'
         created_at: v.number(), // UTC Timestamp
     })
         .index("by_clerk_id", ["clerk_id"])

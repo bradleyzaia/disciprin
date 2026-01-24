@@ -6,7 +6,7 @@ import { Navbar } from "@/components/layout/Navbar"
 import { CompletionChart } from "@/components/analytics/CompletionChart"
 import { AnalyticsHeader } from "@/components/analytics/AnalyticsHeader"
 import { KeyMetrics } from "@/components/analytics/KeyMetrics"
-import { PillPerformanceTable } from "@/components/analytics/PillPerformanceTable"
+
 
 export function Analytics() {
     const [timeRange, setTimeRange] = useState<'W' | 'M' | 'Y'>('M')

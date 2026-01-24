@@ -15,7 +15,7 @@ export function Journal() {
     const user = useQuery(api.users.getUser)
 
     // Default to Monday (1) if not specified or loading
-    const weekStartsOn = user?.week_start_day === 'sunday' ? 0 : 1
+    const weekStartsOn = (user as any)?.week_start_day === 'sunday' ? 0 : 1
 
     // Default to current week based on preference
     // We use a small effect to update the selected date if it was initialized with a default

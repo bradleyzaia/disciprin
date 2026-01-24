@@ -63,7 +63,7 @@ export function AsciiPillCanvas({ className, cellSize = 1 }: { className?: strin
                 <EffectComposer>
                     <AsciiEffect
                         style="standard"
-                        cellSize={2}
+                        cellSize={cellSize}
                         invert={true}
                         resolution={resolution}
                         color={true}

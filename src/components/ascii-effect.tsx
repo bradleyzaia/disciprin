@@ -146,7 +146,7 @@ class AsciiEffectImpl extends Effect {
     })
   }
 
-  update(renderer: any, inputBuffer: any, deltaTime: number) {
+  update(_renderer: any, _inputBuffer: any, deltaTime: number) {
     const targetFPS = this.uniforms.get("targetFPS")!.value
 
     if (targetFPS > 0) {

@@ -117,14 +117,17 @@ export const ProtocolDefinitionStep = ({ pills, onUpdatePills }: ProtocolDefinit
                     onSelect={(name) => {
                         const config = HABIT_CONFIG[name]
                         if (config) {
-                            const newPill: PillDraft = {
-                                name,
+                            const defaults: Partial<PillDraft> = {
                                 measurement_type: "boolean",
                                 target_value: 1,
                                 frequency_per_week: 3,
-                                unit: "",
-                                ...config
+                                unit: ""
                             }
+                            const newPill: PillDraft = {
+                                name,
+                                ...defaults,
+                                ...config
+                            } as PillDraft
                             onUpdatePills([...pills, newPill])
                         }
                         setIsPrescriptionDrawerOpen(false)
