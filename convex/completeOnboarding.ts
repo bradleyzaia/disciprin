@@ -2,11 +2,12 @@ import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 
 
+// Force sync
+
 export default mutation({
     args: {
         name: v.string(),
         timezone: v.string(),
-        week_start_day: v.string(),
         pills: v.array(
             v.object({
                 name: v.string(),
@@ -37,7 +38,6 @@ export default mutation({
             await ctx.db.patch(existingUser._id, {
                 name: args.name,
                 timezone: args.timezone,
-                week_start_day: args.week_start_day,
                 onboarding_completed: true,
             });
         } else {
@@ -46,7 +46,6 @@ export default mutation({
                 name: args.name,
                 email: email,
                 timezone: args.timezone,
-                week_start_day: args.week_start_day,
                 onboarding_completed: true,
                 created_at: Date.now(),
             });

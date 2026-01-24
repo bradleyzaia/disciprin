@@ -14,14 +14,12 @@ export function UserProfileEditor() {
 
     const [name, setName] = useState("")
     const [timezone, setTimezone] = useState("UTC")
-    const [weekStart, setWeekStart] = useState("sunday")
     const [isDirty, setIsDirty] = useState(false)
 
     useEffect(() => {
         if (user) {
             setName(user.name || "")
             setTimezone(user.timezone || "UTC")
-            setWeekStart(user.week_start_day || "sunday")
         }
     }, [user])
 
@@ -30,7 +28,6 @@ export function UserProfileEditor() {
             await updateUser({
                 name,
                 timezone,
-                week_start_day: weekStart,
             })
             setIsDirty(false)
             showToast("SUCCESS", "Profile updated")
@@ -47,10 +44,6 @@ export function UserProfileEditor() {
         { label: "Europe/London", value: "Europe/London" },
     ]
 
-    const WEEK_START_OPTIONS = [
-        { label: "Sunday", value: "sunday" },
-        { label: "Monday", value: "monday" },
-    ]
 
     if (!user) return null // Or skeleton
 
@@ -60,14 +53,14 @@ export function UserProfileEditor() {
                 <GridCell span={6} className="p-16">
                     <h3 className="mb-12 text-primary text-lg uppercase">Profile</h3>
                     <div className="mb-8">
-                        <label className="block text-xs mb-2 text-muted-foreground uppercase">Name</label>
+                        <label className="block text-xs mb-2 text-dark-theme-text uppercase">Name</label>
                         <Input
                             value={name}
                             onChange={(e) => { setName(e.target.value); setIsDirty(true) }}
                         />
                     </div>
                     <div className="mb-0">
-                        <label className="block text-xs mb-2 text-muted-foreground uppercase">Email Address</label>
+                        <label className="block text-xs mb-2 text-dark-theme-text uppercase">Email Address</label>
                         <Input
                             value={user.email}
                             disabled
@@ -75,22 +68,14 @@ export function UserProfileEditor() {
                         />
                     </div>
                 </GridCell>
-                <GridCell span={6} className="p-16 border-r-0 bg-muted/20">
+                <GridCell span={6} className="p-16 border-r-0 bg-white/5">
                     <h3 className="mb-12 text-primary text-lg uppercase">Preferences</h3>
                     <div className="mb-8">
-                        <label className="block text-xs mb-2 text-muted-foreground uppercase">Timezone</label>
+                        <label className="block text-xs mb-2 text-dark-theme-text uppercase">Timezone</label>
                         <Select
                             value={timezone}
                             onChange={(val) => { setTimezone(val); setIsDirty(true) }}
                             options={TIMEZONE_OPTIONS}
-                        />
-                    </div>
-                    <div className="mb-0">
-                        <label className="block text-xs mb-2 text-muted-foreground uppercase">Week Starts On</label>
-                        <Select
-                            value={weekStart}
-                            onChange={(val) => { setWeekStart(val); setIsDirty(true) }}
-                            options={WEEK_START_OPTIONS}
                         />
                     </div>
                 </GridCell>

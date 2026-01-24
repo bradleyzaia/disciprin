@@ -1,34 +1,37 @@
-import { Link } from "react-router-dom"
+import { ScrambleLink } from "@/components/ui/scramble-link"
 import { GridRow, GridCell } from "@/components/layout/grid"
-import { LayoutGrid, BarChart3, Book, Settings } from "lucide-react"
+import { LayoutGrid, BarChart3, Book, Settings, LogOut } from "lucide-react"
+import { useClerk } from "@clerk/clerk-react"
 
 export function Navbar() {
+    const { signOut } = useClerk()
+
     return (
         <GridRow flex="pass">
-            <GridCell hug="pass" className="flex items-center">
-                <Link to="/dashboard">
-                    <span className="font-display font-black uppercase text-xl tracking-normal">Disciprin</span>
-                </Link>
+            <GridCell hug="pass" className="flex items-center" to="/dashboard">
+                <span className="font-display font-black uppercase text-xl tracking-normal">Disciprin</span>
             </GridCell>
-            <GridCell className="flex-1 flex items-center justify-center space-x-12 text-xs uppercase text-muted-foreground bg-transparent">
-                <a href="/dashboard" className="hover:text-foreground transition-colors flex items-center gap-2">
+            <GridCell className="flex-1 flex items-center justify-center space-x-12 text-xs uppercase text-dark-theme-text bg-transparent">
+                <div className="flex items-center gap-2">
                     <LayoutGrid className="size-4" />
-                    <span>Dashboard</span>
-                </a>
-                <a href="/analytics" className="hover:text-foreground transition-colors flex items-center gap-2">
+                    <ScrambleLink to="/dashboard" className="px-2 py-1 transition-colors hover:bg-white hover:text-grayscale0">Dashboard</ScrambleLink>
+                </div>
+                <div className="flex items-center gap-2">
                     <BarChart3 className="size-4" />
-                    <span>Analytics</span>
-                </a>
-                <a href="/journal" className="hover:text-foreground transition-colors flex items-center gap-2">
+                    <ScrambleLink to="/analytics" className="px-2 py-1 transition-colors hover:bg-white hover:text-grayscale0">Analytics</ScrambleLink>
+                </div>
+                <div className="flex items-center gap-2">
                     <Book className="size-4" />
-                    <span>Journal</span>
-                </a>
+                    <ScrambleLink to="/journal" className="px-2 py-1 transition-colors hover:bg-white hover:text-grayscale0">Journal</ScrambleLink>
+                </div>
             </GridCell>
-            <GridCell hug="pass" className="group flex items-center justify-end hover:bg-black transition-colors cursor-pointer">
-                <a href="/settings" className="transition-colors group-hover:text-white">
-                    <Settings className="size-5" />
-                </a>
+            <GridCell hug="pass" className="group flex items-center justify-end" to="/settings">
+                <Settings className="size-5" />
+            </GridCell>
+            <GridCell hug="pass" className="group flex items-center justify-end" onClick={() => signOut()}>
+                <LogOut className="size-5" />
             </GridCell>
         </GridRow>
     )
 }
+

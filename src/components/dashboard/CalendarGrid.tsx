@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils"
-import { startOfDay, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, format, getWeek, isWithinInterval, startOfYear, endOfYear, eachWeekOfInterval } from "date-fns"
-import { AnimatePresence, motion } from "framer-motion"
-import { useState, useMemo } from "react"
-import { DayEntryModal } from "./DayEntryModal"
+import { startOfDay, startOfMonth, endOfMonth, eachDayOfInterval, format, isWithinInterval, isSameDay } from "date-fns"
+import { motion } from "framer-motion"
+import { useMemo, useEffect } from "react"
 import { CalendarDayCell, type DayCellState } from "./CalendarDayCell"
+import { ScrambleText } from "@/components/ui/scramble-text"
 
 // --- Types ---
 
@@ -25,7 +25,7 @@ export interface PillEntry {
     is_completed: boolean
 }
 
-export type CalendarView = 'week' | 'month' | 'quarter' | 'year'
+export type CalendarView = 'week' | 'month'
 
 // View Model
 interface ColumnHeaderViewModel {
@@ -78,7 +78,7 @@ interface CalendarGridProps {
     onViewChange?: (view: CalendarView) => void
     onDateChange?: (date: Date) => void
     onEntryUpdate?: (entry: PillEntry) => void
-    weekStartsOn?: 0 | 1
+    onPillClick?: (pill: Pill) => void
 }
 
 // --- Helper Functions ---
@@ -93,7 +93,7 @@ export function CalendarGrid({
     onViewChange: _onViewChange,
     onDateChange,
     onEntryUpdate,
-    weekStartsOn = 1
+    onPillClick
 }: CalendarGridProps) {
     const onViewChange = _onViewChange || (() => { })
 
@@ -126,32 +126,8 @@ export function CalendarGrid({
                     type: 'day'
                 }))
             }
-            case 'quarter': {
-                const currentMonth = currentDate.getMonth()
-                const quarterStartMonth = Math.floor(currentMonth / 3) * 3
-                const start = new Date(currentDate.getFullYear(), quarterStartMonth, 1)
-                const end = new Date(currentDate.getFullYear(), quarterStartMonth + 3, 0)
-                return eachWeekOfInterval({ start, end }, { weekStartsOn }).map(date => ({
-                    id: `week-${getWeek(date, { weekStartsOn })}`,
-                    label: `W${getWeek(date, { weekStartsOn })}`,
-                    subLabel: format(date, 'MMM'),
-                    interval: { start: date, end: endOfWeek(date, { weekStartsOn }) },
-                    type: 'week'
-                }))
-            }
-            case 'year': {
-                const start = startOfYear(currentDate)
-                const end = endOfYear(currentDate)
-                return eachWeekOfInterval({ start, end }, { weekStartsOn }).map(date => ({
-                    id: `year-week-${getWeek(date, { weekStartsOn })}`,
-                    label: `W${getWeek(date, { weekStartsOn })}`,
-                    subLabel: format(date, 'MMM'),
-                    interval: { start: date, end: endOfWeek(date, { weekStartsOn }) },
-                    type: 'week'
-                }))
-            }
         }
-    }, [view, currentDate, weekStartsOn])
+    }, [view, currentDate])
 
     // Generate Rows & Cells (The View Model)
     const rows: RowViewModel[] = useMemo(() => {
@@ -177,7 +153,8 @@ export function CalendarGrid({
                     } else if (entry && entry.value > 0) {
                         dayState = 'partially-completed'
                     } else {
-                        dayState = 'past-incomplete'
+                        const isToday = colDate!.getTime() === today.getTime()
+                        dayState = isToday ? 'present-incomplete' : 'past-incomplete'
                     }
 
                     return {
@@ -198,7 +175,13 @@ export function CalendarGrid({
                         const entryDate = new Date(e.date)
                         return isWithinInterval(entryDate, interval)
                     })
-                    const completedCount = relevantEntries.filter(e => e.is_completed).length
+                    const completedCount = relevantEntries.reduce((acc, e) => {
+                        if (pill.measurement_type === 'boolean') {
+                            return acc + (e.is_completed ? 1 : 0)
+                        } else {
+                            return acc + Math.min(1, e.value / pill.target_value)
+                        }
+                    }, 0)
                     const isMet = completedCount >= pill.frequency_per_week
 
                     return {
@@ -221,32 +204,9 @@ export function CalendarGrid({
     }, [pills, columns, entries])
 
 
-    // Interaction State
-    const [selectedCell, setSelectedCell] = useState<{
-        pill: Pill,
-        date: Date,
-        entry?: PillEntry
-        rect?: DOMRect
-    } | null>(null)
-
-    const handleCellClick = (cell: CellViewModel, e: React.MouseEvent) => {
+    const handleCellClick = (cell: CellViewModel) => {
         if (cell.type === 'day') {
-            if (cell.isFuture) return // Or cell.dayState === 'future'
-
-            const rect = e.currentTarget.getBoundingClientRect()
-            // Re-fetch latest entry from props to ensure modal gets fresh data if used directly, 
-            // but here we used pre-calculated vm. 
-            // Actually, for the modal we might want the raw entry.
-            // But we can find it again or pass it.
-            // Let's find it again to be safe and consistent with previous logic
-            const entry = entries.find(ent => ent.pill_id === cell.context.pillId && ent.date === formatDateKey(cell.context.date))
-
-            setSelectedCell({
-                pill: cell.context.pill,
-                date: cell.context.date,
-                entry,
-                rect
-            })
+            // No-op for day cells
         } else {
             // Aggregated view click - navigate to week
             if (!cell.isFuture) {
@@ -259,36 +219,65 @@ export function CalendarGrid({
 
     // --- 2. Declarative Rendering ---
 
+    useEffect(() => {
+        // Center the current day or focused date
+        const todayKey = format(new Date(), 'yyyy-MM-dd')
+        // First try to find Today's column
+        let targetEl = document.getElementById(`calendar-col-${todayKey}`)
+
+        // If Today isn't in view (e.g. browsing a different month), try the currently selected date
+        if (!targetEl) {
+            const selectedKey = format(currentDate, 'yyyy-MM-dd')
+            targetEl = document.getElementById(`calendar-col-${selectedKey}`)
+        }
+
+        if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+        }
+    }, [columns, currentDate])
+
     return (
         <div className={cn("w-full h-full flex flex-col font-mono text-xs overflow-hidden", className)}>
-            <div className="flex-1 overflow-auto relative">
+            <div className="flex-1 overflow-x-auto overflow-y-auto relative">
                 {/* Header */}
                 <div
-                    className="grid h-16 sticky top-0 z-20 bg-background/95 backdrop-blur-sm"
+                    className="grid h-24 sticky top-0 z-20 bg-transparent backdrop-blur-sm"
                     style={{
-                        gridTemplateColumns: `240px repeat(${columns.length}, minmax(40px, 1fr))`,
+                        gridTemplateColumns: `240px repeat(${columns.length}, minmax(${view === 'month' ? '120px' : '40px'}, 1fr))`,
                         width: 'fit-content',
                         minWidth: '100%'
                     }}
                 >
                     {/* Control Cell */}
-                    <div className="p-4 border-r border-b border-black/50 flex items-center justify-between font-medium bg-black text-white h-full sticky left-0 z-30 w-[240px]">
-                        <span>pill</span>
+                    <div className="border-r border-b border-dark-theme-border flex sticky left-0 z-30 w-[240px] bg-black h-full">
+                        {(['week', 'month'] as CalendarView[]).map(v => (
+                            <button
+                                key={v}
+                                onClick={() => onViewChange(v)}
+                                className={cn(
+                                    "flex-1 h-full flex items-center justify-center hover:bg-white hover:text-black transition-colors uppercase text-[10px] border-r border-dark-theme-border last:border-r-0",
+                                    view === v ? "text-dark-theme-text font-bold bg-white/10" : "text-dark-theme-text/30"
+                                )}
+                            >
+                                <ScrambleText text={v[0]} />
+                            </button>
+                        ))}
                     </div>
 
                     {/* Column Headers */}
                     {columns.map((col) => (
                         <div
                             key={col.id}
+                            id={`calendar-col-${col.id}`}
                             className={cn(
-                                "p-2 border-r border-b border-black/50 last:border-r-0 flex flex-col items-center justify-center gap-1 min-w-[32px] bg-background",
+                                "p-2 border-r border-b border-dark-theme-border last:border-r-0 flex flex-col items-center justify-center gap-1 min-w-[32px]",
                                 view === 'week' && "p-4"
                             )}
                         >
                             <span className={cn("opacity-50 uppercase text-[10px]", view === 'week' && "text-xs")}>
-                                {col.subLabel}
+                                <ScrambleText text={col.subLabel} />
                             </span>
-                            <span className="whitespace-nowrap">{col.label}</span>
+                            <span className="whitespace-nowrap"><ScrambleText text={col.label} /></span>
                         </div>
                     ))}
                 </div>
@@ -296,25 +285,33 @@ export function CalendarGrid({
                 {/* Body Rows */}
                 <div className="w-fit min-w-full">
                     {rows.length === 0 ? (
-                        <div className="w-full h-32 flex items-center justify-center text-muted-foreground border-b border-black/50 sticky left-0">
-                            No pills configured.
+                        <div className="w-full h-32 flex items-center justify-center text-dark-theme-text border-b border-dark-theme-border sticky left-0">
+                            <ScrambleText text="No pills configured." />
                         </div>
                     ) : (
                         rows.map((row) => (
                             <div
                                 key={row.pill.id}
-                                className="grid border-b border-black/50 h-16 bg-background"
+                                className="grid border-b border-dark-theme-border h-16 bg-black/50 backdrop-blur-md"
                                 style={{
-                                    gridTemplateColumns: `240px repeat(${columns.length}, minmax(40px, 1fr))`
+                                    gridTemplateColumns: `240px repeat(${columns.length}, minmax(${view === 'month' ? '120px' : '40px'}, 1fr))`
                                 }}
                             >
                                 {/* Row Header (Pill Info) */}
-                                <div className="p-4 border-r border-black/50 flex flex-col justify-center truncate group hover:bg-black/5 transition-colors h-full sticky left-0 z-10 w-[240px] bg-background">
-                                    <div className="font-medium truncate">{row.pill.name}</div>
-                                    <div className="text-[10px] text-muted-foreground flex gap-2">
-                                        <span>{row.pill.measurement_type === 'boolean' ? 'PASS/FAIL' : `${row.pill.target_value} ${row.pill.unit || ''}`}</span>
-                                        <span>•</span>
-                                        <span>Goal: {row.pill.frequency_per_week}/wk</span>
+                                <div
+                                    onClick={() => onPillClick?.(row.pill)}
+                                    className="px-4 border-r border-dark-theme-border flex flex-col justify-center truncate group h-full sticky left-0 z-10 w-[240px] backdrop-blur-sm cursor-pointer hover:bg-white/5 transition-colors"
+                                >
+                                    <div className="font-medium truncate"><ScrambleText text={row.pill.name} /></div>
+                                    <div className="text-[10px] text-dark-theme-text flex flex-col leading-relaxed">
+                                        <div>
+                                            <ScrambleText text={row.pill.measurement_type === 'boolean' ? 'PASS/FAIL' : `${row.pill.target_value}${row.pill.unit ? ` ${row.pill.unit}` : ''}`} />
+                                            {row.pill.measurement_type !== 'boolean' && <ScrambleText text=" / DAY" className="text-grayscale75" />}
+                                        </div>
+                                        <div>
+                                            <ScrambleText text={`${row.pill.frequency_per_week}X`} />
+                                            <ScrambleText text=" / WEEK" className="text-grayscale75" />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -322,10 +319,11 @@ export function CalendarGrid({
                                 {row.cells.map((cell) => (
                                     <motion.div
                                         key={cell.id}
-                                        onClick={(e) => handleCellClick(cell, e)}
+                                        onClick={() => handleCellClick(cell)}
                                         className={cn(
-                                            "border-r border-black/50 last:border-r-0 flex items-center justify-center transition-all hover:bg-black/5 cursor-pointer relative",
-                                            cell.isFuture && "bg-white text-muted-foreground cursor-default hover:bg-white"
+                                            "border-r border-dark-theme-border last:border-r-0 flex items-center justify-center transition-all cursor-pointer relative backdrop-blur-md",
+                                            cell.isFuture && "bg-white/4 text-dark-theme-text cursor-default",
+                                            (cell.type === 'day' && isSameDay(cell.context.date, new Date())) && "bg-white/2"
                                         )}
                                     >
                                         {cell.type === 'day' ? (
@@ -333,6 +331,17 @@ export function CalendarGrid({
                                                 state={cell.dayState}
                                                 value={cell.value}
                                                 target={cell.target}
+                                                unit={cell.context.pill.unit}
+                                                onUpdate={(newValue) => {
+                                                    if (onEntryUpdate) {
+                                                        onEntryUpdate({
+                                                            pill_id: cell.context.pillId,
+                                                            date: formatDateKey(cell.context.date),
+                                                            value: newValue,
+                                                            is_completed: newValue >= (cell.target || 0)
+                                                        })
+                                                    }
+                                                }}
                                             />
                                         ) : (
                                             /* Aggregated Cell Rendering (Inline for now as it's specific) */
@@ -343,19 +352,19 @@ export function CalendarGrid({
                                                 )}>
                                                     {view === 'week' ? (
                                                         <div className={cn(
-                                                            "w-8 h-6 flex items-center justify-center border border-black",
-                                                            cell.aggregatedStats.isMet ? "bg-black text-white" : "bg-transparent text-black"
+                                                            "w-8 h-6 flex items-center justify-center border border-dark-theme-border",
+                                                            cell.aggregatedStats.isMet ? "bg-green text-black" : "bg-transparent text-dark-theme-text/50"
                                                         )}>
-                                                            {cell.aggregatedStats.completed}/{row.pill.frequency_per_week}
+                                                            <ScrambleText text={`${Number.isInteger(cell.aggregatedStats.completed) ? cell.aggregatedStats.completed : cell.aggregatedStats.completed.toFixed(1)}/${row.pill.frequency_per_week}`} />
                                                         </div>
                                                     ) : (
                                                         <div className="flex flex-col items-center">
-                                                            <span className="font-bold">{cell.aggregatedStats.completed}</span>
+                                                            <span className="font-bold"><ScrambleText text={Number.isInteger(cell.aggregatedStats.completed) ? cell.aggregatedStats.completed.toString() : cell.aggregatedStats.completed.toFixed(1)} /></span>
                                                         </div>
                                                     )}
                                                 </div>
                                             ) : (
-                                                !cell.isFuture && <span className="text-black/20">-</span>
+                                                !cell.isFuture && <span className="text-dark-theme-text/20"><ScrambleText text="-" /></span>
                                             ))
                                         )}
                                     </motion.div>
@@ -365,30 +374,6 @@ export function CalendarGrid({
                     )}
                 </div>
             </div>
-
-            {/* Modal */}
-            <AnimatePresence>
-                {selectedCell && (
-                    <DayEntryModal
-                        originRect={selectedCell.rect}
-                        pill={selectedCell.pill}
-                        date={selectedCell.date}
-                        initialValue={selectedCell.entry?.value}
-                        isCompleted={selectedCell.entry?.is_completed}
-                        onClose={() => setSelectedCell(null)}
-                        onSave={(value, isCompleted) => {
-                            if (onEntryUpdate) {
-                                onEntryUpdate({
-                                    pill_id: selectedCell.pill.id,
-                                    date: formatDateKey(selectedCell.date),
-                                    value,
-                                    is_completed: isCompleted
-                                })
-                            }
-                        }}
-                    />
-                )}
-            </AnimatePresence>
         </div>
     )
 }

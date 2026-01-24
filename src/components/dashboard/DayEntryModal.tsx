@@ -45,7 +45,7 @@ function EntranceZoomRects({ origin, target }: { origin: DOMRect, target: DOMRec
                             ease: "linear",
                             delay: i * 0.03
                         }}
-                        className="fixed z-50 border border-black pointer-events-none"
+                        className="fixed z-50 border border-dark-theme-border pointer-events-none"
                     />
                 )
             })}
@@ -85,7 +85,7 @@ function ExitZoomRects({ origin, target }: { origin: DOMRect, target: DOMRect })
                             ease: "linear",
                             delay: i * 0.03
                         }}
-                        className="fixed z-50 border border-black pointer-events-none"
+                        className="fixed z-50 border border-dark-theme-border pointer-events-none"
                     />
                 )
             })}
@@ -144,8 +144,8 @@ export function DayEntryModal({
                         type="button"
                         onClick={() => setCompleted(true)}
                         className={cn(
-                            "px-4 py-2 border border-black font-mono text-xs uppercase hover:bg-black/5 transition-colors",
-                            completed && "bg-black text-white hover:bg-black"
+                            "px-4 py-2 border border-dark-theme-border font-mono text-xs uppercase hover:bg-white/10 transition-colors",
+                            completed && "bg-black text-dark-theme-text hover:bg-black"
                         )}
                     >
                         Pass
@@ -154,8 +154,8 @@ export function DayEntryModal({
                         type="button"
                         onClick={() => setCompleted(false)}
                         className={cn(
-                            "px-4 py-2 border border-black font-mono text-xs uppercase hover:bg-black/5 transition-colors",
-                            !completed && "bg-black/5"
+                            "px-4 py-2 border border-dark-theme-border font-mono text-xs uppercase hover:bg-white/10 transition-colors",
+                            !completed && "bg-white/10"
                         )}
                     >
                         Fail
@@ -171,10 +171,10 @@ export function DayEntryModal({
                     type="number"
                     value={value || ''}
                     onChange={(e) => setValue(Number(e.target.value))}
-                    className="w-24 border-b border-black bg-transparent py-1 font-mono text-2xl outline-none"
+                    className="w-24 border-b border-l border-r border-t border-dark-theme-border bg-transparent p-2 font-mono text-2xl outline-none"
                     placeholder="0"
                 />
-                <span className="text-xs text-muted-foreground">{pill.unit}</span>
+                <span className="text-xs text-dark-theme-text">{pill.unit}</span>
             </div>
         )
     }
@@ -187,7 +187,7 @@ export function DayEntryModal({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={onClose}
-                className="absolute inset-0 bg-[radial-gradient(#000000_1px,transparent_1px)] [background-size:2px_2px] opacity-25 cursor-pointer"
+                className="absolute inset-0 bg-transparent"
             />
 
             {/* The Zoom Animation Layer */}
@@ -209,11 +209,11 @@ export function DayEntryModal({
                     opacity: 0,
                     transition: { duration: 0.05 } // Fast fade out to let rects take over
                 }}
-                className="relative z-10 w-full max-w-sm border border-black bg-white shadow-xl"
+                className="relative z-10 w-full max-w-sm border border-dark-theme-border bg-black shadow-xl"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-black p-4 bg-black text-white">
+                <div className="flex items-center justify-between border-b border-dark-theme-border p-4 bg-black text-dark-theme-text">
                     <div className="flex flex-col">
                         <span className="font-mono text-[10px] opacity-70 uppercase tracking-widest">{format(date, 'EEEE, MMM d')}</span>
                         <span className="font-mono text-lg">{pill.name}</span>
@@ -229,18 +229,18 @@ export function DayEntryModal({
                 </form>
 
                 {/* Footer */}
-                <div className="grid grid-cols-2 border-t border-black">
+                <div className="grid grid-cols-2 border-t border-dark-theme-border">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="p-4 border-r border-black hover:bg-black/5 font-mono text-xs uppercase"
+                        className="p-4 border-r border-dark-theme-border hover:bg-white/10 font-mono text-xs uppercase"
                     >
                         Cancel
                     </button>
                     <button
                         type="button"
                         onClick={() => handleSubmit()}
-                        className="p-4 hover:bg-black hover:text-white transition-colors font-mono text-xs uppercase flex items-center justify-center gap-2"
+                        className="p-4 hover:bg-white hover:text-black transition-colors font-mono text-xs uppercase flex items-center justify-center gap-2"
                     >
                         <Check className="w-4 h-4" />
                         Confirm

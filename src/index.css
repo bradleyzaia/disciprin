@@ -28,53 +28,47 @@
 
   --font-display: 'Cal Sans', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
+  --color-grayscale0: #010101;
+  --color-grayscale25: #222222;
+  --color-grayscale30: #333333;
+  --color-grayscale50: #555555;
+  --color-grayscale75: #aaaaaa;
+  --color-grayscale100: #f1f1f1;
+  --color-green: #00FF8C;
+  --color-red: #FF00B2;
+  --color-yellow: #FBFF00;
+
+  --color-light-theme-border: var(--color-grayscale75);
+  --color-dark-theme-border: var(--color-grayscale25);
+  --color-light-theme-text: var(--color-grayscale0);
+  --color-dark-theme-text: var(--color-grayscale100);
 }
 
 @layer base {
   :root {
-    --background: hsl(0 0% 100%);
-    --foreground: hsl(0 0% 3.9%);
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(0 0% 3.9%);
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(0 0% 3.9%);
-    --primary: hsl(0 0% 9%);
-    --primary-foreground: hsl(0 0% 98%);
-    --secondary: hsl(0 0% 96.1%);
-    --secondary-foreground: hsl(0 0% 9%);
-    --muted: hsl(0 0% 96.1%);
-    --muted-foreground: hsl(0 0% 45.1%);
-    --accent: hsl(0 0% 96.1%);
-    --accent-foreground: hsl(0 0% 9%);
-    --destructive: hsl(0 84.2% 60.2%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 89.8%);
-    --input: hsl(0 0% 89.8%);
-    --ring: hsl(0 0% 3.9%);
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: hsl(0 0% 3.9%);
-    --foreground: hsl(0 0% 98%);
+    --background: #010101;
+    --foreground: var(--color-dark-theme-text);
     --card: hsl(0 0% 3.9%);
-    --card-foreground: hsl(0 0% 98%);
+    --card-foreground: var(--color-dark-theme-text);
     --popover: hsl(0 0% 3.9%);
-    --popover-foreground: hsl(0 0% 98%);
+    --popover-foreground: var(--color-dark-theme-text);
     --primary: hsl(0 0% 98%);
     --primary-foreground: hsl(0 0% 9%);
     --secondary: hsl(0 0% 14.9%);
     --secondary-foreground: hsl(0 0% 98%);
     --muted: hsl(0 0% 14.9%);
-    --muted-foreground: hsl(0 0% 63.9%);
+    --muted-foreground: var(--color-dark-theme-text);
     --accent: hsl(0 0% 14.9%);
     --accent-foreground: hsl(0 0% 98%);
     --destructive: hsl(0 62.8% 30.6%);
     --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 14.9%);
-    --input: hsl(0 0% 14.9%);
+    --border: var(--color-dark-theme-border);
+    --input: var(--color-dark-theme-border);
     --ring: hsl(0 0% 83.1%);
+    --radius: 0.5rem;
   }
+
+  /* .dark mode is now default */
 }
 
 @layer base {
@@ -82,7 +76,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[#010101] text-dark-theme-text;
     font-family: var(--font-mono);
     line-height: 1.5;
     font-weight: 400;
@@ -90,7 +84,7 @@
     text-transform: uppercase;
     letter-spacing: 0;
     font-size: 0.75rem;
-    cursor: url('/imgs/pointer.png') 0 0, auto;
+    cursor: url('/imgs/cursor.svg?v=1') 0 0, auto;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -98,19 +92,12 @@
   }
 
   button, a {
-    cursor: url('/imgs/pointer-cursor.svg'), pointer;
+    cursor: url('/imgs/pointer.svg?v=1') 7 1, pointer;
   }
 }
 
 /* Clerk Overrides */
-.social-only-signup .cl-formField-firstName,
-.social-only-signup .cl-formField-lastName,
-.social-only-signup .cl-formField-emailAddress,
-.social-only-signup .cl-formField-password,
-.social-only-signup .cl-dividerRow,
-.social-only-signup .cl-formButtonPrimary {
-  display: none !important;
-}
+/* Clerk Overrides - Removed social-only-signup to show full form */
 
 /* Global Scrollbar Styling */
 ::-webkit-scrollbar {
@@ -119,13 +106,47 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--color-grayscale0);
+  border: 1px solid var(--color-grayscale25);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: black;
+  background: var(--color-grayscale30);
+  border: 1px solid var(--color-grayscale25);
 }
 
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-grayscale50);
+}
+
+
+
 .cursor-pointer, button, a {
-  cursor: url('/imgs/pointer-cursor.svg') 22 0, pointer;
+  cursor: url('/imgs/pointer.svg?v=1') 7 1, pointer;
+}
+
+/* Scramble Hover Effects */
+.GridCell.interactive {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.GridCell.interactive:hover {
+  background-color: #ffffff !important;
+  color: var(--color-grayscale0) !important;
+}
+
+.GridCell.interactive:hover .scramble-text,
+.scramble-link:hover .scramble-text,
+.scramble-link:hover {
+  color: var(--color-grayscale0) !important;
+}
+
+/* MasterGrid Specific Overrides */
+.MasterGrid .GridCell button.bg-white:hover {
+  background-color: #ffffff !important;
+  color: var(--color-grayscale0) !important;
+}
+
+.MasterGrid .GridCell button.bg-white:hover svg {
+  color: var(--color-grayscale0) !important;
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Canvas, useFrame } from "@react-three/fiber"
+import { OrbitControls } from "@react-three/drei"
 import { EffectComposer } from "@react-three/postprocessing"
 import { Vector2 } from "three"
 import { AsciiEffect } from "./ascii-effect"
@@ -25,7 +26,7 @@ function Pill() {
     )
 }
 
-export function AsciiPillCanvas({ className, cellSize = 4 }: { className?: string, cellSize?: number }) {
+export function AsciiPillCanvas({ className, cellSize = 1 }: { className?: string, cellSize?: number }) {
     const containerRef = useRef<HTMLDivElement>(null)
     const [resolution, setResolution] = useState(new Vector2(100, 100))
 
@@ -53,16 +54,22 @@ export function AsciiPillCanvas({ className, cellSize = 4 }: { className?: strin
 
                 <Pill />
 
+                <OrbitControls
+                    enableZoom={false}
+                    enablePan={false}
+                    makeDefault
+                />
+
                 <EffectComposer>
                     <AsciiEffect
                         style="standard"
-                        cellSize={cellSize}
+                        cellSize={2}
                         invert={true}
                         resolution={resolution}
-                        color={false}
+                        color={true}
                         postfx={{
-                            contrastAdjust: 1.2,
-                            brightnessAdjust: 0.2
+                            contrastAdjust: 1,
+                            brightnessAdjust: 0.5
                         }}
                     />
                 </EffectComposer>

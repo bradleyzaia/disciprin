@@ -1,6 +1,10 @@
+import { useState } from "react"
 import { MasterGrid, GridRow, GridCell } from "@/components/layout/grid"
+import { Drawer } from "@/components/ui/Drawer"
+import { Button } from "@/components/ui/Button"
 
 export function GridTest() {
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false)
     return (
         <MasterGrid className="h-screen">
             <GridRow>
@@ -40,6 +44,27 @@ export function GridTest() {
                     LIMITED TO 50PX MAX
                 </GridCell>
             </GridRow>
+
+            {/* Test Drawer Interaction */}
+            <GridRow>
+                <GridCell span={12} className="p-8 flex items-center justify-center border-t border-dark-theme-border">
+                    <Button onClick={() => setIsDrawerOpen(true)}>
+                        LAUNCH BOTTOM DRAWER
+                    </Button>
+                </GridCell>
+            </GridRow>
+
+            <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
+                <div className="flex-1 flex flex-col items-center justify-center p-8 bg-black">
+                    <h2 className="text-4xl font-display mb-4">DRAWER ACTIVE</h2>
+                    <p className="font-mono text-sm opacity-50 mb-8">
+                        BOTTOM 25% VIEWPORT FILL | 1PX TOP BORDER | SWISS GRID STANDARD
+                    </p>
+                    <Button variant="outline" onClick={() => setIsDrawerOpen(false)}>
+                        CLOSE DRAWER
+                    </Button>
+                </div>
+            </Drawer>
         </MasterGrid>
     )
 }

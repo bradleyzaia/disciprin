@@ -41,7 +41,7 @@ function EntranceZoomRects({ origin, target }: { origin: DOMRect, target: DOMRec
                             ease: "linear",
                             delay: i * 0.03
                         }}
-                        className="fixed z-50 border border-black pointer-events-none"
+                        className="fixed z-50 border border-dark-theme-border pointer-events-none"
                     />
                 )
             })}
@@ -81,7 +81,7 @@ function ExitZoomRects({ origin, target }: { origin: DOMRect, target: DOMRect })
                             ease: "linear",
                             delay: i * 0.03
                         }}
-                        className="fixed z-50 border border-black pointer-events-none"
+                        className="fixed z-50 border border-dark-theme-border pointer-events-none"
                     />
                 )
             })}
@@ -105,7 +105,7 @@ export function PillCreationModal({
         name: "",
         measurement_type: "boolean",
         target_value: 1,
-        frequency_per_week: 7, // Default to daily
+        frequency_per_week: 3,
         unit: ""
     })
 
@@ -116,7 +116,7 @@ export function PillCreationModal({
                 name: "",
                 measurement_type: "boolean",
                 target_value: 1,
-                frequency_per_week: 7,
+                frequency_per_week: 3,
                 unit: ""
             })
         }
@@ -130,10 +130,14 @@ export function PillCreationModal({
         }
     }, [isOpen])
 
-    const handleUpdatePill = (field: keyof PillDraft, value: any) => {
+    const handleUpdatePill = (fieldOrUpdates: keyof PillDraft | Partial<PillDraft>, value?: any) => {
+        const updates = typeof fieldOrUpdates === 'string'
+            ? { [fieldOrUpdates]: value }
+            : fieldOrUpdates
+
         setPill(prev => ({
             ...prev,
-            [field]: value
+            ...updates
         }))
     }
 
@@ -152,7 +156,7 @@ export function PillCreationModal({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-[radial-gradient(#000000_1px,transparent_1px)] [background-size:2px_2px] opacity-25"
+                        className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:2px_2px] opacity-25"
                     />
 
                     {/* The Zoom Animation Layer */}
@@ -172,11 +176,11 @@ export function PillCreationModal({
                             opacity: 0,
                             transition: { duration: 0.05 }
                         }}
-                        className="relative z-10 w-full max-w-lg border border-black bg-white shadow-xl max-h-[90vh] flex flex-col"
+                        className="relative z-10 w-full max-w-[1024px] border border-dark-theme-border bg-black shadow-xl flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between border-b border-black p-4 bg-black text-white shrink-0">
+                        <div className="flex items-center justify-between border-b border-dark-theme-border p-4 bg-black text-dark-theme-text shrink-0">
                             <span className="font-mono text-lg uppercase">{title}</span>
                             <button onClick={onClose} className="hover:opacity-70">
                                 <X className="w-5 h-5" />
@@ -184,28 +188,28 @@ export function PillCreationModal({
                         </div>
 
                         {/* Body - using simplified PillEditorCard without borders since it's inside modal */}
-                        <div className="overflow-y-auto">
+                        <div>
                             <PillEditorCard
                                 pill={pill}
                                 index={0} // We can assume index 0 for creating single
                                 onUpdate={handleUpdatePill}
-                                className="border-0"
+                                className="border-0 min-w-[50rem]" // 800px to accommodate the grid
                             />
                         </div>
 
                         {/* Footer */}
-                        <div className="grid grid-cols-2 border-t border-black shrink-0">
+                        <div className="grid grid-cols-2 border-t border-dark-theme-border shrink-0">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="p-4 border-r border-black hover:bg-black/5 font-mono text-xs uppercase"
+                                className="p-4 border-r border-dark-theme-border hover:bg-grayscale100 hover:text-grayscale0 transition-colors font-mono text-xs uppercase"
                             >
-                                Cancel
+                                CANCEL
                             </button>
                             <button
                                 type="button"
                                 onClick={handleConfirm}
-                                className="p-4 hover:bg-black hover:text-white transition-colors font-mono text-xs uppercase flex items-center justify-center gap-2"
+                                className="p-4 hover:bg-white hover:text-black transition-colors font-mono text-xs uppercase flex items-center justify-center gap-2"
                             >
                                 <Check className="w-4 h-4" />
                                 Create Pill

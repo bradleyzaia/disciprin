@@ -42,7 +42,7 @@ function EntranceZoomRects({ origin, target }: { origin: DOMRect, target: DOMRec
                             ease: "linear",
                             delay: i * 0.03
                         }}
-                        className="fixed z-50 border border-black pointer-events-none"
+                        className="fixed z-50 border border-dark-theme-border pointer-events-none"
                     />
                 )
             })}
@@ -82,7 +82,7 @@ function ExitZoomRects({ origin, target }: { origin: DOMRect, target: DOMRect })
                             ease: "linear",
                             delay: i * 0.03
                         }}
-                        className="fixed z-50 border border-black pointer-events-none"
+                        className="fixed z-50 border border-dark-theme-border pointer-events-none"
                     />
                 )
             })}
@@ -160,7 +160,7 @@ export function SelectionModal({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-[radial-gradient(#000000_1px,transparent_1px)] [background-size:2px_2px] opacity-25 cursor-pointer"
+                        className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:2px_2px] opacity-25 cursor-pointer"
                     />
 
                     {/* The Zoom Animation Layer */}
@@ -180,11 +180,11 @@ export function SelectionModal({
                             opacity: 0,
                             transition: { duration: 0.05 }
                         }}
-                        className="relative z-10 w-full max-w-2xl border border-black bg-white shadow-xl max-h-[80vh] flex flex-col"
+                        className="relative z-10 w-full max-w-2xl border border-dark-theme-border bg-black shadow-xl max-h-[80vh] flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between border-b border-black p-4 bg-black text-white shrink-0">
+                        <div className="flex items-center justify-between border-b border-dark-theme-border p-4 bg-black text-dark-theme-text shrink-0">
                             <span className="font-mono text-lg uppercase">{title}</span>
                             <button onClick={onClose} className="hover:opacity-70">
                                 <X className="w-5 h-5" />
@@ -192,7 +192,7 @@ export function SelectionModal({
                         </div>
 
                         {/* Categories Row */}
-                        <div className="flex border-b border-black bg-neutral-100 overflow-x-auto scrollbar-hide shrink-0">
+                        <div className="flex border-b border-dark-theme-border bg-white/5 overflow-x-auto scrollbar-hide shrink-0">
                             {categories.map(category => (
                                 <button
                                     key={category}
@@ -200,8 +200,8 @@ export function SelectionModal({
                                     className={cn(
                                         "px-4 py-3 border text-xs font-mono uppercase transition-colors whitespace-nowrap rounded-none -ml-px first:ml-0 relative",
                                         activeCategory === category
-                                            ? "z-10 bg-black text-white border-black"
-                                            : "bg-white text-muted-foreground border-neutral-300 hover:border-black hover:text-black hover:z-10"
+                                            ? "z-10 bg-white text-black border-white"
+                                            : "bg-black text-dark-theme-text border-dark-theme-border hover:border-white hover:text-dark-theme-text hover:z-10"
                                     )}
                                 >
                                     {category}
@@ -210,23 +210,23 @@ export function SelectionModal({
                         </div>
 
                         {/* Options Vertical Grid - Filtering based on category */}
-                        <div className="flex-1 overflow-y-auto bg-neutral-50 min-h-[160px]">
+                        <div className="flex-1 overflow-y-auto bg-black min-h-[160px]">
                             {activeCategory === "CUSTOM" ? (
                                 <div className="flex flex-col items-center justify-center h-full p-8 gap-4">
                                     <div className="w-full max-w-xs space-y-2">
-                                        <label className="text-xs font-mono uppercase text-muted-foreground">Custom Pill Name</label>
+                                        <label className="text-xs font-mono uppercase text-dark-theme-text">Custom Pill Name</label>
                                         <input
                                             type="text"
                                             value={customValue}
                                             onChange={(e) => setCustomValue(e.target.value)}
                                             placeholder="ENTER NAME..."
-                                            className="w-full p-3 border border-black font-mono text-sm uppercase placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-black"
+                                            className="w-full p-3 border border-dark-theme-border font-mono text-sm uppercase placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-white bg-transparent text-dark-theme-text"
                                             autoFocus
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Enter') handleConfirm()
                                             }}
                                         />
-                                        <p className="text-[10px] text-muted-foreground font-mono">
+                                        <p className="text-[10px] text-dark-theme-text font-mono">
                                             New pills will track DAILY BOOLEAN (Pass/Fail) by default.
                                         </p>
                                     </div>
@@ -243,8 +243,8 @@ export function SelectionModal({
                                                     className={cn(
                                                         "w-full aspect-square flex flex-col items-center justify-center p-4 border transition-all text-center gap-2 -ml-px -mt-px hover:z-10 relative",
                                                         selectedValue === option.label
-                                                            ? "bg-black text-white border-black shadow-lg z-10"
-                                                            : "bg-white text-foreground border-neutral-300 hover:border-black"
+                                                            ? "bg-white text-black border-white shadow-lg z-10"
+                                                            : "bg-black text-dark-theme-text border-dark-theme-border hover:border-white"
                                                     )}
                                                 >
                                                     {selectedValue === option.label && <Check className="w-4 h-4 mb-1" />}
@@ -253,25 +253,25 @@ export function SelectionModal({
                                             ))}
                                     </div>
                                     {normalizedOptions.filter(opt => opt.category === activeCategory).length === 0 && (
-                                        <div className="w-full text-center text-muted-foreground font-mono text-xs mt-8">NO OPTIONS AVAILABLE</div>
+                                        <div className="w-full text-center text-dark-theme-text font-mono text-xs mt-8">NO OPTIONS AVAILABLE</div>
                                     )}
                                 </>
                             )}
                         </div>
 
                         {/* Footer */}
-                        <div className="grid grid-cols-2 border-t border-black shrink-0">
+                        <div className="grid grid-cols-2 border-t border-dark-theme-border shrink-0">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="p-4 border-r border-black hover:bg-black/5 font-mono text-xs uppercase"
+                                className="p-4 border-r border-dark-theme-border hover:bg-white/10 font-mono text-xs uppercase"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="button"
                                 onClick={handleConfirm}
-                                className="p-4 hover:bg-black hover:text-white transition-colors font-mono text-xs uppercase flex items-center justify-center gap-2"
+                                className="p-4 hover:bg-white hover:text-black transition-colors font-mono text-xs uppercase flex items-center justify-center gap-2"
                             >
                                 <Check className="w-4 h-4" />
                                 Confirm

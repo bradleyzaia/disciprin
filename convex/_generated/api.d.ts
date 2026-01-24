@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as analytics from "../analytics.js";
+import type * as cleanup from "../cleanup.js";
 import type * as completeOnboarding from "../completeOnboarding.js";
 import type * as getDashboardData from "../getDashboardData.js";
 import type * as journal from "../journal.js";
@@ -25,6 +27,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  analytics: typeof analytics;
+  cleanup: typeof cleanup;
   completeOnboarding: typeof completeOnboarding;
   getDashboardData: typeof getDashboardData;
   journal: typeof journal;

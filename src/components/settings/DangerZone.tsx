@@ -22,14 +22,14 @@ export function DangerZone() {
     return (
         <GridRow className="border-b-0 flex-grow">
             <GridCell span={12} className="p-16 border-r-0">
-                <h3 className="text-red-500 mb-6 uppercase text-lg">Danger Zone</h3>
-                <p className="text-muted-foreground mb-12 max-w-xl text-xs uppercase">
+                <h3 className="text-red mb-6 uppercase text-lg">Danger Zone</h3>
+                <p className="text-dark-theme-text mb-12 max-w-xl text-xs uppercase">
                     Permanently delete your account and all associated data. This action cannot be undone.
                 </p>
                 <div>
                     <button
                         onClick={handleDeleteAccount}
-                        className="border border-red-500 text-red-500 px-12 py-6 hover:bg-red-500 hover:text-white transition-colors uppercase text-sm rounded-none font-mono"
+                        className="border border-red text-red px-12 py-6 hover:bg-red hover:text-dark-theme-text transition-colors uppercase text-sm rounded-none font-mono"
                     >
                         Delete Account
                     </button>

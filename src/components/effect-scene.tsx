@@ -1,15 +1,27 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { Canvas } from "@react-three/fiber"
+import { useState, useEffect, useRef, Suspense, useMemo } from "react"
+import { Canvas, useThree } from "@react-three/fiber"
 import { EffectComposer } from "@react-three/postprocessing"
-import { OrbitControls } from "@react-three/drei"
+import { useVideoTexture } from "@react-three/drei"
 import { Vector2 } from "three"
 import { AsciiEffect } from "./ascii-effect"
 
+function VideoScene() {
+    const texture = useVideoTexture("/test.webm")
+    const { viewport } = useThree()
+
+    return (
+        <mesh scale={[viewport.width, viewport.height, 1]}>
+            <planeGeometry />
+            <meshBasicMaterial map={texture} toneMapped={false} />
+        </mesh>
+    )
+}
+
 export function EffectScene() {
     const containerRef = useRef<HTMLDivElement>(null)
-    const [mousePos, setMousePos] = useState(new Vector2(0, 0))
+    const mousePos = useMemo(() => new Vector2(0, 0), [])
     const [resolution, setResolution] = useState(new Vector2(1920, 1080))
 
     useEffect(() => {
@@ -18,7 +30,7 @@ export function EffectScene() {
                 const rect = containerRef.current.getBoundingClientRect()
                 const x = e.clientX - rect.left
                 const y = rect.height - (e.clientY - rect.top)
-                setMousePos(new Vector2(x, y))
+                mousePos.set(x, y)
             }
         }
 
@@ -43,48 +55,39 @@ export function EffectScene() {
     }, [])
 
     return (
-        <div ref={containerRef} className="w-full h-full">
+        <div ref={containerRef} style={{ width: "100%", height: "100vh" }}>
             <Canvas
+                gl={{ antialias: false }}
                 camera={{ position: [0, 0, 5], fov: 50 }}
-                style={{ background: "#C20000" }}
+                style={{ background: "#000000" }}
             >
-                <color attach="background" args={["#C20000"]} />
+                <color attach="background" args={["#000000"]} />
 
-                {/* Lighting */}
-                <hemisphereLight intensity={0.5} />
-                <directionalLight position={[5, 5, 5]} intensity={2} />
-                <directionalLight position={[-5, 3, -5]} intensity={1.2} />
-
-                {/* 3D Model */}
-                {/* 3D Model */}
-                <mesh scale={1.2} rotation={[0, 0, 0]}>
-                    <capsuleGeometry args={[0.8, 0.3, 100, 16]} />
-                    <meshStandardMaterial color="#c20000" roughness={0.3} metalness={0.1} />
-                </mesh>
-
-                <OrbitControls enableDamping enableZoom={true} enableRotate={true} />
+                <Suspense fallback={null}>
+                    <VideoScene />
+                </Suspense>
 
                 {/* ASCII Effect with PostFX */}
                 <EffectComposer>
                     <AsciiEffect
                         style="standard"
-                        cellSize={4}
+                        cellSize={2}
                         invert={false}
-                        color={true}
+                        color={false}
                         resolution={resolution}
                         mousePos={mousePos}
                         postfx={{
                             scanlineIntensity: 0,
-                            scanlineCount: 200,
-                            targetFPS: 0,
+                            scanlineCount: 100,
+                            targetFPS: 30,
                             jitterIntensity: 0,
-                            jitterSpeed: 1,
+                            jitterSpeed: 0,
                             mouseGlowEnabled: false,
-                            mouseGlowRadius: 200,
+                            mouseGlowRadius: 100,
                             mouseGlowIntensity: 1.5,
                             vignetteIntensity: 0,
-                            vignetteRadius: 0.8,
-                            colorPalette: 0,
+                            vignetteRadius: 0,
+                            colorPalette: "original",
                             curvature: 0,
                             aberrationStrength: 0,
                             noiseIntensity: 0,
@@ -95,7 +98,7 @@ export function EffectScene() {
                             waveSpeed: 1,
                             glitchIntensity: 0,
                             glitchFrequency: 0,
-                            brightnessAdjust: 0,
+                            brightnessAdjust: 0.1, // Range is typically -1.0 to 1.0 (0.1 adds 10% brightness)
                             contrastAdjust: 1,
                         }}
                     />

@@ -7,7 +7,16 @@ const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
     return (
-        <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string}>
+        <ClerkProvider
+            publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string}
+            localization={{
+                signUp: {
+                    start: {
+                        title: "PATIENT INTAKE",
+                    }
+                }
+            }}
+        >
             <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
                 {children}
             </ConvexProviderWithClerk>

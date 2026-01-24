@@ -37,10 +37,11 @@ export const SynchronizationStep = ({ timezone, onChange }: SynchronizationStepP
                             id="timezone"
                             value={timezone}
                             onChange={onChange}
-                            className="h-16 text-lg border-black/50 focus-visible:ring-black"
+                            size="lg"
+                            className="h-16 border-dark-theme-border focus-visible:ring-black"
                             options={timezones}
                         />
-                        <div className="p-4 border border-black/10 bg-black/5 text-xs text-muted-foreground">
+                        <div className="p-4 -mt-px border-x border-b border-white/10 bg-white/5 text-xs text-dark-theme-text">
                             <ScrambleText text="AUTOMATICALLY DETECTED FROM BROWSER ENVIRONMENT" />
                         </div>
                     </div>

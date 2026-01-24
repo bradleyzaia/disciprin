@@ -8,6 +8,7 @@ interface ScrambleTextProps extends React.HTMLAttributes<HTMLSpanElement> {
     duration?: number
     symbols?: string
     as?: React.ElementType
+    trigger?: any
 }
 
 export function ScrambleText({
@@ -16,10 +17,11 @@ export function ScrambleText({
     symbols,
     className,
     as: Component = "span",
+    trigger,
     ...props
 }: ScrambleTextProps) {
     const { delay } = useStagger()
-    const scrambled = useScrambleText(text, duration, symbols, delay)
+    const scrambled = useScrambleText(text, duration, symbols, delay, trigger)
 
     const Comp = Component as any
     return (

@@ -39,6 +39,7 @@ export const saveEntry = mutation({
         period_type: v.string(),
         date: v.string(),
         content: v.string(),
+        title: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -69,6 +70,7 @@ export const saveEntry = mutation({
         if (existing) {
             await ctx.db.patch(existing._id, {
                 content: args.content,
+                title: args.title,
                 updated_at: Date.now(),
             });
         } else {
@@ -77,6 +79,7 @@ export const saveEntry = mutation({
                 period_type: args.period_type,
                 date: args.date,
                 content: args.content,
+                title: args.title,
                 created_at: Date.now(),
                 updated_at: Date.now(),
             });

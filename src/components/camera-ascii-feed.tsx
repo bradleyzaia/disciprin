@@ -39,8 +39,10 @@ export function CameraAsciiFeed({ className }: { className?: string }) {
             <Canvas
                 gl={{ antialias: false }}
                 camera={{ position: [0, 0, 5], fov: 50 }}
+
+                style={{ background: "#ffffff" }}
             >
-                <color attach="background" args={["black"]} />
+
 
                 {/* We render a plane that fills the camera view */}
                 {/* 
@@ -62,7 +64,7 @@ export function CameraAsciiFeed({ className }: { className?: string }) {
                         resolution={resolution}
                         postfx={{
                             contrastAdjust: 1.2,
-                            brightnessAdjust: 0.2,
+                            brightnessAdjust: 1,
                         }}
 
                     />

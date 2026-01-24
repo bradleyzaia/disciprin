@@ -57,7 +57,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
                     animate={{ width: "100%" }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                     className={cn(
-                        "flex h-12 w-full items-center justify-between rounded-none border border-neutral-800 bg-transparent px-4 py-2 text-xs text-foreground font-mono uppercase focus:outline-none focus:ring-1 focus:ring-neutral-500 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-black/5 transition-colors",
+                        "flex h-12 w-full items-center justify-between rounded-none border border-dark-theme-border bg-transparent px-4 py-2 text-xs text-dark-theme-text font-mono uppercase focus:outline-none focus:ring-1 focus:ring-white/50 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-white/5 transition-colors",
                         !value && "text-neutral-500",
                         className
                     )}

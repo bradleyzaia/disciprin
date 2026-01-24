@@ -22,7 +22,6 @@ export default defineSchema({
         name: v.string(),
         email: v.string(),
         timezone: v.string(), // e.g., "America/New_York"
-        week_start_day: v.string(), // 'sunday' | 'monday'
         pill_order: v.optional(v.array(v.string())), // Ordered array of pill IDs
         onboarding_completed: v.boolean(),
         created_at: v.number(), // UTC Timestamp
@@ -87,6 +86,7 @@ export default defineSchema({
         user_id: v.string(), // Reference to user (clerk_id)
         period_type: v.string(), // 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual'
         date: v.string(), // Specific date or start date of period
+        title: v.optional(v.string()),
         content: v.string(), // Free-form text
         created_at: v.number(), // UTC Timestamp
         updated_at: v.number(), // UTC Timestamp

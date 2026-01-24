@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
-export function useScrambleText(text: string, duration: number = 0.2, symbols: string = "!@#$%^&*-+", delay: number = 0) {
+export function useScrambleText(text: string, duration: number = 0.2, symbols: string = "!@#$%^&*-+", delay: number = 0, trigger: any = null) {
     const [scrambled, setScrambled] = useState(text)
+    const isFirstRender = useRef(true)
 
     useEffect(() => {
         if (!text) return
@@ -40,54 +41,23 @@ export function useScrambleText(text: string, duration: number = 0.2, symbols: s
             }, 1000 / 60)
         }
 
-        if (delay > 0) {
-            // Initial state should be fully scrambled or empty? 
-            // Usually valid scramble starts immediately or waits.
-            // If we wait, maybe we should show nothing or full scramble?
-            // Existing logic started immediately.
-            // If delay is passed, we probably want to wait before starting the transition from scrambled to clear?
-            // Or maybe it is intro animation?
-            // Let's assume it waits to start the 'unscramble' process (if that's what it does).
-            // Actually the current logic *reveals* the text. `revealIndex` goes from 0 to length.
-            // So initially it should be fully scrambled? 
-            // But `useState(text)` sets it to `text` initially.
-            // Wait, existing code `const [scrambled, setScrambled] = useState(text)`?
-            // If it starts with `text`, then it is already revealed?
-            // The effect runs and sets it to scrambled then reveals it?
+        const actualDelay = isFirstRender.current ? delay : 0
 
-            // Let's look at the loop:
-            // `currentStep` starts at 0. `progress` starts near 0.
-            // `revealIndex` starts near 0.
-            // `nextScrambled` will be mostly symbols.
-            // So yes, it scrambles immediately upon effect.
-
-            // So `delay` should probably delay the *start* of the effect?
-            // If I delay, it will stay as `text` (clean) for `delay` ms, then sudden scramble and reveal?
-            // OR should it start scrambled and wait to reveal?
-
-            // "Input Intro Animation" / "Staggered Animations".
-            // Likely we want it to be invisible or scrambled, then reveal.
-
-            // If I initialize `useState(text)`, it renders text.
-            // Then effect runs. 
-            // If I delay, it stays text.
-
-            // If I want it to *appear* later, maybe the parent handles opacity.
-            // But if `ScrambleText` is used for "intro", maybe it should start scrambled?
-
-            // Let's stick to simple delay of the animation start.
-
-            timeoutId = setTimeout(startAnimation, delay)
+        if (actualDelay > 0) {
+            timeoutId = setTimeout(startAnimation, actualDelay)
         } else {
             startAnimation()
         }
+
+        isFirstRender.current = false
 
         return () => {
             clearTimeout(timeoutId)
             clearInterval(intervalId)
         }
-    }, [text, duration, symbols, delay])
+    }, [text, duration, symbols, delay, trigger])
 
     return scrambled
 }
+
 

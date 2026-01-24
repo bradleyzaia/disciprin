@@ -20,7 +20,6 @@ export const updateUser = mutation({
     args: {
         name: v.string(),
         timezone: v.string(),
-        week_start_day: v.string(),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -36,7 +35,6 @@ export const updateUser = mutation({
         await ctx.db.patch(user._id, {
             name: args.name,
             timezone: args.timezone,
-            week_start_day: args.week_start_day,
         });
 
         return { success: true };
