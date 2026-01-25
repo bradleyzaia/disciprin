@@ -14,7 +14,7 @@ interface BaseProps {
 export function MasterGrid({ children, className }: BaseProps) {
     return (
         <div className={cn(
-            "MasterGrid max-w-[1440px] mx-auto border-l border-r border-solid border-dark-theme-border md:min-h-[100dvh] flex flex-col bg-transparent text-dark-theme-text font-mono text-xs [&>*]:border-r-0 [&>*:last-child]:border-b-0 relative",
+            "MasterGrid w-full max-w-[1440px] mx-auto md:border-l md:border-r border-solid border-dark-theme-border md:min-h-[100dvh] flex flex-col bg-transparent text-dark-theme-text font-mono text-xs [&>*]:border-r-0 [&>*:last-child]:border-b-0 relative",
             className
         )}>
             <Toast />
