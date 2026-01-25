@@ -16,13 +16,20 @@ import { ProtectedRoute } from "@/components/layout/ProtectedRoute"
 
 
 
-
+import { SmoothScroll } from "@/components/layout/SmoothScroll"
 import { AuthenticateWithRedirectCallback } from "@clerk/clerk-react"
+import { useEffect } from "react"
+import { SFX, preloadSFX } from "@/lib/sfx"
 
 function App() {
+  useEffect(() => {
+    preloadSFX(Object.values(SFX))
+  }, [])
+
   return (
     <ToastProvider>
       <BrowserRouter>
+        <SmoothScroll />
         <BackgroundController />
         <Routes>
           <Route path="/" element={<Landing />} />

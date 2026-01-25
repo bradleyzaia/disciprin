@@ -4,6 +4,7 @@ import { useFitText } from "@/hooks/use-fit-text"
 import { Toast } from "@/components/ui/Toast"
 
 import { Link } from "react-router-dom"
+import { SFX, playSFX } from "@/lib/sfx"
 
 interface BaseProps {
     children?: React.ReactNode
@@ -87,7 +88,7 @@ export function GridCell({ children, className, span, rowSpan, rows, hug, dynami
     })
 
     const commonClasses = cn(
-        "GridCell border-r border-solid border-dark-theme-border last:border-r-0 text-xs block relative backdrop-blur-md",
+        "GridCell border-r border-solid border-dark-theme-border last:border-r-0 text-xs block relative",
         !rows && "p-8",
         hug === 'pass' && "w-fit flex-none",
         (to || href || onClick) && "cursor-pointer interactive",
@@ -115,6 +116,7 @@ export function GridCell({ children, className, span, rowSpan, rows, hug, dynami
         return (
             <Link
                 to={to}
+                onMouseDown={() => playSFX(SFX.ENTER)}
                 className={commonClasses}
                 style={style}
                 title={title}
@@ -130,6 +132,7 @@ export function GridCell({ children, className, span, rowSpan, rows, hug, dynami
         return (
             <a
                 href={href}
+                onMouseDown={() => playSFX(SFX.ENTER)}
                 className={commonClasses}
                 style={style}
                 title={title}
@@ -145,6 +148,7 @@ export function GridCell({ children, className, span, rowSpan, rows, hug, dynami
         return (
             <button
                 type="button"
+                onMouseDown={() => playSFX(SFX.ENTER)}
                 onClick={onClick}
                 className={cn(commonClasses, "text-left")}
                 style={style}

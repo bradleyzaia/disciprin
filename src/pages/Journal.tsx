@@ -122,14 +122,14 @@ export function Journal() {
             />
 
             <GridRow className="flex-grow min-h-[600px] border-b-0">
-                <GridCell span={4} className="bg-muted/10">
+                <GridCell span={4} className="bg-black/80 backdrop-blur-none">
                     <JournalSidebar
                         history={history}
                         selectedDate={selectedDate}
                         onSelect={setSelectedDate}
                     />
                 </GridCell>
-                <GridCell span={8} className="border-r-0 p-0 relative">
+                <GridCell span={8} className="border-r-0 p-0 relative bg-black/80 backdrop-blur-none">
                     <JournalEditor
                         value={content}
                         title={title}

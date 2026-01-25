@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { MasterGrid, GridRow, GridCell } from "@/components/layout/grid"
 import { Navbar } from "@/components/layout/Navbar"
+import { SFX, playSFX } from "@/lib/sfx"
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format, differenceInDays } from "date-fns"
 import { ScrambleText } from "@/components/ui/scramble-text"
 import { CalendarGrid, type CalendarView, type PillEntry } from "@/components/dashboard/CalendarGrid"
@@ -13,6 +14,7 @@ import { PillEditorCard } from "@/components/pills/PillEditorCard"
 import { X, Check, Trash2, Plus } from "lucide-react"
 import { type Pill } from "@/components/dashboard/CalendarGrid"
 import { cn } from "@/lib/utils"
+import { Quote } from "@/components/Quote"
 
 export function Dashboard() {
     const [view, setView] = useState<CalendarView>('week')
@@ -36,6 +38,8 @@ export function Dashboard() {
         frequency_per_week: 3,
         unit: ""
     })
+    const [editingEntry, setEditingEntry] = useState<{ pill: Pill, date: string, value: number } | null>(null)
+    const [entryValue, setEntryValue] = useState<string>("")
 
     const user = useQuery(api.users.getUser)
     // Calculate Date Range for Query based on current view
@@ -103,6 +107,32 @@ export function Dashboard() {
             unit: pill.unit || ""
         })
         setIsDrawerOpen(true)
+    }
+
+    const handleEntryClick = (pill: Pill, date: string, value: number) => {
+        // We only use the drawer on mobile (simplistic check for now)
+        if (window.innerWidth < 768) {
+            setEditingEntry({ pill, date, value })
+            setEntryValue(value === 0 ? "" : value.toString())
+        }
+    }
+
+    const handleSaveEntry = async () => {
+        if (!editingEntry) return
+        const numValue = parseFloat(entryValue)
+        const finalValue = isNaN(numValue) ? 0 : numValue
+
+        try {
+            await handleEntryUpdate({
+                pill_id: editingEntry.pill.id,
+                date: editingEntry.date,
+                value: finalValue,
+                is_completed: finalValue >= editingEntry.pill.target_value
+            })
+            setEditingEntry(null)
+        } catch (error) {
+            console.error("Failed to save entry:", error)
+        }
     }
 
     const handlePrescriptionSelect = (name: string) => {
@@ -205,43 +235,49 @@ export function Dashboard() {
         <MasterGrid>
             <Navbar />
             <GridRow>
-                <GridCell rows={2} span={2}>
+                <GridCell rows={2} className="col-span-5 order-1 md:col-span-2 md:order-none border-b border-dark-theme-border md:border-b-0">
                     <p className="text-xs text-dark-theme-text uppercase"><ScrambleText text="User" /></p>
                     <p className="text-xl font-mono tracking-normal truncate" title={user?.name}>
                         <ScrambleText text={user?.name || '...'} />
                     </p>
                 </GridCell>
-                <GridCell rows={2} span={3}>
+                <GridCell rows={2} className="col-span-5 order-4 md:col-span-3 md:order-none">
                     <p className="text-xs text-dark-theme-text uppercase"><ScrambleText text=" this week " /></p>
-                    <p className="text-5xl font-mono tracking-normal">
+                    <p className="text-2xl md:text-5xl font-mono tracking-normal">
                         <ScrambleText text={`${compliance}%`} />
                     </p>
                 </GridCell>
-                <GridCell rows={2} span={3}>
+                <GridCell rows={2} className="col-span-5 order-5 md:col-span-3 md:order-none">
                     <p className="text-xs text-dark-theme-text uppercase"><ScrambleText text="current streak" /></p>
-                    <p className="text-5xl font-mono tracking-normal flex items-baseline">
+                    <p className="text-2xl md:text-5xl font-mono tracking-normal flex items-baseline">
                         <ScrambleText text={(data?.globalStreak ?? 0).toString()} />
                         <span className="ml-4 uppercase">Wk</span>
                     </p>
                 </GridCell>
-                <GridCell rows={2} span={2}>
+                <GridCell rows={2} className="col-span-5 order-2 md:col-span-2 md:order-none border-b border-dark-theme-border md:border-b-0">
                     <p className="text-xs text-dark-theme-text uppercase"><ScrambleText text="Period" /></p>
-                    <p className="text-5xl font-mono tracking-normal">
+                    <p className="text-2xl md:text-5xl font-mono tracking-normal">
                         <ScrambleText text={view === 'week' ? `W${format(startDate, 'w')}-${format(startDate, 'RRRR')}` :
                             format(currentDate, 'MMM yyyy').toUpperCase()} />
                     </p>
                 </GridCell>
-                <GridCell span={1} className="p-0">
+                <GridCell className="p-0 col-span-2 order-6 md:col-span-1 md:order-none">
                     <button
-                        onClick={() => setIsPrescriptionDrawerOpen(true)}
+                        onMouseDown={() => playSFX(SFX.ENTER)}
+                        onClick={() => {
+                            setIsPrescriptionDrawerOpen(true)
+                        }}
                         className="w-full h-full flex items-center justify-center bg-white hover:!bg-green transition-colors group"
                     >
                         <span className="font-display font-bold text-lg text-black">Rx</span>
                     </button>
                 </GridCell>
-                <GridCell span={1} className="p-0">
+                <GridCell className="p-0 col-span-2 order-3 md:col-span-1 md:order-none border-b border-dark-theme-border md:border-b-0">
                     <button
-                        onClick={handleAddPillClick}
+                        onMouseDown={() => playSFX(SFX.ENTER)}
+                        onClick={() => {
+                            handleAddPillClick()
+                        }}
                         className="w-full h-full flex items-center justify-center bg-white hover:!bg-green transition-colors group"
                     >
                         <Plus className="w-12 h-12 text-black" />
@@ -265,6 +301,7 @@ export function Dashboard() {
                             onDateChange={setCurrentDate}
                             onEntryUpdate={handleEntryUpdate}
                             onPillClick={handlePillClick}
+                            onEntryClick={handleEntryClick}
                             onOrderChange={async (updatedPills) => {
                                 // Optimistic update handled by local state in CalendarGrid
                                 // Persist to server
@@ -276,9 +313,15 @@ export function Dashboard() {
                                     console.error("Failed to update pill order:", error)
                                 }
                             }}
-                            className="mb-[120px]"
+                            className=""
                         />
                     )}
+                </GridCell>
+            </GridRow>
+
+            <GridRow>
+                <GridCell span={12} className="p-0">
+                    <Quote />
                 </GridCell>
             </GridRow>
             <Drawer
@@ -354,6 +397,87 @@ export function Dashboard() {
                         >
                             <Check className="w-4 h-4" />
                             {editingPill ? "Save Changes" : "Create Pill"}
+                        </button>
+                    </div>
+                </div>
+            </Drawer>
+
+            <Drawer
+                isOpen={!!editingEntry}
+                onClose={() => setEditingEntry(null)}
+                className="bg-black"
+            >
+                <div className="flex flex-col h-full">
+                    <div className="flex items-center justify-between border-b border-dark-theme-border p-4 bg-black text-dark-theme-text shrink-0">
+                        <span className="font-mono text-lg uppercase">
+                            <ScrambleText text={`LOG: ${editingEntry?.pill.name}`} />
+                        </span>
+                        <button onClick={() => setEditingEntry(null)} className="hover:opacity-70">
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    <div className="flex-1 p-8 flex flex-col items-center justify-center gap-8">
+                        <p className="text-xs text-dark-theme-text uppercase opacity-50">
+                            <ScrambleText text={editingEntry ? format(new Date(editingEntry.date), 'EEEE, MMMM do') : ""} />
+                        </p>
+
+                        <div className="flex flex-col items-center gap-4 w-full max-w-xs">
+                            <div className="flex items-baseline gap-4 font-mono">
+                                <input
+                                    type="text"
+                                    value={entryValue}
+                                    onChange={(e) => setEntryValue(e.target.value)}
+                                    autoFocus
+                                    className="w-32 bg-white/5 border-b border-white/20 text-center focus:border-green transition-colors py-4 text-5xl text-green outline-none"
+                                    placeholder="0"
+                                />
+                                <div className="flex flex-col">
+                                    <span className="text-xl text-dark-theme-text opacity-50">/ {editingEntry?.pill.target_value}</span>
+                                    <span className="text-xs uppercase text-dark-theme-text opacity-30">{editingEntry?.pill.unit}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {editingEntry?.pill.measurement_type === 'boolean' && (
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setEntryValue("0")}
+                                    className={cn(
+                                        "px-8 py-4 border border-dark-theme-border font-mono text-xs uppercase transition-colors",
+                                        entryValue === "0" ? "bg-red text-black border-red" : "hover:bg-red/10 text-red"
+                                    )}
+                                >
+                                    Fail
+                                </button>
+                                <button
+                                    onClick={() => setEntryValue(editingEntry.pill.target_value.toString())}
+                                    className={cn(
+                                        "px-8 py-4 border border-dark-theme-border font-mono text-xs uppercase transition-colors",
+                                        entryValue === editingEntry.pill.target_value.toString() ? "bg-green text-black border-green" : "hover:bg-green/10 text-green"
+                                    )}
+                                >
+                                    Pass
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-2 border-t border-dark-theme-border shrink-0">
+                        <button
+                            type="button"
+                            onClick={() => setEditingEntry(null)}
+                            className="p-6 border-r border-dark-theme-border hover:bg-grayscale100 hover:text-grayscale0 transition-colors font-mono text-xs uppercase"
+                        >
+                            CANCEL
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleSaveEntry}
+                            className="p-6 bg-white text-black hover:bg-green transition-colors font-mono text-xs uppercase flex items-center justify-center gap-2"
+                        >
+                            <Check className="w-4 h-4" />
+                            SAVE ENTRY
                         </button>
                     </div>
                 </div>

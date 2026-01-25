@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils"
 import { Check } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { ScrambleText } from "@/components/ui/scramble-text"
+import { playSFX, SFX } from "@/lib/sfx"
 
 export type DayCellState = 'completed' | 'partially-completed' | 'past-incomplete' | 'present-incomplete' | 'future'
 
@@ -13,11 +14,13 @@ interface CalendarDayCellProps {
     onUpdate?: (value: number) => void
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void
     className?: string
+    isBoolean?: boolean
 }
 
-export function CalendarDayCell({ state, value, target, unit, onUpdate, onClick, className }: CalendarDayCellProps) {
+export function CalendarDayCell({ state, value, target, unit, onUpdate, onClick, className, isBoolean }: CalendarDayCellProps) {
     const [isEditing, setIsEditing] = useState(false)
     const [localValue, setLocalValue] = useState(value?.toString() || "")
+    const [isHovered, setIsHovered] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
@@ -43,6 +46,7 @@ export function CalendarDayCell({ state, value, target, unit, onUpdate, onClick,
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
+            playSFX(SFX.ENTER)
             handleSubmit()
         } else if (e.key === 'Escape') {
             setLocalValue(value?.toString() || "")
@@ -50,11 +54,21 @@ export function CalendarDayCell({ state, value, target, unit, onUpdate, onClick,
         }
     }
 
+    const handleMouseEnter = () => {
+        setIsHovered(true)
+        if (state !== 'future') {
+            playSFX(SFX.HOVER_DIGITS)
+        }
+    }
+
     const onCellClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (state === 'future') return
         e.stopPropagation()
-        setIsEditing(true)
-        onClick?.(e)
+        if (onClick) {
+            onClick(e)
+        } else {
+            setIsEditing(true)
+        }
     }
 
     if (isEditing) {
@@ -85,14 +99,22 @@ export function CalendarDayCell({ state, value, target, unit, onUpdate, onClick,
 
     let content = null
     const percentage = (value && target) ? Math.round((value / target) * 100) : (state === 'completed' ? 100 : 0)
+    const percentageText = `${percentage}%`
+    let valueText = target ? `${value ?? 0}/${target}${unit ? ` ${unit}` : ''}` : percentageText
+
+    if (isBoolean) {
+        valueText = (value && value >= (target || 1)) ? 'PASS' : 'FAIL'
+    }
+
+    const displayText = isHovered ? valueText : percentageText
 
     switch (state) {
         case 'completed':
             content = (
                 <>
                     <ScrambleText
-                        className="absolute top-4 right-4 text-xs leading-none text-green scale-75 origin-top-right"
-                        text={`${percentage}%`}
+                        className="absolute top-2 right-2 text-xs leading-none text-green scale-75 origin-top-right"
+                        text={displayText}
                         scrambleOnMount={false}
                     />
                     <div className="w-8 h-4 rounded-full border border-dark-theme-border bg-green rotate-315 transform origin-center flex items-center justify-center">
@@ -117,8 +139,8 @@ export function CalendarDayCell({ state, value, target, unit, onUpdate, onClick,
             content = (
                 <>
                     <ScrambleText
-                        className="absolute top-4 right-4 text-xs leading-none text-dark-theme-text/50 scale-75 origin-top-right"
-                        text={`${percentage}%`}
+                        className="absolute top-2 right-2 text-xs leading-none text-dark-theme-text/50 scale-75 origin-top-right"
+                        text={displayText}
                         scrambleOnMount={false}
                     />
                     <div className="w-6 h-3 rounded-full border border-dark-theme-border bg-transparent rotate-315 transform origin-center overflow-hidden relative">
@@ -135,6 +157,8 @@ export function CalendarDayCell({ state, value, target, unit, onUpdate, onClick,
     return (
         <div
             onClick={onCellClick}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={() => setIsHovered(false)}
             className={cn(
                 "h-full w-full relative flex items-center justify-center cursor-pointer group",
                 state === 'future' && "cursor-default",

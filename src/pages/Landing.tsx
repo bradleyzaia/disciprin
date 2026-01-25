@@ -8,16 +8,16 @@ export function Landing() {
     const { isLoaded, isSignedIn } = useAuth()
 
     return (
-        <div className="relative min-h-screen">
+        <div className="relative h-screen overflow-hidden">
             <div className="fixed inset-0 z-0">
                 <EffectScene />
             </div>
-            <MasterGrid className="relative border-l border-r-0 border-dark-theme-border z-10 bg-transparent pointer-events-none min-h-screen h-auto">
+            <MasterGrid className="relative border-l border-r-0 border-dark-theme-border z-10 bg-transparent pointer-events-none h-full">
                 <GridRow className="flex-1">
                     {/* Mobile Spacer for Top Half Scene */}
                     <GridCell className="col-span-12 h-[50vh] md:hidden p-0 backdrop-blur-none bg-transparent" />
 
-                    <GridCell className="col-span-12 md:col-span-6 h-auto md:h-full flex flex-col justify-between pointer-events-auto backdrop-blur-md bg-grayscale0/20 md:bg-transparent p-0 border-t md:border-t-0 border-dark-theme-border">
+                    <GridCell className="col-span-12 md:col-span-6 h-[50vh] md:h-full flex flex-col justify-between pointer-events-auto backdrop-blur-md bg-grayscale0/20 md:bg-transparent p-0 border-t md:border-t-0 border-dark-theme-border">
                         <div className="p-4 md:p-8">
                             <h1 className="font-display text-5xl md:text-8xl uppercase leading-[0.9] md:leading-[0.8] tracking-normal text-dark-theme-text">
                                 Disciprin
@@ -27,10 +27,10 @@ export function Landing() {
                             </p>
 
                             <div className="mt-8 flex gap-4 text-dark-theme-text">
-                                <Activity className="size-6" />
-                                <Brain className="size-6" />
-                                <Wallet className="size-6" />
-                                <Heart className="size-6" />
+                                <Activity className="size-6" strokeWidth={1} />
+                                <Brain className="size-6" strokeWidth={1} />
+                                <Wallet className="size-6" strokeWidth={1} />
+                                <Heart className="size-6" strokeWidth={1} />
                             </div>
 
                         </div>
