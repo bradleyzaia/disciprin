@@ -66,17 +66,17 @@ export function Login() {
     }
 
     return (
-        <div className="relative min-h-[100dvh] bg-background">
+        <div className="relative h-[100dvh] overflow-hidden bg-background">
             <div className="fixed inset-0 z-0">
                 <EffectScene />
             </div>
 
-            <MasterGrid className="relative z-10 bg-transparent pointer-events-none min-h-[100dvh] h-auto border-l border-r-0 border-dark-theme-border">
-                <GridRow className="flex-1">
+            <MasterGrid className="relative z-10 bg-transparent pointer-events-none h-full border-l border-r-0 border-dark-theme-border">
+                <GridRow className="flex-1 grid-rows-[1fr_auto] md:grid-rows-none">
                     {/* Mobile Spacer for Top Half Scene */}
-                    <GridCell className="col-span-12 h-[50dvh] md:hidden border-b border-dark-theme-border p-0 backdrop-blur-none bg-transparent" />
+                    <GridCell className="col-span-12 md:hidden border-b border-dark-theme-border p-0 backdrop-blur-none bg-transparent" />
 
-                    <GridCell className="col-span-12 md:col-span-6 h-auto md:h-full flex flex-col justify-center items-start pointer-events-auto backdrop-blur-md bg-grayscale0/20 md:bg-transparent p-4 md:p-8">
+                    <GridCell className="col-span-12 md:col-span-6 md:h-full flex flex-col justify-center items-start pointer-events-auto backdrop-blur-md bg-grayscale0/20 md:bg-transparent p-4 md:p-8">
                         <div className="w-full max-w-md space-y-8">
                             <div className="space-y-2">
                                 <h1 className="font-display text-3xl text-dark-theme-text tracking-normal">
