@@ -186,7 +186,13 @@ export const getAnalyticsData = query({
                         if (expected <= 0) return 0;
                         const actual = allPillEntries.reduce((acc, e) => acc + getCompletionValue(e, pill), 0);
                         return Math.min(100, (actual / expected) * 100);
-                    })()
+                    })(),
+                    // Added for global aggregation
+                    expected: (() => {
+                        const daysSinceCreation = Math.max(1, (Date.now() - pill.created_at) / (1000 * 60 * 60 * 24));
+                        return daysSinceCreation * (pill.frequency_per_week / 7);
+                    })(),
+                    actual: allPillEntries.reduce((acc, e) => acc + getCompletionValue(e, pill), 0)
                 }
             };
         });

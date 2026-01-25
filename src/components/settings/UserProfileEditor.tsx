@@ -5,6 +5,7 @@ import { GridRow, GridCell } from "@/components/layout/grid"
 import { Input } from "@/components/ui/Input"
 import { Select } from "@/components/ui/Select"
 import { Button } from "@/components/ui/Button"
+import { ScrambleText } from "@/components/ui/scramble-text"
 import { useToast } from "@/lib/toast-context"
 
 export function UserProfileEditor() {
@@ -38,11 +39,18 @@ export function UserProfileEditor() {
     }
 
     const TIMEZONE_OPTIONS = [
-        { label: "UTC (Universal Time)", value: "UTC" },
-        { label: "America/New_York", value: "America/New_York" },
-        { label: "America/Los_Angeles", value: "America/Los_Angeles" },
-        { label: "Europe/London", value: "Europe/London" },
+        "UTC",
+        "America/New_York",
+        "America/Los_Angeles",
+        "Europe/London",
+        "Europe/Berlin",
+        "Asia/Tokyo",
+        "Australia/Sydney",
+        Intl.DateTimeFormat().resolvedOptions().timeZone,
     ]
+        .filter((v, i, a) => a.indexOf(v) === i)
+        .sort()
+        .map((tz) => ({ label: tz.toUpperCase(), value: tz }))
 
 
     if (!user) return null // Or skeleton
@@ -50,17 +58,17 @@ export function UserProfileEditor() {
     return (
         <>
             <GridRow>
-                <GridCell span={6} className="p-16">
-                    <h3 className="mb-12 text-primary text-lg uppercase">Profile</h3>
+                <GridCell span={6} className="p-16 backdrop-blur-none bg-black/80">
+                    <h3 className="mb-12 text-primary text-lg uppercase"><ScrambleText text="Profile" /></h3>
                     <div className="mb-8">
-                        <label className="block text-xs mb-2 text-dark-theme-text uppercase">Name</label>
+                        <label className="block text-xs mb-2 text-dark-theme-text uppercase"><ScrambleText text="Name" /></label>
                         <Input
                             value={name}
                             onChange={(e) => { setName(e.target.value); setIsDirty(true) }}
                         />
                     </div>
                     <div className="mb-0">
-                        <label className="block text-xs mb-2 text-dark-theme-text uppercase">Email Address</label>
+                        <label className="block text-xs mb-2 text-dark-theme-text uppercase"><ScrambleText text="Email Address" /></label>
                         <Input
                             value={user.email}
                             disabled
@@ -68,10 +76,10 @@ export function UserProfileEditor() {
                         />
                     </div>
                 </GridCell>
-                <GridCell span={6} className="p-16 border-r-0 bg-white/5">
-                    <h3 className="mb-12 text-primary text-lg uppercase">Preferences</h3>
+                <GridCell span={6} className="p-16 border-r-0 backdrop-blur-none bg-black/80">
+                    <h3 className="mb-12 text-primary text-lg uppercase"><ScrambleText text="Preferences" /></h3>
                     <div className="mb-8">
-                        <label className="block text-xs mb-2 text-dark-theme-text uppercase">Timezone</label>
+                        <label className="block text-xs mb-2 text-dark-theme-text uppercase"><ScrambleText text="Timezone" /></label>
                         <Select
                             value={timezone}
                             onChange={(val) => { setTimezone(val); setIsDirty(true) }}

@@ -75,10 +75,30 @@ interface GridCellProps extends BaseProps {
     title?: string
 }
 
+const SPAN_CLASSES: Record<number, string> = {
+    1: "md:col-span-1",
+    2: "md:col-span-2",
+    3: "md:col-span-3",
+    4: "md:col-span-4",
+    5: "md:col-span-5",
+    6: "md:col-span-6",
+    7: "md:col-span-7",
+    8: "md:col-span-8",
+    9: "md:col-span-9",
+    10: "md:col-span-10",
+    11: "md:col-span-11",
+    12: "md:col-span-12",
+}
+
 export function GridCell({ children, className, span, rowSpan, rows, hug, dynamicText, minFontSize = 12, maxFontSize = 100, to, href, onClick, title }: GridCellProps) {
-    // If span is undefined, it defaults to auto/1
+    // defaults to full width on mobile (col-span-12) and the text-specified span on desktop
+    // if span is undefined, it defaults to auto/1 on desktop
+    const spanClass = span && SPAN_CLASSES[span]
+        ? `col-span-12 ${SPAN_CLASSES[span]}`
+        : "col-span-12 md:col-span-1"
+
     const style: React.CSSProperties = {
-        gridColumn: span ? `span ${span} / span ${span}` : undefined,
+        // gridColumn is now handled by classes for better responsiveness
         gridRow: rowSpan ? `span ${rowSpan} / span ${rowSpan}` : undefined,
     }
 
@@ -89,6 +109,7 @@ export function GridCell({ children, className, span, rowSpan, rows, hug, dynami
 
     const commonClasses = cn(
         "GridCell border-r border-solid border-dark-theme-border last:border-r-0 text-xs block relative",
+        spanClass,
         !rows && "p-8",
         hug === 'pass' && "w-fit flex-none",
         (to || href || onClick) && "cursor-pointer interactive",

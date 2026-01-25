@@ -1,6 +1,6 @@
 import { ScrambleLink } from "@/components/ui/scramble-link"
 import { GridRow, GridCell } from "@/components/layout/grid"
-import { LayoutGrid, BarChart3, Book, Settings, LogOut, Pill } from "lucide-react"
+import { LayoutGrid, BarChart3, Book, User, LogOut, Pill } from "lucide-react"
 import { useClerk } from "@clerk/clerk-react"
 
 import { Link } from "react-router-dom"
@@ -38,7 +38,7 @@ export function Navbar() {
             </GridCell>
             <GridCell hug="pass" className="group flex items-center justify-center w-12 md:w-16 !p-0 !backdrop-blur-none bg-black/80" to="/settings">
                 <div className="w-full flex items-center justify-center">
-                    <Settings className="size-5" strokeWidth={1} />
+                    <User className="size-5" strokeWidth={1} />
                 </div>
             </GridCell>
             <GridCell hug="pass" className="group flex items-center justify-center w-12 md:w-16 !p-0 !backdrop-blur-none bg-black/80" onClick={() => signOut()}>
