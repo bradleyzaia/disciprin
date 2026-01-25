@@ -29,7 +29,7 @@ export const SynchronizationStep = ({ timezone, onChange }: SynchronizationStepP
                 <AsciiEarthMap timezone={timezone} className="w-full h-full" />
             </div>
 
-            <div className="max-w-5xl w-full mx-auto space-y-12 relative z-10">
+            <div className="max-w-5xl w-full mx-auto space-y-12 relative z-10 px-4 md:px-0">
                 <div className="space-y-8">
                     <div>
                         <Label htmlFor="timezone">Timezone</Label>

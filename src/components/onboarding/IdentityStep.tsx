@@ -8,7 +8,7 @@ interface IdentityStepProps {
 
 export const IdentityStep = ({ name, onChange }: IdentityStepProps) => {
     return (
-        <div className="max-w-5xl w-full mx-auto space-y-12 relative z-10">
+        <div className="max-w-5xl w-full mx-auto space-y-12 relative z-10 px-4 md:px-0">
             <div className="space-y-8">
                 <div className="space-y-4">
                     <Label htmlFor="name">patient name</Label>

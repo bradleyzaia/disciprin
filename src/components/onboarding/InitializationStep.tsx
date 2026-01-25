@@ -20,12 +20,13 @@ export const InitializationStep = ({ data, onNext, isSubmitting = false }: Initi
             </div>
 
             {/* Details Section */}
-            <div className="flex-[2] w-full grid grid-cols-3">
-                <div className="h-full border-r border-dark-theme-border flex flex-col items-center justify-center space-y-2">
+
+            <div className="flex-[2] w-full grid grid-cols-1 grid-rows-3 md:grid-cols-3 md:grid-rows-1">
+                <div className="h-full border-b md:border-b-0 md:border-r border-dark-theme-border flex flex-col items-center justify-center space-y-2">
                     <p className="font-mono text-xs text-dark-theme-text tracking-widest uppercase mb-1">USER</p>
                     <p className="text-2xl font-display uppercase">{data.name}</p>
                 </div>
-                <div className="h-full border-r border-dark-theme-border flex flex-col items-center justify-center space-y-2">
+                <div className="h-full border-b md:border-b-0 md:border-r border-dark-theme-border flex flex-col items-center justify-center space-y-2">
                     <p className="font-mono text-xs text-dark-theme-text tracking-widest uppercase mb-1">TIMEZONE</p>
                     <p className="text-2xl font-display uppercase">{data.timezone}</p>
                 </div>

@@ -29,7 +29,7 @@ export const Onboarding = () => {
         name: "",
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         pills: [
-            { ...HABIT_CONFIG["GYM"], name: "GYM" },
+            { ...HABIT_CONFIG["TRAIN RESISTANCE"], name: "TRAIN RESISTANCE" },
         ],
     })
 
@@ -96,7 +96,7 @@ export const Onboarding = () => {
 
             {/* Content Area */}
             <GridRow cols={12} className="flex-1 min-h-[500px] border-b-0">
-                <GridCell span={12} className={`border-r-0 flex flex-col justify-center relative overflow-hidden ${step === 4 ? "p-0" : "p-12 md:p-20"}`}>
+                <GridCell span={12} className={`border-r-0 flex flex-col justify-center relative overflow-hidden ${step === 4 ? "p-0" : "p-0 md:p-20"}`}>
                     <OnboardingAsciiBackground />
 
                     {step === 1 && (
@@ -140,7 +140,7 @@ export const Onboarding = () => {
                             onClick={handleBack}
                             disabled={step === 1}
                             variant="ghost"
-                            className="w-full h-20 text-sm"
+                            className="w-full h-20"
                         >
                             Back
                         </Button>
@@ -148,10 +148,10 @@ export const Onboarding = () => {
                     <GridCell span={6} className="p-0">
                         <Button
                             onClick={handleNext}
-                            disabled={(step === 1 && !data.name) || (step === 3 && data.pills.some(p => !p.name || p.frequency_per_week < 1 || p.frequency_per_week > 7 || (p.measurement_type !== 'boolean' && p.target_value < 1)))}
+                            disabled={(step === 1 && !data.name) || (step === 3 && data.pills.some(p => !p.name || p.frequency_per_week < 1 || p.frequency_per_week > 7 || (p.measurement_type !== 'boolean' && (p.target_value < 1 || !p.unit))))}
                             variant="primary"
                             icon={ArrowRight}
-                            className="w-full h-20 text-sm"
+                            className="w-full h-20"
                         >
                             {step === 3 ? "Complete Intake" : "Next Step"}
                         </Button>

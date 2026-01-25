@@ -66,7 +66,7 @@ export function OnboardingAsciiBackground() {
                         resolution={resolution}
                         mousePos={mousePos}
                         style="standard"
-                        cellSize={4}
+                        cellSize={2}
                         color={false}
                         invert={false}
                         postfx={{
