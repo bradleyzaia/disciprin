@@ -193,7 +193,7 @@ export function PillCreationModal({
                                 pill={pill}
                                 index={0} // We can assume index 0 for creating single
                                 onUpdate={handleUpdatePill}
-                                className="border-0 min-w-[50rem]" // 800px to accommodate the grid
+                                className="border-0 min-w-0 md:min-w-[50rem]" // 800px to accommodate the grid on desktop
                             />
                         </div>
 

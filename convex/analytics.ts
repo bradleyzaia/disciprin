@@ -177,7 +177,17 @@ export const getAnalyticsData = query({
                 name: pill.name,
                 completionRate: rate,
                 currentStreak: currentWeeklyStreak,
-                status: rate > 90 ? 'Good' : rate > 70 ? 'Rack Disciprin' : 'Dishonor'
+                status: rate > 90 ? 'Good' : rate > 70 ? 'Rack Disciprin' : 'Dishonor',
+                lifetimeStats: {
+                    totalCompleted: allPillEntries.filter(e => isEntryCompleted(e, pill)).length,
+                    completionRate: (() => {
+                        const daysSinceCreation = Math.max(1, (Date.now() - pill.created_at) / (1000 * 60 * 60 * 24));
+                        const expected = daysSinceCreation * (pill.frequency_per_week / 7);
+                        if (expected <= 0) return 0;
+                        const actual = allPillEntries.reduce((acc, e) => acc + getCompletionValue(e, pill), 0);
+                        return Math.min(100, (actual / expected) * 100);
+                    })()
+                }
             };
         });
 

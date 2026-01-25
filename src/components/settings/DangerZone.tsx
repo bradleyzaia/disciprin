@@ -22,9 +22,9 @@ export function DangerZone() {
     return (
         <GridRow className="border-b-0 flex-grow">
             <GridCell span={12} className="p-16 border-r-0">
-                <h3 className="text-red mb-6 uppercase text-lg">Danger Zone</h3>
-                <p className="text-dark-theme-text mb-12 max-w-xl text-xs uppercase">
-                    Permanently delete your account and all associated data. This action cannot be undone.
+
+                <p className="text-red mb-4 max-w-xl text-xs uppercase">
+                    i want to return to mediocrity. For now.
                 </p>
                 <div>
                     <button

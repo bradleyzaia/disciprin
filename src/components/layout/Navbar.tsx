@@ -1,35 +1,50 @@
 import { ScrambleLink } from "@/components/ui/scramble-link"
 import { GridRow, GridCell } from "@/components/layout/grid"
-import { LayoutGrid, BarChart3, Book, Settings, LogOut } from "lucide-react"
+import { LayoutGrid, BarChart3, Book, Settings, LogOut, Pill } from "lucide-react"
 import { useClerk } from "@clerk/clerk-react"
+
+import { Link } from "react-router-dom"
+import { playSFX, SFX } from "@/lib/sfx"
 
 export function Navbar() {
     const { signOut } = useClerk()
 
     return (
         <GridRow flex="pass">
-            <GridCell hug="pass" className="flex items-center" to="/dashboard">
-                <span className="font-display font-black uppercase text-xl tracking-normal">Disciprin</span>
-            </GridCell>
-            <GridCell className="flex-1 flex items-center justify-center space-x-12 text-xs uppercase text-dark-theme-text bg-transparent">
-                <div className="flex items-center gap-2">
-                    <LayoutGrid className="size-4" />
-                    <ScrambleLink to="/dashboard" className="px-2 py-1 transition-colors hover:bg-white hover:text-grayscale0">Dashboard</ScrambleLink>
-                </div>
-                <div className="flex items-center gap-2">
-                    <BarChart3 className="size-4" />
-                    <ScrambleLink to="/analytics" className="px-2 py-1 transition-colors hover:bg-white hover:text-grayscale0">Analytics</ScrambleLink>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Book className="size-4" />
-                    <ScrambleLink to="/journal" className="px-2 py-1 transition-colors hover:bg-white hover:text-grayscale0">Journal</ScrambleLink>
+            <GridCell hug="pass" className="flex items-center justify-center w-12 md:w-16 !p-0 !backdrop-blur-none bg-black/80" to="/dashboard">
+                <div className="w-full flex items-center justify-center">
+                    <Pill className="size-8" strokeWidth={1} />
                 </div>
             </GridCell>
-            <GridCell hug="pass" className="group flex items-center justify-end" to="/settings">
-                <Settings className="size-5" />
+            <GridCell className="flex-1 flex items-center !px-0 md:!px-8 text-xs uppercase text-dark-theme-text !backdrop-blur-none bg-black/80">
+                <div className="flex-1 flex items-center justify-center gap-2" title="Dashboard">
+                    <Link to="/dashboard" onMouseDown={() => playSFX(SFX.ENTER)} className="flex items-center justify-center text-current transition-colors hover:text-grayscale0">
+                        <LayoutGrid className="size-4" strokeWidth={1} />
+                    </Link>
+                    <ScrambleLink to="/dashboard" className="px-2 py-1 transition-colors hover:bg-white hover:text-grayscale0 hidden md:inline-block">Dashboard</ScrambleLink>
+                </div>
+                <div className="flex-1 flex items-center justify-center gap-2" title="Analytics">
+                    <Link to="/analytics" onMouseDown={() => playSFX(SFX.ENTER)} className="flex items-center justify-center text-current transition-colors hover:text-grayscale0">
+                        <BarChart3 className="size-4" strokeWidth={1} />
+                    </Link>
+                    <ScrambleLink to="/analytics" className="px-2 py-1 transition-colors hover:bg-white hover:text-grayscale0 hidden md:inline-block">Analytics</ScrambleLink>
+                </div>
+                <div className="flex-1 flex items-center justify-center gap-2" title="Journal">
+                    <Link to="/journal" onMouseDown={() => playSFX(SFX.ENTER)} className="flex items-center justify-center text-current transition-colors hover:text-grayscale0">
+                        <Book className="size-4" strokeWidth={1} />
+                    </Link>
+                    <ScrambleLink to="/journal" className="px-2 py-1 transition-colors hover:bg-white hover:text-grayscale0 hidden md:inline-block">Journal</ScrambleLink>
+                </div>
             </GridCell>
-            <GridCell hug="pass" className="group flex items-center justify-end" onClick={() => signOut()}>
-                <LogOut className="size-5" />
+            <GridCell hug="pass" className="group flex items-center justify-center w-12 md:w-16 !p-0 !backdrop-blur-none bg-black/80" to="/settings">
+                <div className="w-full flex items-center justify-center">
+                    <Settings className="size-5" strokeWidth={1} />
+                </div>
+            </GridCell>
+            <GridCell hug="pass" className="group flex items-center justify-center w-12 md:w-16 !p-0 !backdrop-blur-none bg-black/80" onClick={() => signOut()}>
+                <div className="w-full flex items-center justify-center">
+                    <LogOut className="size-5" strokeWidth={1} />
+                </div>
             </GridCell>
         </GridRow>
     )

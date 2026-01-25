@@ -1,9 +1,11 @@
 import { cn } from "@/lib/utils"
 import { startOfDay, startOfMonth, endOfMonth, eachDayOfInterval, format, isWithinInterval, isSameDay } from "date-fns"
-import { Reorder } from "framer-motion"
+import { Reorder, useDragControls } from "framer-motion"
 import { useMemo, useEffect, useState } from "react"
 import { CalendarDayCell, type DayCellState } from "./CalendarDayCell"
 import { ScrambleText } from "@/components/ui/scramble-text"
+import { GripVertical } from "lucide-react"
+import { SFX, playSFX } from "@/lib/sfx"
 
 // --- Types ---
 
@@ -80,6 +82,144 @@ interface CalendarGridProps {
     onEntryUpdate?: (entry: PillEntry) => void
     onPillClick?: (pill: Pill) => void
     onOrderChange?: (pills: Pill[]) => void
+    onEntryClick?: (pill: Pill, date: string, value: number) => void
+}
+
+// --- Row Component for Drag Controls ---
+interface PillRowProps {
+    row: RowViewModel
+    columns: ColumnHeaderViewModel[]
+    view: CalendarView
+    onPillClick?: (pill: Pill) => void
+    onOrderChange?: (pills: Pill[]) => void
+    orderedPills: Pill[]
+    handleCellClick: (cell: CellViewModel) => void
+    onEntryUpdate?: (entry: PillEntry) => void
+    onEntryClick?: (pill: Pill, date: string, value: number) => void
+}
+
+function PillRow({
+    row,
+    columns,
+    view,
+    onPillClick,
+    onOrderChange,
+    orderedPills,
+    handleCellClick,
+    onEntryUpdate,
+    onEntryClick
+}: PillRowProps) {
+    const controls = useDragControls()
+
+    // Column Definitions
+    const sidebarWidth = "max(15vw, 160px)"
+    const dayCellMinWidth = view === 'month' ? '120px' : '48px'
+    const gridTemplateColumns = `${sidebarWidth} repeat(${columns.length}, minmax(${dayCellMinWidth}, 1fr))`
+
+    return (
+        <Reorder.Item
+            as="div"
+            value={row.pill}
+            dragListener={false}
+            dragControls={controls}
+            onDragEnd={() => onOrderChange?.(orderedPills)}
+            className="grid border-b border-dark-theme-border min-h-16 bg-black/50 relative"
+            style={{ gridTemplateColumns }}
+        >
+            {/* Row Header (Pill Info) */}
+            <div
+                onClick={() => onPillClick?.(row.pill)}
+                className={cn(
+                    "px-4 border-r border-dark-theme-border flex items-center group h-full sticky left-0 z-30 cursor-pointer hover:bg-white/5 transition-colors",
+                    view === 'month' ? "bg-black/80 backdrop-blur-md" : "backdrop-blur-sm"
+                )}
+            >
+                <div className="flex-1 min-w-0 pr-4">
+                    <div className="font-medium truncate"><ScrambleText text={row.pill.name} /></div>
+                    <div className="text-[10px] text-dark-theme-text flex flex-col leading-relaxed">
+                        <div>
+                            <ScrambleText text={row.pill.measurement_type === 'boolean' ? 'PASS/FAIL' : `${row.pill.target_value}${row.pill.unit ? ` ${row.pill.unit}` : ''}`} />
+                            {row.pill.measurement_type !== 'boolean' && <ScrambleText text=" / DAY" className="text-grayscale75" />}
+                        </div>
+                        <div>
+                            <ScrambleText text={`${row.pill.frequency_per_week}X`} />
+                            <ScrambleText text=" / WEEK" className="text-grayscale75" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Drag Handle */}
+                <div
+                    onPointerDown={(e) => controls.start(e)}
+                    className="cursor-grab active:cursor-grabbing text-dark-theme-text/20 hover:text-white transition-colors"
+                    style={{ touchAction: 'none' }}
+                >
+                    <GripVertical className="size-4" />
+                </div>
+            </div>
+
+            {/* Cells */}
+            {row.cells.map((cell) => (
+                <div
+                    key={cell.id}
+                    onClick={() => handleCellClick(cell)}
+                    className={cn(
+                        "border-r border-dark-theme-border last:border-r-0 flex items-center justify-center transition-all cursor-pointer relative",
+                        cell.isFuture && "bg-white/4 text-dark-theme-text cursor-default",
+                        (cell.type === 'day' && isSameDay(cell.context.date, new Date())) && "bg-white/2"
+                    )}
+                >
+                    {cell.type === 'day' ? (
+                        <CalendarDayCell
+                            state={cell.dayState}
+                            value={cell.value}
+                            target={cell.target}
+                            unit={cell.context.pill.unit}
+                            isBoolean={cell.context.pill.measurement_type === 'boolean'}
+                            onClick={(window.innerWidth < 768 && onEntryClick) ? () => {
+                                if (!cell.isFuture) {
+                                    onEntryClick(cell.context.pill, formatDateKey(cell.context.date), cell.value || 0)
+                                }
+                            } : undefined}
+                            onUpdate={(newValue) => {
+                                if (onEntryUpdate) {
+                                    onEntryUpdate({
+                                        pill_id: cell.context.pillId,
+                                        date: formatDateKey(cell.context.date),
+                                        value: newValue,
+                                        is_completed: newValue >= (cell.target || 0)
+                                    })
+                                }
+                            }}
+                        />
+                    ) : (
+                        /* Aggregated Cell Rendering (Inline for now as it's specific) */
+                        cell.aggregatedStats && (cell.aggregatedStats.completed > 0 ? (
+                            <div className={cn(
+                                "w-full h-full flex flex-col items-center justify-center text-[10px]",
+                                cell.aggregatedStats.isMet && "font-bold"
+                            )}>
+                                {view === 'week' ? (
+                                    <div className={cn(
+                                        "w-8 h-6 flex items-center justify-center border border-dark-theme-border",
+                                        cell.aggregatedStats.isMet ? "bg-green text-black" : "bg-transparent text-dark-theme-text/50"
+                                    )}>
+                                        <ScrambleText text={`${Number.isInteger(cell.aggregatedStats.completed) ? cell.aggregatedStats.completed : cell.aggregatedStats.completed.toFixed(1)}/${row.pill.frequency_per_week}`} scrambleOnMount={false} />
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center">
+                                        <span className="font-bold"><ScrambleText text={Number.isInteger(cell.aggregatedStats.completed) ? cell.aggregatedStats.completed.toString() : cell.aggregatedStats.completed.toFixed(1)} /></span>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            !cell.isFuture && <span className="text-dark-theme-text/20"><ScrambleText text="-" /></span>
+                        ))
+                    )}
+                </div>
+            ))}
+        </Reorder.Item>
+    )
 }
 
 // --- Helper Functions ---
@@ -95,7 +235,8 @@ export function CalendarGrid({
     onDateChange,
     onEntryUpdate,
     onPillClick,
-    onOrderChange
+    onOrderChange,
+    onEntryClick
 }: CalendarGridProps) {
     const onViewChange = _onViewChange || (() => { })
 
@@ -219,7 +360,7 @@ export function CalendarGrid({
 
     const handleCellClick = (cell: CellViewModel) => {
         if (cell.type === 'day') {
-            // No-op for day cells
+            // No-op here; handled by CalendarDayCell's onClick to allow mobile-specific drawer
         } else {
             // Aggregated view click - navigate to week
             if (!cell.isFuture) {
@@ -254,18 +395,19 @@ export function CalendarGrid({
             <div className="flex-1 overflow-x-auto overflow-y-auto relative">
                 {/* Header */}
                 <div
-                    className="grid h-24 sticky top-0 z-20 bg-transparent backdrop-blur-sm"
+                    className="grid h-24 sticky top-0 z-20 bg-transparent"
                     style={{
-                        gridTemplateColumns: `240px repeat(${columns.length}, minmax(${view === 'month' ? '120px' : '40px'}, 1fr))`,
+                        gridTemplateColumns: `max(15vw, 160px) repeat(${columns.length}, minmax(${view === 'month' ? '120px' : '48px'}, 1fr))`,
                         width: 'fit-content',
                         minWidth: '100%'
                     }}
                 >
                     {/* Control Cell */}
-                    <div className="border-r border-b border-dark-theme-border flex sticky left-0 z-30 w-[240px] bg-black h-full">
+                    <div className="border-r border-b border-dark-theme-border flex sticky left-0 z-30 bg-black h-full">
                         {(['week', 'month'] as CalendarView[]).map(v => (
                             <button
                                 key={v}
+                                onMouseDown={() => playSFX(SFX.ENTER)}
                                 onClick={() => onViewChange(v)}
                                 className={cn(
                                     "flex-1 h-full flex items-center justify-center hover:bg-white hover:text-black transition-colors uppercase text-[10px] border-r border-dark-theme-border last:border-r-0",
@@ -304,89 +446,18 @@ export function CalendarGrid({
                     ) : (
                         <Reorder.Group as="div" axis="y" values={orderedPills} onReorder={handleReorder} className="w-fit min-w-full">
                             {rows.map((row) => (
-                                <Reorder.Item
-                                    as="div"
+                                <PillRow
                                     key={row.pill.id}
-                                    value={row.pill}
-                                    onDragEnd={() => onOrderChange?.(orderedPills)}
-                                    className="grid border-b border-dark-theme-border h-16 bg-black/50 backdrop-blur-md relative"
-                                    style={{
-                                        gridTemplateColumns: `240px repeat(${columns.length}, minmax(${view === 'month' ? '120px' : '40px'}, 1fr))`
-                                    }}
-                                >
-                                    {/* Row Header (Pill Info) */}
-                                    <div
-                                        onClick={() => onPillClick?.(row.pill)}
-                                        className="px-4 border-r border-dark-theme-border flex flex-col justify-center truncate group h-full sticky left-0 z-10 w-[240px] backdrop-blur-sm cursor-grab active:cursor-grabbing hover:bg-white/5 transition-colors"
-                                    >
-                                        <div className="font-medium truncate"><ScrambleText text={row.pill.name} /></div>
-                                        <div className="text-[10px] text-dark-theme-text flex flex-col leading-relaxed">
-                                            <div>
-                                                <ScrambleText text={row.pill.measurement_type === 'boolean' ? 'PASS/FAIL' : `${row.pill.target_value}${row.pill.unit ? ` ${row.pill.unit}` : ''}`} />
-                                                {row.pill.measurement_type !== 'boolean' && <ScrambleText text=" / DAY" className="text-grayscale75" />}
-                                            </div>
-                                            <div>
-                                                <ScrambleText text={`${row.pill.frequency_per_week}X`} />
-                                                <ScrambleText text=" / WEEK" className="text-grayscale75" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Cells */}
-                                    {row.cells.map((cell) => (
-                                        <div
-                                            key={cell.id}
-                                            onClick={() => handleCellClick(cell)}
-                                            className={cn(
-                                                "border-r border-dark-theme-border last:border-r-0 flex items-center justify-center transition-all cursor-pointer relative",
-                                                cell.isFuture && "bg-white/4 text-dark-theme-text cursor-default",
-                                                (cell.type === 'day' && isSameDay(cell.context.date, new Date())) && "bg-white/2"
-                                            )}
-                                        >
-                                            {cell.type === 'day' ? (
-                                                <CalendarDayCell
-                                                    state={cell.dayState}
-                                                    value={cell.value}
-                                                    target={cell.target}
-                                                    unit={cell.context.pill.unit}
-                                                    onUpdate={(newValue) => {
-                                                        if (onEntryUpdate) {
-                                                            onEntryUpdate({
-                                                                pill_id: cell.context.pillId,
-                                                                date: formatDateKey(cell.context.date),
-                                                                value: newValue,
-                                                                is_completed: newValue >= (cell.target || 0)
-                                                            })
-                                                        }
-                                                    }}
-                                                />
-                                            ) : (
-                                                /* Aggregated Cell Rendering (Inline for now as it's specific) */
-                                                cell.aggregatedStats && (cell.aggregatedStats.completed > 0 ? (
-                                                    <div className={cn(
-                                                        "w-full h-full flex flex-col items-center justify-center text-[10px]",
-                                                        cell.aggregatedStats.isMet && "font-bold"
-                                                    )}>
-                                                        {view === 'week' ? (
-                                                            <div className={cn(
-                                                                "w-8 h-6 flex items-center justify-center border border-dark-theme-border",
-                                                                cell.aggregatedStats.isMet ? "bg-green text-black" : "bg-transparent text-dark-theme-text/50"
-                                                            )}>
-                                                                <ScrambleText text={`${Number.isInteger(cell.aggregatedStats.completed) ? cell.aggregatedStats.completed : cell.aggregatedStats.completed.toFixed(1)}/${row.pill.frequency_per_week}`} scrambleOnMount={false} />
-                                                            </div>
-                                                        ) : (
-                                                            <div className="flex flex-col items-center">
-                                                                <span className="font-bold"><ScrambleText text={Number.isInteger(cell.aggregatedStats.completed) ? cell.aggregatedStats.completed.toString() : cell.aggregatedStats.completed.toFixed(1)} /></span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    !cell.isFuture && <span className="text-dark-theme-text/20"><ScrambleText text="-" /></span>
-                                                ))
-                                            )}
-                                        </div>
-                                    ))}
-                                </Reorder.Item>
+                                    row={row}
+                                    columns={columns}
+                                    view={view}
+                                    onPillClick={onPillClick}
+                                    onOrderChange={onOrderChange}
+                                    orderedPills={orderedPills}
+                                    handleCellClick={handleCellClick}
+                                    onEntryUpdate={onEntryUpdate}
+                                    onEntryClick={onEntryClick}
+                                />
                             ))}
                         </Reorder.Group>
                     )}

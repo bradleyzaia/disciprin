@@ -6,10 +6,11 @@ import { Navbar } from "@/components/layout/Navbar"
 import { CompletionChart } from "@/components/analytics/CompletionChart"
 import { AnalyticsHeader } from "@/components/analytics/AnalyticsHeader"
 import { KeyMetrics } from "@/components/analytics/KeyMetrics"
+import { PillPerformanceGrid } from "@/components/analytics/PillPerformanceGrid"
 
 
 export function Analytics() {
-    const [timeRange, setTimeRange] = useState<'W' | 'M' | 'Y'>('M')
+    const [timeRange, setTimeRange] = useState<'W' | 'M' | 'Y'>('W')
 
     // Calculate date range based on selection
     const { startDate, endDate } = useMemo(() => {
@@ -55,7 +56,7 @@ export function Analytics() {
             />
 
             <GridRow>
-                <GridCell span={12} className="h-[400px] flex flex-col">
+                <GridCell span={12} className="h-[400px] flex flex-col backdrop-blur-none bg-black/80 border-b border-dark-theme-border">
                     <h3 className="mb-0 font-mono text-sm uppercase tracking-wider text-stable-light/50">Completion Rate</h3>
                     <div className="flex-1 min-h-0 pt-8">
                         <CompletionChart
@@ -66,6 +67,10 @@ export function Analytics() {
                     </div>
                 </GridCell>
             </GridRow>
+
+            <div className="mt-[-1px]">
+                <PillPerformanceGrid data={data?.habitPerformance || []} />
+            </div>
 
 
         </MasterGrid>

@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/Input"
 import { Select } from "@/components/ui/Select"
 import { Label } from "@/components/ui/Label"
@@ -42,19 +43,19 @@ export function PillEditorCard({ pill, index, onUpdate, onHelpClick, className }
     }
 
     return (
-        <div className={className}>
-            <div className="relative flex h-44">
+        <div className={cn(className)}>
+            <div className="relative flex flex-col md:flex-row min-h-[11rem] h-auto md:h-44">
 
-                <div className="w-48 h-full border-r border-dark-theme-border bg-black overflow-hidden relative shrink-0">
+                <div className="w-full md:w-48 h-32 md:h-full border-b md:border-b-0 md:border-r border-dark-theme-border bg-black overflow-hidden relative shrink-0">
                     <AsciiPillCanvas className="w-full h-full" />
                     <div className="absolute top-2 left-2 text-[10px] uppercase tracking-widest text-dark-theme-text px-1">
                         PILL {String(index + 1).padStart(2, '0')}
                     </div>
                 </div>
 
-                <div className="flex-1 grid grid-cols-12 gap-4 p-6 items-start">
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 p-6 items-start">
 
-                    <div className="col-span-4 relative">
+                    <div className="col-span-1 md:col-span-4 relative">
                         <Label className="mb-2 block">Pill</Label>
                         <Input
                             value={pill.name}
@@ -65,7 +66,7 @@ export function PillEditorCard({ pill, index, onUpdate, onHelpClick, className }
                         />
                     </div>
 
-                    <div className="col-span-3">
+                    <div className="col-span-1 md:col-span-3">
                         <Label className="mb-2 block">Type</Label>
                         <Select
                             value={pill.measurement_type}
@@ -79,7 +80,7 @@ export function PillEditorCard({ pill, index, onUpdate, onHelpClick, className }
                         />
                     </div>
 
-                    <div className="col-span-3">
+                    <div className="col-span-1 md:col-span-3">
                         {pill.measurement_type !== 'boolean' && (
                             <>
                                 <Label className="mb-2 block">Target</Label>
@@ -103,7 +104,7 @@ export function PillEditorCard({ pill, index, onUpdate, onHelpClick, className }
                         )}
                     </div>
 
-                    <div className="col-span-2">
+                    <div className="col-span-1 md:col-span-2">
                         <Label className="mb-2 block">Doses/Wk</Label>
                         <Input
                             type="number"

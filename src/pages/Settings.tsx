@@ -10,7 +10,7 @@ export function Settings() {
         <MasterGrid>
             <Navbar />
             <GridRow>
-                <GridCell span={12} className="flex items-center">
+                <GridCell span={12} className="flex items-center backdrop-blur-none bg-black/80">
                     <h2 className="text-xl m-0 tracking-normal uppercase">SYSTEM SETTINGS</h2>
                 </GridCell>
             </GridRow>

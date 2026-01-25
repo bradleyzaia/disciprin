@@ -6,6 +6,7 @@ import { EffectComposer } from "@react-three/postprocessing"
 import { useVideoTexture } from "@react-three/drei"
 import { Vector2 } from "three"
 import { AsciiEffect } from "./ascii-effect"
+import { cn } from "@/lib/utils"
 
 function VideoScene() {
     const texture = useVideoTexture("/test.webm")
@@ -48,7 +49,7 @@ function VideoScene() {
     )
 }
 
-export function EffectScene() {
+export function EffectScene({ className }: { className?: string }) {
     const containerRef = useRef<HTMLDivElement>(null)
     const mousePos = useMemo(() => new Vector2(0, 0), [])
     const [resolution, setResolution] = useState(new Vector2(1920, 1080))
@@ -84,7 +85,7 @@ export function EffectScene() {
     }, [])
 
     return (
-        <div ref={containerRef} style={{ width: "100%", height: "100vh" }}>
+        <div ref={containerRef} className={cn("w-full h-full relative", className)}>
             <Canvas
                 gl={{ antialias: false }}
                 camera={{ position: [0, 0, 5], fov: 50 }}
