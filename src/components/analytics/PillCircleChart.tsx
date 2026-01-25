@@ -38,10 +38,8 @@ export function PillCircleChart({
 
             <div className="relative flex items-center justify-center">
                 <svg
-                    width={size}
-                    height={size}
                     viewBox={`0 0 ${size} ${size}`}
-                    className="transform -rotate-90"
+                    className="transform -rotate-90 w-full h-auto max-w-[160px]"
                 >
                     {/* Track */}
                     <circle
@@ -77,7 +75,7 @@ export function PillCircleChart({
             </div>
 
             {/* Legend / Stats */}
-            <div className="w-full flex justify-between px-4 text-[10px] uppercase font-mono tracking-wider">
+            <div className="w-full flex flex-col md:flex-row items-center md:justify-between gap-1 md:gap-0 px-4 text-[10px] uppercase font-mono tracking-wider">
                 <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
                     <span className="text-stable-light/70">Current</span>

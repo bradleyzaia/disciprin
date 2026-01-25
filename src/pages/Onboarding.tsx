@@ -74,7 +74,7 @@ export const Onboarding = () => {
     }
 
     return (
-        <MasterGrid className="min-h-screen bg-background text-dark-theme-text selection:bg-primary selection:text-primary-foreground">
+        <MasterGrid className="min-h-[100dvh] bg-background text-dark-theme-text selection:bg-primary selection:text-primary-foreground">
             {/* Header Row */}
             <GridRow cols={12} className="border-b border-dark-theme-border">
                 <GridCell span={8} className="border-r border-dark-theme-border py-8 px-8">
@@ -148,7 +148,7 @@ export const Onboarding = () => {
                     <GridCell span={6} className="p-0">
                         <Button
                             onClick={handleNext}
-                            disabled={step === 1 && !data.name}
+                            disabled={(step === 1 && !data.name) || (step === 3 && data.pills.some(p => !p.name || p.frequency_per_week < 1 || p.frequency_per_week > 7 || (p.measurement_type !== 'boolean' && p.target_value < 1)))}
                             variant="primary"
                             icon={ArrowRight}
                             className="w-full h-20 text-sm"

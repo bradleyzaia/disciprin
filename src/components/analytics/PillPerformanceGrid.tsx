@@ -24,7 +24,7 @@ export function PillPerformanceGrid({ data }: PillPerformanceGridProps) {
     return (
         <GridRow className="border-b-0">
             {data.map((pill) => (
-                <GridCell key={pill.id} span={3} className="backdrop-blur-none bg-black/80 min-h-[300px] border-b border-dark-theme-border">
+                <GridCell key={pill.id} className="col-span-6 md:col-span-3 p-4 md:p-8 backdrop-blur-none bg-black/80 min-h-[300px] border-b border-dark-theme-border">
                     <PillCircleChart
                         name={pill.name}
                         completionRate={pill.completionRate}

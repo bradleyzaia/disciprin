@@ -11,26 +11,26 @@ interface KeyMetricsProps {
 export function KeyMetrics({ overallCompletionRate, totalHabitsCompleted, currentStreak, bestStreak }: KeyMetricsProps) {
     return (
         <GridRow>
-            <GridCell span={3} className="h-40 flex flex-col justify-between text-center backdrop-blur-none bg-black/80">
-                <h3 className="text-5xl font-mono text-primary m-0 tracking-normal">{Math.round(overallCompletionRate)}%</h3>
+            <GridCell span={3} className="h-40 flex flex-col justify-between text-left md:text-center backdrop-blur-none bg-black/80 p-4 md:p-8">
+                <h3 className="text-2xl md:text-5xl font-mono text-primary m-0 tracking-normal">{Math.round(overallCompletionRate)}%</h3>
                 <span className="text-xs text-grayscale75 uppercase">Period Completion Rate</span>
             </GridCell>
-            <GridCell span={3} className="h-40 flex flex-col justify-between text-center backdrop-blur-none bg-black/80">
-                <h3 className="text-5xl font-mono m-0 tracking-normal flex items-baseline justify-center">
+            <GridCell span={3} className="h-40 flex flex-col justify-between text-left md:text-center backdrop-blur-none bg-black/80 p-4 md:p-8">
+                <h3 className="text-2xl md:text-5xl font-mono m-0 tracking-normal flex items-baseline justify-start md:justify-center">
                     {currentStreak}
                     <span className="ml-4 uppercase">Wks</span>
                 </h3>
                 <span className="text-xs text-grayscale75 uppercase">Current Streak</span>
             </GridCell>
-            <GridCell span={3} className="h-40 flex flex-col justify-between text-center backdrop-blur-none bg-black/80">
-                <h3 className="text-5xl font-mono m-0 tracking-normal flex items-baseline justify-center">
+            <GridCell span={3} className="h-40 flex flex-col justify-between text-left md:text-center backdrop-blur-none bg-black/80 p-4 md:p-8">
+                <h3 className="text-2xl md:text-5xl font-mono m-0 tracking-normal flex items-baseline justify-start md:justify-center">
                     {bestStreak}
                     <span className="ml-4 uppercase">Wks</span>
                 </h3>
                 <span className="text-xs text-grayscale75 uppercase">Best Streak</span>
             </GridCell>
-            <GridCell span={3} className="h-40 flex flex-col justify-between text-center border-r-0 backdrop-blur-none bg-black/80">
-                <h3 className="text-5xl font-mono m-0 tracking-normal">{totalHabitsCompleted.toFixed(2)}</h3>
+            <GridCell span={3} className="h-40 flex flex-col justify-between text-left md:text-center border-r-0 backdrop-blur-none bg-black/80 p-4 md:p-8">
+                <h3 className="text-2xl md:text-5xl font-mono m-0 tracking-normal">{totalHabitsCompleted.toFixed(2)}</h3>
                 <span className="text-xs text-grayscale75 uppercase">Total Pills Taken</span>
             </GridCell>
         </GridRow>

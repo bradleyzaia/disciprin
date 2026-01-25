@@ -62,7 +62,10 @@ export function PillEditorCard({ pill, index, onUpdate, onHelpClick, className }
                             onChange={(e) => handleNameChange(e.target.value)}
                             onHelpClick={onHelpClick}
                             placeholder="NAME"
-                            className="h-10 text-xs border-dark-theme-border focus-visible:ring-white/50"
+                            className={cn(
+                                "h-10 text-xs border-dark-theme-border focus-visible:ring-white/50",
+                                !pill.name && "border-red-500 focus-visible:ring-red-500"
+                            )}
                         />
                     </div>
 
@@ -90,7 +93,10 @@ export function PillEditorCard({ pill, index, onUpdate, onHelpClick, className }
                                         hideSteppers
                                         min={1}
                                         value={pill.target_value}
-                                        onChange={(e) => onUpdate("target_value", parseInt(e.target.value) || 1)}
+                                        onChange={(e) => {
+                                            const val = parseInt(e.target.value) || 1
+                                            onUpdate("target_value", Math.max(1, val))
+                                        }}
                                         className="h-10 text-xs border-dark-theme-border focus-visible:ring-white/50 border-r-0 focus-visible:ring-inset focus-visible:ring-offset-0 z-10 relative"
                                     />
                                     <Input
@@ -111,7 +117,10 @@ export function PillEditorCard({ pill, index, onUpdate, onHelpClick, className }
                             min={1}
                             max={7}
                             value={pill.frequency_per_week}
-                            onChange={(e) => onUpdate("frequency_per_week", parseInt(e.target.value) || 3)}
+                            onChange={(e) => {
+                                const val = parseInt(e.target.value) || 3
+                                onUpdate("frequency_per_week", Math.min(Math.max(1, val), 7))
+                            }}
                             className="h-10 text-xs border-dark-theme-border focus-visible:ring-white/50"
                         />
                     </div>

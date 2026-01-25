@@ -2,22 +2,22 @@ import { useAuth } from "@clerk/clerk-react"
 import { MasterGrid, GridRow, GridCell } from "@/components/layout/grid"
 import { ScrambleLink } from "@/components/ui/scramble-link"
 import { EffectScene } from "@/components/effect-scene"
-import { Activity, Brain, Wallet, Heart } from "lucide-react"
+import { Activity, Brain, Wallet, Heart, Pill } from "lucide-react"
 
 export function Landing() {
     const { isLoaded, isSignedIn } = useAuth()
 
     return (
-        <div className="relative h-screen overflow-hidden">
+        <div className="relative h-[100dvh] overflow-hidden">
             <div className="fixed inset-0 z-0">
                 <EffectScene />
             </div>
             <MasterGrid className="relative border-l border-r-0 border-dark-theme-border z-10 bg-transparent pointer-events-none h-full">
                 <GridRow className="flex-1">
                     {/* Mobile Spacer for Top Half Scene */}
-                    <GridCell className="col-span-12 h-[50vh] md:hidden p-0 backdrop-blur-none bg-transparent" />
+                    <GridCell className="col-span-12 h-[50dvh] md:hidden p-0 backdrop-blur-none bg-transparent" />
 
-                    <GridCell className="col-span-12 md:col-span-6 h-[50vh] md:h-full flex flex-col justify-between pointer-events-auto backdrop-blur-md bg-grayscale0/20 md:bg-transparent p-0 border-t md:border-t-0 border-dark-theme-border">
+                    <GridCell className="col-span-12 md:col-span-6 h-[50dvh] md:h-full flex flex-col justify-between pointer-events-auto backdrop-blur-md bg-grayscale0/20 md:bg-transparent p-0 border-t md:border-t-0 border-dark-theme-border">
                         <div className="p-4 md:p-8">
                             <h1 className="font-display text-5xl md:text-8xl uppercase leading-[0.9] md:leading-[0.8] tracking-normal text-dark-theme-text">
                                 Disciprin
@@ -31,6 +31,7 @@ export function Landing() {
                                 <Brain className="size-6" strokeWidth={1} />
                                 <Wallet className="size-6" strokeWidth={1} />
                                 <Heart className="size-6" strokeWidth={1} />
+                                <Pill className="size-6" strokeWidth={1} />
                             </div>
 
                         </div>

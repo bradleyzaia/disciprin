@@ -5,45 +5,82 @@ export const SFX = {
 
 export type SFXKey = (typeof SFX)[keyof typeof SFX];
 
-const audioCache: Record<string, HTMLAudioElement> = {};
+// Use Web Audio API for low-latency playback (especially on mobile)
+let audioCtx: AudioContext | null = null;
+const buffers: Record<string, AudioBuffer> = {};
 
-export const preloadSFX = (urls: string[]) => {
-    urls.forEach((url) => {
-        if (!audioCache[url]) {
-            const audio = new Audio(url);
-            audio.preload = 'auto';
-            audio.volume = 0.4;
-            // Force load to ensure it's in memory/cache
-            audio.load();
-            audioCache[url] = audio;
+const getAudioContext = () => {
+    if (!audioCtx && typeof window !== 'undefined') {
+        // Cross-browser support
+        const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+        if (Ctx) {
+            audioCtx = new Ctx();
         }
-    });
+    }
+    return audioCtx;
+};
+
+export const preloadSFX = async (urls: string[]) => {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    // Parallel fetch and decode
+    await Promise.all(
+        urls.map(async (url) => {
+            if (buffers[url]) return;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+                const arrayBuffer = await response.arrayBuffer();
+                // decodeAudioData is callback-based in older browsers but Promise-based in modern ones.
+                // We'll use the promise syntax which is widely supported now.
+                const decodedBuffer = await ctx.decodeAudioData(arrayBuffer);
+                buffers[url] = decodedBuffer;
+            } catch (error) {
+                console.warn(`Failed to preload SFX: ${url}`, error);
+            }
+        })
+    );
 };
 
 export const playSFX = (url: string, volume = 0.4) => {
-    const audio = audioCache[url];
-    if (audio) {
-        // For low latency re-triggering, if it's already playing, we want to restart immediately.
-        // However, if we simply reset currentTime, it might cut off the previous tail.
-        // To support rapid hovers without cutoff, we can cloneNode, but that might be expensive?
-        // For "hover digits", a monophonic behavior per-sound is usually cleaner than a cacophony.
-        // But modifying the global singleton's currentTime can cause race conditions if play() is promised.
+    const ctx = getAudioContext();
+    if (!ctx) return;
 
-        // Better approach for UI SFX without delay: Clone for polyphony OR simple restart.
-        // Let's try simple restart first for zero-allocation performance on hover.
+    // Auto-resume AudioContext on user interaction (needed for mobile Safari/Chrome)
+    if (ctx.state === 'suspended') {
+        ctx.resume().catch((e) => console.warn('AudioContext resume failed', e));
+    }
 
-        audio.currentTime = 0;
-        audio.volume = volume;
-        audio.play().catch((e) => {
-            // Ignore autoplay policy errors (user interaction usually covers this)
-            console.warn('SFX playback failed', e);
-        });
+    const buffer = buffers[url];
+    if (buffer) {
+        try {
+            const source = ctx.createBufferSource();
+            source.buffer = buffer;
+            const gainNode = ctx.createGain();
+            gainNode.gain.value = volume;
+
+            source.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            // start(0) plays immediately
+            source.start(0);
+        } catch (e) {
+            console.warn('Error playing SFX source', e);
+        }
     } else {
-        // Fallback if not preloaded (creates new instance, might have delay)
-        const newAudio = new Audio(url);
-        newAudio.volume = volume;
-        newAudio.play().catch(() => { });
-        // Cache it for next time
-        audioCache[url] = newAudio;
+        // Fallback: If not preloaded, try to fetch and play on the fly (will have delay)
+        // This ensures the sound eventually plays even if preload failed or wasn't called.
+        fetch(url)
+            .then(res => res.arrayBuffer())
+            .then(ab => ctx.decodeAudioData(ab))
+            .then(buf => {
+                buffers[url] = buf;
+                playSFX(url, volume); // Retry play
+            })
+            .catch(e => console.warn('On-demand SFX load failed', e));
     }
 };
