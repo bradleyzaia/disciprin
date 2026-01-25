@@ -15,10 +15,29 @@ export default query({
         const userId = identity.subject;
 
         // Fetch all active pills
-        const pills = await ctx.db
+        const rawPills = await ctx.db
             .query("pills")
             .withIndex("by_user_active", q => q.eq("user_id", userId).eq("is_active", true))
             .collect();
+
+        // Fetch user preference for order
+        const userDoc = await ctx.db
+            .query("users")
+            .withIndex("by_clerk_id", q => q.eq("clerk_id", userId))
+            .first();
+
+        const pillOrder = userDoc?.pill_order || [];
+
+        // Sort pills
+        const pills = [...rawPills].sort((a, b) => {
+            const indexA = pillOrder.indexOf(a._id);
+            const indexB = pillOrder.indexOf(b._id);
+            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+            // Otherwise maintain creation order (or alphabetical)
+            return b.created_at - a.created_at;
+        });
 
         // Fetch entries within range (for View)
         const entries = await ctx.db

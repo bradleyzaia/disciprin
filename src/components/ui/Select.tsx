@@ -61,7 +61,7 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
                 <div
                     ref={ref}
                     className={cn(
-                        "flex h-full w-full items-center justify-between border border-dark-theme-border bg-transparent px-4 py-2 text-dark-theme-text cursor-pointer font-mono uppercase focus:outline-none transition-colors hover:bg-white/5",
+                        "flex h-full w-full items-center justify-between border border-dark-theme-border bg-transparent px-4 py-2 text-dark-theme-text cursor-pointer font-mono uppercase focus:outline-none transition-colors hover:bg-white hover:text-light-theme-text",
                         textSizeClass,
                         isOpen && "border-white bg-white/5 text-white",
                     )}

@@ -6,8 +6,9 @@ import { Navbar } from "@/components/layout/Navbar"
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format, differenceInDays } from "date-fns"
 import { ScrambleText } from "@/components/ui/scramble-text"
 import { CalendarGrid, type CalendarView, type PillEntry } from "@/components/dashboard/CalendarGrid"
-import { type PillDraft } from "@/lib/habit-config"
+import { type PillDraft, HABIT_CONFIG } from "@/lib/habit-config"
 import { Drawer } from "@/components/ui/Drawer"
+import { Prescriptions } from "@/components/onboarding/Prescriptions"
 import { PillEditorCard } from "@/components/pills/PillEditorCard"
 import { X, Check, Trash2, Plus } from "lucide-react"
 import { type Pill } from "@/components/dashboard/CalendarGrid"
@@ -23,8 +24,10 @@ export function Dashboard() {
     const updateEntry = useMutation(api.pills.logPillEntry.default)
     const updatePillMutation = useMutation(api.pills.item.updatePill)
     const archivePillMutation = useMutation(api.pills.item.archivePill)
+    const updatePillOrderMutation = useMutation(api.users.updatePillOrder)
 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+    const [isPrescriptionDrawerOpen, setIsPrescriptionDrawerOpen] = useState(false)
     const [editingPill, setEditingPill] = useState<Pill | null>(null)
     const [pillDraft, setPillDraft] = useState<PillDraft>({
         name: "",
@@ -100,6 +103,23 @@ export function Dashboard() {
             unit: pill.unit || ""
         })
         setIsDrawerOpen(true)
+    }
+
+    const handlePrescriptionSelect = (name: string) => {
+        const config = HABIT_CONFIG[name]
+        if (config) {
+            setEditingPill(null)
+            setPillDraft({
+                name: name,
+                measurement_type: config.measurement_type,
+                target_value: config.target_value,
+                frequency_per_week: config.frequency_per_week,
+                unit: config.unit,
+                category: config.category
+            })
+            setIsPrescriptionDrawerOpen(false)
+            setIsDrawerOpen(true)
+        }
     }
 
     const handleSavePill = async () => {
@@ -204,12 +224,20 @@ export function Dashboard() {
                         <span className="ml-4 uppercase">Wk</span>
                     </p>
                 </GridCell>
-                <GridCell rows={2} span={3}>
+                <GridCell rows={2} span={2}>
                     <p className="text-xs text-dark-theme-text uppercase"><ScrambleText text="Period" /></p>
                     <p className="text-5xl font-mono tracking-normal">
                         <ScrambleText text={view === 'week' ? `W${format(startDate, 'w')}-${format(startDate, 'RRRR')}` :
                             format(currentDate, 'MMM yyyy').toUpperCase()} />
                     </p>
+                </GridCell>
+                <GridCell span={1} className="p-0">
+                    <button
+                        onClick={() => setIsPrescriptionDrawerOpen(true)}
+                        className="w-full h-full flex items-center justify-center bg-white hover:!bg-green transition-colors group"
+                    >
+                        <span className="font-display font-bold text-lg text-black">Rx</span>
+                    </button>
                 </GridCell>
                 <GridCell span={1} className="p-0">
                     <button
@@ -237,10 +265,32 @@ export function Dashboard() {
                             onDateChange={setCurrentDate}
                             onEntryUpdate={handleEntryUpdate}
                             onPillClick={handlePillClick}
+                            onOrderChange={async (updatedPills) => {
+                                // Optimistic update handled by local state in CalendarGrid
+                                // Persist to server
+                                try {
+                                    await updatePillOrderMutation({
+                                        pillIds: updatedPills.map(p => p.id)
+                                    })
+                                } catch (error) {
+                                    console.error("Failed to update pill order:", error)
+                                }
+                            }}
+                            className="mb-[120px]"
                         />
                     )}
                 </GridCell>
             </GridRow>
+            <Drawer
+                isOpen={isPrescriptionDrawerOpen}
+                onClose={() => setIsPrescriptionDrawerOpen(false)}
+                className="bg-black"
+            >
+                <Prescriptions
+                    onClose={() => setIsPrescriptionDrawerOpen(false)}
+                    onSelect={handlePrescriptionSelect}
+                />
+            </Drawer>
             <Drawer
                 isOpen={isDrawerOpen}
                 onClose={() => setIsDrawerOpen(false)}

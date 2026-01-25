@@ -41,6 +41,29 @@ export const updateUser = mutation({
     },
 });
 
+export const updatePillOrder = mutation({
+    args: {
+        pillIds: v.array(v.string()),
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Unauthenticated");
+
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_clerk_id", (q) => q.eq("clerk_id", identity.subject))
+            .first();
+
+        if (!user) throw new Error("User not found");
+
+        await ctx.db.patch(user._id, {
+            pill_order: args.pillIds,
+        });
+
+        return { success: true };
+    },
+});
+
 // Delete account (Hard delete for now, or soft delete if preferred - following plan for cascade)
 export const deleteAccount = mutation({
     args: {},

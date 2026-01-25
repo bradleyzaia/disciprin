@@ -1,7 +1,14 @@
 import { useState, useEffect, useRef } from "react"
 
-export function useScrambleText(text: string, duration: number = 0.2, symbols: string = "!@#$%^&*-+", delay: number = 0, trigger: any = null) {
-    const [scrambled, setScrambled] = useState(text)
+export function useScrambleText(
+    text: string,
+    duration: number = 0.2,
+    symbols: string = "!@#$%^&*-+",
+    delay: number = 0,
+    trigger: any = null,
+    scrambleOnMount: boolean = true
+) {
+    const [scrambled, setScrambled] = useState(scrambleOnMount ? (text ? text[0] : "") : text)
     const isFirstRender = useRef(true)
 
     useEffect(() => {
@@ -11,6 +18,12 @@ export function useScrambleText(text: string, duration: number = 0.2, symbols: s
         let intervalId: ReturnType<typeof setInterval>
 
         const startAnimation = () => {
+            // If we shouldn't scramble on mount and it's the first render, just set text and return
+            if (isFirstRender.current && !scrambleOnMount) {
+                setScrambled(text)
+                return
+            }
+
             const steps = Math.floor(duration * 60) // 60fps
             let currentStep = 0
 
@@ -55,7 +68,7 @@ export function useScrambleText(text: string, duration: number = 0.2, symbols: s
             clearTimeout(timeoutId)
             clearInterval(intervalId)
         }
-    }, [text, duration, symbols, delay, trigger])
+    }, [text, duration, symbols, delay, trigger, scrambleOnMount])
 
     return scrambled
 }

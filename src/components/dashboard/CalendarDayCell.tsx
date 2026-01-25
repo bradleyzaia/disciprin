@@ -93,6 +93,7 @@ export function CalendarDayCell({ state, value, target, unit, onUpdate, onClick,
                     <ScrambleText
                         className="absolute top-4 right-4 text-xs leading-none text-green scale-75 origin-top-right"
                         text={`${percentage}%`}
+                        scrambleOnMount={false}
                     />
                     <div className="w-8 h-4 rounded-full border border-dark-theme-border bg-green rotate-315 transform origin-center flex items-center justify-center">
                         <Check className="w-3 h-3 rotate-45 text-black" />
@@ -118,6 +119,7 @@ export function CalendarDayCell({ state, value, target, unit, onUpdate, onClick,
                     <ScrambleText
                         className="absolute top-4 right-4 text-xs leading-none text-dark-theme-text/50 scale-75 origin-top-right"
                         text={`${percentage}%`}
+                        scrambleOnMount={false}
                     />
                     <div className="w-6 h-3 rounded-full border border-dark-theme-border bg-transparent rotate-315 transform origin-center overflow-hidden relative">
                         <div
@@ -134,7 +136,7 @@ export function CalendarDayCell({ state, value, target, unit, onUpdate, onClick,
         <div
             onClick={onCellClick}
             className={cn(
-                "h-full w-full relative flex items-center justify-center backdrop-blur-md cursor-pointer group",
+                "h-full w-full relative flex items-center justify-center cursor-pointer group",
                 state === 'future' && "cursor-default",
                 className
             )}

@@ -26,7 +26,7 @@ function Pill() {
     )
 }
 
-export function AsciiPillCanvas({ className, cellSize = 1 }: { className?: string, cellSize?: number }) {
+export function AsciiPillCanvas({ className }: { className?: string }) {
     const containerRef = useRef<HTMLDivElement>(null)
     const [resolution, setResolution] = useState(new Vector2(100, 100))
 
@@ -63,7 +63,7 @@ export function AsciiPillCanvas({ className, cellSize = 1 }: { className?: strin
                 <EffectComposer>
                     <AsciiEffect
                         style="standard"
-                        cellSize={cellSize}
+                        cellSize={2}
                         invert={true}
                         resolution={resolution}
                         color={true}
