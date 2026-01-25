@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "cf:dev": "wrangler pages dev",
-    "cf:deploy": "wrangler pages deploy dist"
+    "cf:deploy": "bun run build && wrangler pages deploy dist"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.59.4",
