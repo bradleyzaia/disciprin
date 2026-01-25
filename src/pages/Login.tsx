@@ -71,9 +71,12 @@ export function Login() {
                 <EffectScene />
             </div>
 
-            <MasterGrid className="relative z-10 bg-transparent pointer-events-none h-screen">
-                <GridRow className="h-full">
-                    <GridCell span={6} className="h-full flex flex-col justify-center items-start pointer-events-auto p-8">
+            <MasterGrid className="relative z-10 bg-transparent pointer-events-none min-h-screen h-auto border-l border-r-0 border-dark-theme-border">
+                <GridRow className="flex-1">
+                    {/* Mobile Spacer for Top Half Scene */}
+                    <GridCell className="col-span-12 h-[50vh] md:hidden border-b border-dark-theme-border p-0 backdrop-blur-none bg-transparent" />
+
+                    <GridCell className="col-span-12 md:col-span-6 h-auto md:h-full flex flex-col justify-center items-start pointer-events-auto backdrop-blur-md bg-grayscale0/20 md:bg-transparent p-4 md:p-8">
                         <div className="w-full max-w-md space-y-8">
                             <div className="space-y-2">
                                 <h1 className="font-display text-3xl text-dark-theme-text tracking-normal">
@@ -158,7 +161,7 @@ export function Login() {
                             </div>
                         </div>
                     </GridCell>
-                    <GridCell span={6} className="h-full border-l border-dark-theme-border p-0 backdrop-blur-none" />
+                    <GridCell className="hidden md:block md:col-span-6 h-full border-l border-dark-theme-border p-0 backdrop-blur-none" />
                 </GridRow>
             </MasterGrid>
         </div>

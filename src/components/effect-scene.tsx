@@ -11,8 +11,37 @@ function VideoScene() {
     const texture = useVideoTexture("/test.webm")
     const { viewport } = useThree()
 
+    const videoConfig = useMemo(() => {
+        const vidW = texture.image?.videoWidth || 1920
+        const vidH = texture.image?.videoHeight || 1080
+        const vidAspect = vidW / vidH
+        return { vidAspect }
+    }, [texture])
+
+    const scale: [number, number, number] = useMemo(() => {
+        const { vidAspect } = videoConfig
+        const { width, height } = viewport
+        const viewAspect = width / height
+
+        // Cover logic
+        if (viewAspect > vidAspect) {
+            // Viewport is wider than video -> constrain by width, let height overshoot (or usually height is strictly constrained by ratio? wait.)
+            // If Viewport is 2:1 and Video is 1:1.
+            // We want to cover.
+            // So width = viewport.width. Height = viewport.width / 1 = huge.
+            // This covers.
+            return [width, width / vidAspect, 1] // Correct
+        } else {
+            // Viewport is taller (e.g. mobile 1:2) and Video is 1:1.
+            // We want to cover.
+            // Width = viewport.height * vidAspect = large. Height = viewport.height.
+            return [height * vidAspect, height, 1] // Correct
+        }
+    }, [viewport.width, viewport.height, videoConfig.vidAspect])
+
+
     return (
-        <mesh scale={[viewport.width, viewport.height, 1]}>
+        <mesh scale={scale}>
             <planeGeometry />
             <meshBasicMaterial map={texture} toneMapped={false} />
         </mesh>
