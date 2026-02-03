@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { grid } from "@/styles/tokens"
 
 interface SelectionModalProps {
     isOpen: boolean
@@ -157,10 +158,14 @@ export function SelectionModal({
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        animate={{ opacity: grid.patternOpacity }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:2px_2px] opacity-25 cursor-pointer"
+                        className="absolute inset-0 cursor-pointer"
+                        style={{
+                            backgroundImage: grid.pattern,
+                            backgroundSize: grid.patternSize
+                        }}
                     />
 
                     {/* The Zoom Animation Layer */}

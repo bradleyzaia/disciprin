@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { colors, shadow } from "@/styles/tokens"
 
 interface DataPoint {
     date: string
@@ -118,7 +119,7 @@ export function CompletionChart({ className, data, timeRange = 'W' }: Completion
                         <motion.path
                             d={pathData}
                             fill="none"
-                            stroke="#ffffff"
+                            stroke={colors.white}
                             strokeWidth="1"
                             strokeLinejoin="round"
                             strokeLinecap="round"
@@ -137,7 +138,7 @@ export function CompletionChart({ className, data, timeRange = 'W' }: Completion
                                     y1={0}
                                     x2={(hoverIndex / (data.length - 1 || 1)) * width}
                                     y2={height}
-                                    stroke="#ffffff"
+                                    stroke={colors.white}
                                     strokeOpacity={0.2}
                                     strokeWidth={1}
                                     vectorEffect="non-scaling-stroke"
@@ -149,8 +150,9 @@ export function CompletionChart({ className, data, timeRange = 'W' }: Completion
                     {/* Bullet - Moved out of SVG to maintain 8x8 size regardless of scaling */}
                     {hoverIndex !== null && data[hoverIndex] && (
                         <div
-                            className="absolute w-2 h-2 bg-white rounded-full pointer-events-none z-20 -translate-x-1/2 -translate-y-1/2 shadow-[0_0_10px_rgba(255,255,255,0.5)] border border-stable-dark"
+                            className="absolute w-2 h-2 bg-white rounded-full pointer-events-none z-20 -translate-x-1/2 -translate-y-1/2 border border-stable-dark"
                             style={{
+                                boxShadow: shadow.glow.white,
                                 left: `${(hoverIndex / (data.length - 1 || 1)) * 100}%`,
                                 top: `${((height - paddingY - (data[hoverIndex].completionRate / 100) * (height - 2 * paddingY)) / height) * 100}%`
                             }}

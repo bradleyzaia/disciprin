@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import type { ReactNode } from "react"
 import { createPortal } from "react-dom"
 import { cn } from "@/lib/utils"
+import { grid } from "@/styles/tokens"
 
 interface DrawerProps {
     isOpen: boolean
@@ -18,10 +19,14 @@ export function Drawer({ isOpen, onClose, children, className }: DrawerProps) {
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.1 }}
+                        animate={{ opacity: grid.patternOpacity }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 z-40 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:2px_2px] opacity-25 cursor-pointer backdrop-blur-[2px]"
+                        className="fixed inset-0 z-40 cursor-pointer backdrop-blur-[2px]"
+                        style={{
+                            backgroundImage: grid.pattern,
+                            backgroundSize: grid.patternSize
+                        }}
                     />
 
                     {/* Drawer Content */}

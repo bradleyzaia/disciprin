@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { X, Check } from "lucide-react"
 import { PillEditorCard } from "@/components/pills/PillEditorCard"
 import { type PillDraft } from "@/lib/habit-config"
+import { grid } from "@/styles/tokens"
 
 interface PillCreationModalProps {
     isOpen: boolean
@@ -153,10 +154,14 @@ export function PillCreationModal({
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        animate={{ opacity: grid.patternOpacity }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:2px_2px] opacity-25"
+                        className="absolute inset-0"
+                        style={{
+                            backgroundImage: grid.pattern,
+                            backgroundSize: grid.patternSize
+                        }}
                     />
 
                     {/* The Zoom Animation Layer */}
