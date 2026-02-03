@@ -11,6 +11,8 @@ interface PillPerformanceData {
     lifetimeStats?: {
         totalCompleted: number
         completionRate: number
+        expected: number
+        actual: number
     }
 }
 

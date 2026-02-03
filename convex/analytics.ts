@@ -172,6 +172,21 @@ export const getAnalyticsData = query({
                 bestStreak = longestWeeklyStreak;
             }
 
+            // Calculate lifetime stats explicitly (not in IIFEs)
+            // Ensure pill.created_at is a valid number, fallback to now if not
+            const createdAt = typeof pill.created_at === 'number' && pill.created_at > 0 
+                ? pill.created_at 
+                : Date.now();
+            const daysSinceCreation = Math.max(1, (Date.now() - createdAt) / (1000 * 60 * 60 * 24));
+            const frequencyPerWeek = typeof pill.frequency_per_week === 'number' && pill.frequency_per_week > 0 
+                ? pill.frequency_per_week 
+                : 1;
+            const lifetimeExpected = daysSinceCreation * (frequencyPerWeek / 7);
+            const lifetimeActual = allPillEntries.reduce((acc, e) => acc + getCompletionValue(e, pill), 0);
+            const lifetimeCompletionRate = lifetimeExpected > 0 
+                ? Math.min(100, (lifetimeActual / lifetimeExpected) * 100) 
+                : 0;
+
             return {
                 id: pill._id,
                 name: pill.name,
@@ -180,19 +195,9 @@ export const getAnalyticsData = query({
                 status: rate > 90 ? 'Good' : rate > 70 ? 'Rack Disciprin' : 'Dishonor',
                 lifetimeStats: {
                     totalCompleted: allPillEntries.filter(e => isEntryCompleted(e, pill)).length,
-                    completionRate: (() => {
-                        const daysSinceCreation = Math.max(1, (Date.now() - pill.created_at) / (1000 * 60 * 60 * 24));
-                        const expected = daysSinceCreation * (pill.frequency_per_week / 7);
-                        if (expected <= 0) return 0;
-                        const actual = allPillEntries.reduce((acc, e) => acc + getCompletionValue(e, pill), 0);
-                        return Math.min(100, (actual / expected) * 100);
-                    })(),
-                    // Added for global aggregation
-                    expected: (() => {
-                        const daysSinceCreation = Math.max(1, (Date.now() - pill.created_at) / (1000 * 60 * 60 * 24));
-                        return daysSinceCreation * (pill.frequency_per_week / 7);
-                    })(),
-                    actual: allPillEntries.reduce((acc, e) => acc + getCompletionValue(e, pill), 0)
+                    completionRate: lifetimeCompletionRate,
+                    expected: lifetimeExpected,
+                    actual: lifetimeActual
                 }
             };
         });
