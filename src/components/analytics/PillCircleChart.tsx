@@ -1,6 +1,6 @@
 
 import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
+import { cn, getCompletionColor } from "@/lib/utils"
 
 interface PillCircleChartProps {
     name: string
@@ -27,7 +27,7 @@ export function PillCircleChart({
     const activeDashArray = activeCircumference
     const activeDashOffset = activeCircumference - (completionRate / 100) * activeCircumference
 
-    const color = '#00FF8C'
+    const color = getCompletionColor(completionRate)
 
     return (
         <div className={cn("flex flex-col items-center justify-center h-full w-full py-4 space-y-4", className)}>
