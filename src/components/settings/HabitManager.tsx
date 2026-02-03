@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { GridRow, GridCell } from "@/components/layout/grid"
+import { ScrambleText } from "@/components/ui/scramble-text"
 
 export function HabitManager() {
     const pills = useQuery(api.pills.getPills.default)
@@ -19,9 +20,9 @@ export function HabitManager() {
 
     return (
         <GridRow>
-            <GridCell span={12} className="p-16 border-r-0">
+            <GridCell span={12} className="p-16 border-r-0 backdrop-blur-none bg-black/80">
                 <div className="flex justify-between items-center mb-12">
-                    <h3 className="text-primary text-lg uppercase">Active Pills</h3>
+                    <h3 className="text-primary text-lg uppercase"><ScrambleText text="Active Pills" /></h3>
                 </div>
 
                 <div className="grid grid-cols-1 gap-0 border border-neutral-800">

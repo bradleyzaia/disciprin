@@ -220,7 +220,7 @@ export function SelectionModal({
                                             value={customValue}
                                             onChange={(e) => setCustomValue(e.target.value)}
                                             placeholder="ENTER NAME..."
-                                            className="w-full p-3 border border-dark-theme-border font-mono text-sm uppercase placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-white bg-transparent text-dark-theme-text"
+                                            className="w-full p-3 border border-dark-theme-border font-mono text-base md:text-sm uppercase placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-white bg-transparent text-dark-theme-text"
                                             autoFocus
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Enter') handleConfirm()

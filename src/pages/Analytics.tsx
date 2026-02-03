@@ -7,6 +7,7 @@ import { CompletionChart } from "@/components/analytics/CompletionChart"
 import { AnalyticsHeader } from "@/components/analytics/AnalyticsHeader"
 import { KeyMetrics } from "@/components/analytics/KeyMetrics"
 import { PillPerformanceGrid } from "@/components/analytics/PillPerformanceGrid"
+import { ScrambleText } from "@/components/ui/scramble-text"
 
 
 export function Analytics() {
@@ -38,6 +39,7 @@ export function Analytics() {
         };
     }, [timeRange]);
 
+    const user = useQuery(api.users.getUser)
     const data = useQuery(api.analytics.getAnalyticsData, { startDate, endDate, timeRange });
 
     return (
@@ -46,6 +48,8 @@ export function Analytics() {
             <AnalyticsHeader
                 timeRange={timeRange}
                 onTimeRangeChange={setTimeRange}
+                analyticsData={data}
+                user={user}
             />
 
             <KeyMetrics
@@ -57,7 +61,7 @@ export function Analytics() {
 
             <GridRow>
                 <GridCell span={12} className="h-[400px] flex flex-col backdrop-blur-none bg-black/80 border-b border-dark-theme-border">
-                    <h3 className="mb-0 font-mono text-sm uppercase tracking-wider text-stable-light/50">Completion Rate</h3>
+                    <h3 className="mb-0 font-mono text-sm uppercase tracking-wider text-stable-light/50"><ScrambleText text="Completion Rate" /></h3>
                     <div className="flex-1 min-h-0 pt-8">
                         <CompletionChart
                             data={data?.chartData ?? []}

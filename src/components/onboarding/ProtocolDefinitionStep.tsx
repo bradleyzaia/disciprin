@@ -64,24 +64,26 @@ export const ProtocolDefinitionStep = ({ pills, onUpdatePills }: ProtocolDefinit
         <div className="max-w-5xl w-full mx-auto space-y-12 relative z-10">
             <div className="space-y-8">
                 <div>
-                    <div className="relative border-x border-t border-white/10 bg-white/5 text-xs text-dark-theme-text flex justify-between items-stretch">
-                        <div className="p-8 pr-48">
-                            <ScrambleText text="CHOOSE YOUR MEDICINE" />
-                            <p className="mt-1 text-[10px] opacity-40 uppercase">One pill you know you should be taking every week.</p>
-                        </div>
-                        <div className="absolute top-0 bottom-0 right-0 h-full flex">
-                            <button
-                                onClick={() => setIsPrescriptionDrawerOpen(true)}
-                                className="h-full aspect-square flex items-center justify-center bg-white border-r border-black/10 hover:!bg-green transition-colors group"
-                            >
-                                <span className="font-display font-bold text-lg text-black">Rx</span>
-                            </button>
-                            <button
-                                onClick={handleAddPillClick}
-                                className="h-full aspect-square flex items-center justify-center bg-white hover:!bg-green transition-colors group"
-                            >
-                                <Plus className="w-5 h-5 text-black" />
-                            </button>
+                    <div className="border border-white/10">
+                        <div className="flex flex-col md:flex-row md:items-stretch">
+                            <div className="flex-1 p-8 text-xs text-dark-theme-text">
+                                <ScrambleText text="CHOOSE YOUR MEDICINE" className="text-lg font-display" />
+                                <p className="mt-1 text-[10px] opacity-40 uppercase">One pill you know you should be taking every week.</p>
+                            </div>
+                            <div className="grid grid-cols-2 h-16 md:h-auto md:w-64 border-t md:border-t-0 md:border-l border-white/10 bg-white shrink-0">
+                                <button
+                                    onClick={() => setIsPrescriptionDrawerOpen(true)}
+                                    className="flex items-center justify-center border-r border-black/10 hover:bg-green transition-colors group"
+                                >
+                                    <span className="font-display font-bold text-lg text-black">Rx</span>
+                                </button>
+                                <button
+                                    onClick={handleAddPillClick}
+                                    className="flex items-center justify-center hover:bg-green transition-colors group"
+                                >
+                                    <Plus className="w-5 h-5 text-black" />
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div className="grid grid-cols-1 border-x border-b border-dark-theme-border divide-y divide-black/50">

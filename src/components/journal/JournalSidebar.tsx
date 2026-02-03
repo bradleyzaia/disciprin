@@ -11,11 +11,13 @@ interface JournalSidebarProps {
     onSelect: (date: string) => void
 }
 
+import { ScrambleText } from "@/components/ui/scramble-text"
+
 export function JournalSidebar({ history, selectedDate, onSelect }: JournalSidebarProps) {
     return (
         <div>
             <div>
-                <h4 className="uppercase text-sm font-mono text-dark-theme-text mb-4">History</h4>
+                <h4 className="uppercase text-sm font-mono text-dark-theme-text mb-4"><ScrambleText text="History" /></h4>
                 <ul className="space-y-4 text-sm text-dark-theme-text">
                     {history.map((item) => (
                         <li
@@ -28,7 +30,7 @@ export function JournalSidebar({ history, selectedDate, onSelect }: JournalSideb
                         </li>
                     ))}
                     {history.length === 0 && (
-                        <li className="text-xs text-grayscale50">NO JOURNAL ENTRIES YET</li>
+                        <li className="text-xs text-grayscale50"><ScrambleText text="NO JOURNAL ENTRIES YET" /></li>
                     )}
                 </ul>
             </div>

@@ -53,23 +53,25 @@ export function PillEditorCard({ pill, index, onUpdate, onHelpClick, className }
                     </div>
                 </div>
 
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 p-6 items-start">
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 p-6 items-start mb-6 md:mb-0 border-b border-dark-theme-border">
 
                     <div className="col-span-1 md:col-span-4 relative">
                         <Label className="mb-2 block">Pill</Label>
                         <Input
-                            value={pill.name}
+                            value={pill.name ?? ""}
                             onChange={(e) => handleNameChange(e.target.value)}
                             onHelpClick={onHelpClick}
                             placeholder="NAME"
-                            className="h-10 text-xs border-dark-theme-border focus-visible:ring-white/50"
+                            className={cn(
+                                "h-10 text-xs border-dark-theme-border focus-visible:ring-white/50"
+                            )}
                         />
                     </div>
 
                     <div className="col-span-1 md:col-span-3">
                         <Label className="mb-2 block">Type</Label>
                         <Select
-                            value={pill.measurement_type}
+                            value={pill.measurement_type ?? ""}
                             onChange={handleTypeChange}
                             className="h-10 text-xs border-dark-theme-border focus-visible:ring-white/50"
                             options={[
@@ -89,8 +91,11 @@ export function PillEditorCard({ pill, index, onUpdate, onHelpClick, className }
                                         type="number"
                                         hideSteppers
                                         min={1}
-                                        value={pill.target_value}
-                                        onChange={(e) => onUpdate("target_value", parseInt(e.target.value) || 1)}
+                                        value={pill.target_value ?? ""}
+                                        onChange={(e) => {
+                                            const val = parseInt(e.target.value) || 1
+                                            onUpdate("target_value", Math.max(1, val))
+                                        }}
                                         className="h-10 text-xs border-dark-theme-border focus-visible:ring-white/50 border-r-0 focus-visible:ring-inset focus-visible:ring-offset-0 z-10 relative"
                                     />
                                     <Input
@@ -110,8 +115,11 @@ export function PillEditorCard({ pill, index, onUpdate, onHelpClick, className }
                             type="number"
                             min={1}
                             max={7}
-                            value={pill.frequency_per_week}
-                            onChange={(e) => onUpdate("frequency_per_week", parseInt(e.target.value) || 3)}
+                            value={pill.frequency_per_week ?? ""}
+                            onChange={(e) => {
+                                const val = parseInt(e.target.value) || 3
+                                onUpdate("frequency_per_week", Math.min(Math.max(1, val), 7))
+                            }}
                             className="h-10 text-xs border-dark-theme-border focus-visible:ring-white/50"
                         />
                     </div>

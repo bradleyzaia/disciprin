@@ -60,7 +60,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         type={type}
                         onFocus={handleFocus}
                         className={cn(
-                            "flex h-full w-full rounded-none border border-dark-theme-border bg-transparent px-10 py-2 text-center text-xs text-dark-theme-text placeholder:text-neutral-500 hover:bg-grayscale100 hover:border-grayscale100 hover:text-grayscale0 focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50 font-mono uppercase appearance-none transition-colors",
+                            "flex h-full w-full rounded-none border border-dark-theme-border bg-transparent px-10 py-2 text-base md:text-xs text-center text-dark-theme-text placeholder:text-neutral-500 hover:bg-grayscale100 hover:border-grayscale100 hover:text-grayscale0 focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50 font-mono uppercase appearance-none transition-colors",
                             // Remove spin buttons
                             "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         )}
@@ -99,7 +99,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         type={type}
                         onFocus={handleFocus}
                         className={cn(
-                            "flex h-full w-full rounded-none border border-dark-theme-border bg-transparent px-4 py-2 pr-12 text-xs text-dark-theme-text placeholder:text-neutral-500 hover:bg-grayscale100 hover:border-grayscale100 hover:text-grayscale0 focus:outline-none focus:ring-1 focus:ring-white/50 disabled:cursor-not-allowed disabled:opacity-50 font-mono uppercase transition-colors"
+                            "flex h-full w-full rounded-none border border-dark-theme-border bg-transparent px-4 py-2 pr-12 text-base md:text-xs text-dark-theme-text placeholder:text-neutral-500 hover:bg-grayscale100 hover:border-grayscale100 hover:text-grayscale0 focus:outline-none focus:ring-1 focus:ring-white/50 disabled:cursor-not-allowed disabled:opacity-50 font-mono uppercase transition-colors"
                         )}
                         ref={ref}
                         {...props}
@@ -121,7 +121,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 type={type}
                 onFocus={handleFocus}
                 className={cn(
-                    "flex h-12 w-full rounded-none border border-dark-theme-border bg-transparent px-4 py-2 text-xs text-dark-theme-text placeholder:text-neutral-500 hover:bg-grayscale100 hover:border-grayscale100 hover:text-grayscale0 focus:outline-none focus:ring-1 focus:ring-white/50 disabled:cursor-not-allowed disabled:opacity-50 font-mono uppercase transition-colors",
+                    "flex h-12 w-full rounded-none border border-dark-theme-border bg-transparent px-4 py-2 text-base md:text-xs text-dark-theme-text placeholder:text-neutral-500 hover:bg-grayscale100 hover:border-grayscale100 hover:text-grayscale0 focus:outline-none focus:ring-1 focus:ring-white/50 disabled:cursor-not-allowed disabled:opacity-50 font-mono uppercase transition-colors",
                     className
                 )}
                 ref={ref}

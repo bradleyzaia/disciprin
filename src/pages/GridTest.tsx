@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button"
 export function GridTest() {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false)
     return (
-        <MasterGrid className="h-screen">
+        <MasterGrid className="h-[100dvh]">
             <GridRow>
                 <GridCell span={12} className="p-8">
                     <h1 className="text-xl mb-4 font-mono">Dynamic Text Sizing Test</h1>
