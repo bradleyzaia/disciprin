@@ -19,8 +19,8 @@ export function StatsOverview() {
     const complianceRate = useMemo(() => {
         if (!analytics?.habitPerformance) return 0
 
-        const totalExpected = analytics.habitPerformance.reduce((acc, curr) => acc + (curr.lifetimeStats.expected || 0), 0)
-        const totalActual = analytics.habitPerformance.reduce((acc, curr) => acc + (curr.lifetimeStats.actual || 0), 0)
+        const totalExpected = analytics.habitPerformance.reduce((acc, curr) => acc + (curr.lifetimeStats?.expected || 0), 0)
+        const totalActual = analytics.habitPerformance.reduce((acc, curr) => acc + (curr.lifetimeStats?.actual || 0), 0)
 
         if (totalExpected === 0) return 0
         return (totalActual / totalExpected) * 100
