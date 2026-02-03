@@ -7,6 +7,7 @@ import { useVideoTexture } from "@react-three/drei"
 import { Vector2 } from "three"
 import { AsciiEffect } from "./ascii-effect"
 import { cn } from "@/lib/utils"
+import { colors } from "@/styles/tokens"
 
 function VideoScene() {
     const texture = useVideoTexture("/test.webm")
@@ -89,9 +90,9 @@ export function EffectScene({ className }: { className?: string }) {
             <Canvas
                 gl={{ antialias: false }}
                 camera={{ position: [0, 0, 5], fov: 50 }}
-                style={{ background: "#000000" }}
+                style={{ background: colors.black }}
             >
-                <color attach="background" args={["#000000"]} />
+                <color attach="background" args={[colors.black]} />
 
                 <Suspense fallback={null}>
                     <VideoScene />

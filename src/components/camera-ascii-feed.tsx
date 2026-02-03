@@ -5,6 +5,7 @@ import { Canvas } from "@react-three/fiber"
 import { EffectComposer } from "@react-three/postprocessing"
 import { Vector2 } from "three"
 import { AsciiEffect } from "./ascii-effect"
+import { colors } from "@/styles/tokens"
 
 export function CameraAsciiFeed({ className }: { className?: string }) {
     // We need to track the container size to pass resolution to the effect
@@ -39,8 +40,7 @@ export function CameraAsciiFeed({ className }: { className?: string }) {
             <Canvas
                 gl={{ antialias: false }}
                 camera={{ position: [0, 0, 5], fov: 50 }}
-
-                style={{ background: "#ffffff" }}
+                style={{ background: colors.white }}
             >
 
 

@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils"
-import { startOfDay, startOfMonth, endOfMonth, eachDayOfInterval, format, isWithinInterval, isSameDay } from "date-fns"
+import { startOfDay, startOfMonth, endOfMonth, eachDayOfInterval, format, isWithinInterval, isSameDay, addWeeks, subWeeks, addMonths, subMonths } from "date-fns"
 import { Reorder, useDragControls } from "framer-motion"
 import { useMemo, useEffect, useState } from "react"
 import { CalendarDayCell, type DayCellState } from "./CalendarDayCell"
 import { ScrambleText } from "@/components/ui/scramble-text"
-import { GripVertical } from "lucide-react"
+import { GripVertical, ChevronLeft, ChevronRight } from "lucide-react"
 import { SFX, playSFX } from "@/lib/sfx"
 
 // --- Types ---
@@ -403,20 +403,71 @@ export function CalendarGrid({
                     }}
                 >
                     {/* Control Cell */}
-                    <div className="border-r border-b border-dark-theme-border flex sticky left-0 z-30 bg-black h-full">
-                        {(['week', 'month'] as CalendarView[]).map(v => (
+                    <div className="border-r border-b border-dark-theme-border flex flex-col sticky left-0 z-30 bg-black h-full">
+                        {/* Navigation Row */}
+                        <div className="flex-1 flex border-b border-dark-theme-border">
                             <button
-                                key={v}
                                 onMouseDown={() => playSFX(SFX.ENTER)}
-                                onClick={() => onViewChange(v)}
-                                className={cn(
-                                    "flex-1 h-full flex items-center justify-center hover:bg-white hover:text-black transition-colors uppercase text-[10px] border-r border-dark-theme-border last:border-r-0",
-                                    view === v ? "text-dark-theme-text font-bold bg-white/10" : "text-dark-theme-text/30"
-                                )}
+                                onClick={() => {
+                                    if (onDateChange) {
+                                        const newDate = view === 'week' 
+                                            ? subWeeks(currentDate, 1) 
+                                            : subMonths(currentDate, 1)
+                                        onDateChange(newDate)
+                                    }
+                                }}
+                                className="w-10 flex items-center justify-center hover:bg-white hover:text-black transition-colors border-r border-dark-theme-border"
+                                title={view === 'week' ? 'Previous week' : 'Previous month'}
                             >
-                                <ScrambleText text={v[0]} />
+                                <ChevronLeft className="size-4" />
                             </button>
-                        ))}
+                            <button
+                                onMouseDown={() => playSFX(SFX.ENTER)}
+                                onClick={() => {
+                                    if (onDateChange) {
+                                        onDateChange(new Date())
+                                    }
+                                }}
+                                className={cn(
+                                    "flex-1 flex items-center justify-center hover:bg-white hover:text-black transition-colors uppercase text-[10px] border-r border-dark-theme-border",
+                                    isSameDay(currentDate, new Date()) ? "text-dark-theme-text/30" : "text-dark-theme-text"
+                                )}
+                                title="Go to today"
+                            >
+                                <ScrambleText text="Today" />
+                            </button>
+                            <button
+                                onMouseDown={() => playSFX(SFX.ENTER)}
+                                onClick={() => {
+                                    if (onDateChange) {
+                                        const newDate = view === 'week' 
+                                            ? addWeeks(currentDate, 1) 
+                                            : addMonths(currentDate, 1)
+                                        onDateChange(newDate)
+                                    }
+                                }}
+                                className="w-10 flex items-center justify-center hover:bg-white hover:text-black transition-colors"
+                                title={view === 'week' ? 'Next week' : 'Next month'}
+                            >
+                                <ChevronRight className="size-4" />
+                            </button>
+                        </div>
+                        {/* View Toggle Row */}
+                        <div className="flex-1 flex">
+                            {(['week', 'month'] as CalendarView[]).map(v => (
+                                <button
+                                    key={v}
+                                    onMouseDown={() => playSFX(SFX.ENTER)}
+                                    onClick={() => onViewChange(v)}
+                                    className={cn(
+                                        "flex-1 h-full flex items-center justify-center hover:bg-white hover:text-black transition-colors uppercase text-[10px] border-r border-dark-theme-border last:border-r-0",
+                                        view === v ? "text-dark-theme-text font-bold bg-white/10" : "text-dark-theme-text/30"
+                                    )}
+                                >
+                                    <ScrambleText text={v[0]} />
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     {/* Column Headers */}

@@ -3,6 +3,7 @@ import { Check } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { ScrambleText } from "@/components/ui/scramble-text"
 import { playSFX, SFX } from "@/lib/sfx"
+import { grid, duration } from "@/styles/tokens"
 
 export type DayCellState = 'completed' | 'partially-completed' | 'past-incomplete' | 'present-incomplete' | 'future'
 
@@ -165,7 +166,14 @@ export function CalendarDayCell({ state, value, target, unit, onUpdate, onClick,
                 className
             )}
         >
-            <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:2px_2px] opacity-0 group-hover:opacity-25 transition-opacity duration-200 pointer-events-none z-0" />
+            <div 
+                className="absolute inset-0 opacity-0 group-hover:opacity-25 transition-opacity pointer-events-none z-0" 
+                style={{
+                    backgroundImage: grid.pattern,
+                    backgroundSize: grid.patternSize,
+                    transitionDuration: `${duration.moderate}ms`
+                }}
+            />
             <div className="relative z-10 w-full h-full flex items-center justify-center">
                 {content}
             </div>

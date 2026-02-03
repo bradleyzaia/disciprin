@@ -6,6 +6,7 @@ import { EffectComposer } from "@react-three/postprocessing"
 import { OrbitControls } from "@react-three/drei"
 import { AsciiEffect } from "@/components/ascii-effect"
 import { Vector2 } from "three"
+import { colors } from "@/styles/tokens"
 
 function FloatingPill() {
     const ref = useRef<any>(null)
@@ -25,7 +26,7 @@ function FloatingPill() {
     return (
         <mesh ref={ref} scale={1.8} rotation={[Math.PI / 4, 0, Math.PI / 4]}>
             <capsuleGeometry args={[0.6, 1.4, 4, 16]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.4} metalness={0.6} />
+            <meshStandardMaterial color={colors.white} roughness={0.4} metalness={0.6} />
         </mesh>
     )
 }
