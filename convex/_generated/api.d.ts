@@ -11,6 +11,13 @@
 import type * as analytics from "../analytics.js";
 import type * as cleanup from "../cleanup.js";
 import type * as completeOnboarding from "../completeOnboarding.js";
+import type * as friends_getCrewStats from "../friends/getCrewStats.js";
+import type * as friends_getFriendFeed from "../friends/getFriendFeed.js";
+import type * as friends_getFriendProfile from "../friends/getFriendProfile.js";
+import type * as friends_getFriends from "../friends/getFriends.js";
+import type * as friends_getPendingRequests from "../friends/getPendingRequests.js";
+import type * as friends_mutations from "../friends/mutations.js";
+import type * as friends_searchUsersByHandle from "../friends/searchUsersByHandle.js";
 import type * as getDashboardData from "../getDashboardData.js";
 import type * as journal from "../journal.js";
 import type * as pills_createPill from "../pills/createPill.js";
@@ -30,6 +37,13 @@ declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   cleanup: typeof cleanup;
   completeOnboarding: typeof completeOnboarding;
+  "friends/getCrewStats": typeof friends_getCrewStats;
+  "friends/getFriendFeed": typeof friends_getFriendFeed;
+  "friends/getFriendProfile": typeof friends_getFriendProfile;
+  "friends/getFriends": typeof friends_getFriends;
+  "friends/getPendingRequests": typeof friends_getPendingRequests;
+  "friends/mutations": typeof friends_mutations;
+  "friends/searchUsersByHandle": typeof friends_searchUsersByHandle;
   getDashboardData: typeof getDashboardData;
   journal: typeof journal;
   "pills/createPill": typeof pills_createPill;

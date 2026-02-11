@@ -9,7 +9,7 @@ import { CrewScroll } from "@/components/friends/CrewScroll"
 import { LiveFeed } from "@/components/friends/LiveFeed"
 import { FriendManageDrawer } from "@/components/friends/FriendManageDrawer"
 import { FriendProfileModal } from "@/components/friends/FriendProfileModal"
-import { type FriendData, type LiveUpdate, getCompletionTier } from "@/lib/mock-friends"
+import { type FriendData, type LiveUpdate } from "@/lib/mock-friends"
 import { UserPlus, Users } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 
