@@ -1,6 +1,6 @@
 import { ScrambleLink } from "@/components/ui/scramble-link"
 import { GridRow, GridCell } from "@/components/layout/grid"
-import { LayoutGrid, BarChart3, Book, User, LogOut, Pill } from "lucide-react"
+import { LayoutGrid, BarChart3, Book, Users, User, LogOut, Pill } from "lucide-react"
 import { useClerk } from "@clerk/clerk-react"
 
 import { Link } from "react-router-dom"
@@ -34,6 +34,12 @@ export function Navbar() {
                         <Book className="size-4" strokeWidth={1} />
                     </Link>
                     <ScrambleLink to="/journal" className="px-2 py-1 transition-colors hover:bg-white hover:text-grayscale0 hidden md:inline-block">Journal</ScrambleLink>
+                </div>
+                <div className="flex-1 flex items-center justify-center gap-2" title="Friends">
+                    <Link to="/friends" onMouseDown={() => playSFX(SFX.ENTER)} className="flex items-center justify-center text-current transition-colors hover:text-grayscale0">
+                        <Users className="size-4" strokeWidth={1} />
+                    </Link>
+                    <ScrambleLink to="/friends" className="px-2 py-1 transition-colors hover:bg-white hover:text-grayscale0 hidden md:inline-block">Friends</ScrambleLink>
                 </div>
             </GridCell>
             <GridCell hug="pass" className="group flex items-center justify-center w-12 md:w-16 !p-0 !backdrop-blur-none bg-black/80" to="/settings">

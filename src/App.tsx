@@ -9,6 +9,7 @@ import { Onboarding } from "@/pages/Onboarding"
 import { Signup } from "@/pages/Signup"
 import { Login } from "@/pages/Login"
 import { GridTest } from "@/pages/GridTest"
+import { Friends } from "@/pages/Friends"
 import { EffectScene } from "@/components/effect-scene"
 import { BackgroundController } from "@/components/layout/BackgroundController"
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute"
@@ -38,6 +39,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/journal" element={<Journal />} />
+            <Route path="/friends" element={<Friends />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="/onboarding" element={<Onboarding />} />
