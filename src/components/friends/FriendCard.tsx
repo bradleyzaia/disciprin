@@ -17,16 +17,17 @@ const BORDER_HOVER = {
 interface FriendCardProps {
   friend: FriendData
   index: number
+  onClick?: () => void
 }
 
-export function FriendCard({ friend, index }: FriendCardProps) {
+export function FriendCard({ friend, index, onClick }: FriendCardProps) {
   const tier = getCompletionTier(friend.completionPct)
 
   return (
     <motion.div
       className={`
         shrink-0 w-[240px] md:w-[280px] scroll-snap-align-start border border-dark-theme-border p-5 md:p-6
-        relative overflow-hidden group
+        relative overflow-hidden group cursor-pointer
         after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5
         ${BORDER_HOVER[tier]}
         after:scale-x-0 after:origin-left after:transition-transform after:duration-500 after:ease-[cubic-bezier(0.23,1,0.32,1)]
@@ -36,6 +37,7 @@ export function FriendCard({ friend, index }: FriendCardProps) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+      onClick={onClick}
     >
       <div className="flex justify-between items-start mb-4">
         <div>
