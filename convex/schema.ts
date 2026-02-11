@@ -21,6 +21,7 @@ export default defineSchema({
         clerk_id: v.string(), // Clerk's user ID (sub)
         name: v.string(),
         email: v.string(),
+        handle: v.optional(v.string()), // Unique @handle for friend discovery
         timezone: v.string(), // e.g., "America/New_York"
         pill_order: v.optional(v.array(v.string())), // Ordered array of pill IDs
         onboarding_completed: v.boolean(),
@@ -28,7 +29,8 @@ export default defineSchema({
         created_at: v.number(), // UTC Timestamp
     })
         .index("by_clerk_id", ["clerk_id"])
-        .index("by_email", ["email"]),
+        .index("by_email", ["email"])
+        .index("by_handle", ["handle"]),
 
     // Pill Model
     // A trackable habit or task
@@ -94,4 +96,17 @@ export default defineSchema({
     })
         // Unique: One entry per period_type + date per user
         .index("by_user_type_date", ["user_id", "period_type", "date"]),
+
+    // Friend Connections
+    // Mutual friendships for social accountability
+    friends: defineTable({
+        user_id: v.string(), // Clerk ID — who sent the request
+        friend_id: v.string(), // Clerk ID — who received it
+        status: v.string(), // 'pending' | 'accepted' | 'blocked'
+        created_at: v.number(),
+        accepted_at: v.optional(v.number()),
+    })
+        .index("by_user_status", ["user_id", "status"])
+        .index("by_friend_status", ["friend_id", "status"])
+        .index("by_pair", ["user_id", "friend_id"]),
 });
