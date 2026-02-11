@@ -36,7 +36,7 @@ export function FriendManageDrawer({ isOpen, onClose }: FriendManageDrawerProps)
               key={t}
               onClick={() => setTab(t)}
               className={`flex-1 py-3 text-[10px] tracking-[0.2em] uppercase transition-colors ${
-                tab === t ? "text-green border-b border-green" : "text-grayscale50 hover:text-dark-theme-text"
+                tab === t ? "text-green border-b border-green -mb-px" : "text-grayscale50 hover:text-dark-theme-text"
               }`}
             >
               {t === "search" ? "Find" : t === "requests" ? "Requests" : "Friends"}
@@ -92,7 +92,7 @@ function SearchTab({ searchQuery, setSearchQuery }: { searchQuery: string; setSe
           placeholder="Search by name or @handle"
           value={searchQuery}
           onChange={(e) => setSearchQuery((e.target as HTMLInputElement).value)}
-          className="!pl-10"
+          className="pl-10"
         />
       </div>
 
@@ -115,7 +115,7 @@ function SearchTab({ searchQuery, setSearchQuery }: { searchQuery: string; setSe
             className="flex items-center justify-between py-3 border-b border-dark-theme-border last:border-0"
           >
             <div>
-              <div className="text-sm font-semibold tracking-wider">{user.name}</div>
+              <div className="font-mono text-xs uppercase tracking-[0.15em]">{user.name}</div>
               <div className="text-[9px] text-grayscale50">@{user.handle}</div>
             </div>
             {user.friendStatus === "accepted" ? (
@@ -172,19 +172,19 @@ function RequestsTab() {
             className="flex items-center justify-between py-3 border-b border-dark-theme-border last:border-0"
           >
             <div>
-              <div className="text-sm font-semibold tracking-wider">{req.name}</div>
+              <div className="font-mono text-xs uppercase tracking-[0.15em]">{req.name}</div>
               <div className="text-[9px] text-grayscale50">{req.handle}</div>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => accept({ friendClerkId: req.clerkId })}
-                className="p-2 border border-green/30 text-green hover:bg-green/10 transition-colors"
+                className="p-2 border border-dark-theme-border text-green hover:bg-white/5 transition-colors"
               >
                 <Check className="size-3.5" />
               </button>
               <button
                 onClick={() => reject({ friendClerkId: req.clerkId })}
-                className="p-2 border border-red/30 text-red hover:bg-red/10 transition-colors"
+                className="p-2 border border-dark-theme-border text-red hover:bg-white/5 transition-colors"
               >
                 <X className="size-3.5" />
               </button>
@@ -228,7 +228,7 @@ function FriendsListTab() {
               className="flex items-center justify-between py-3 border-b border-dark-theme-border last:border-0"
             >
               <div>
-                <div className="text-sm font-semibold tracking-wider">{f.name}</div>
+                <div className="font-mono text-xs uppercase tracking-[0.15em]">{f.name}</div>
                 <div className="text-[9px] text-grayscale50">{f.handle}</div>
               </div>
               <div className="flex items-center gap-3">
@@ -240,7 +240,7 @@ function FriendsListTab() {
                         removeFriend({ friendClerkId: f.clerkId })
                         setConfirming(null)
                       }}
-                      className="text-[9px] text-red border border-red/30 px-2 py-1 hover:bg-red/10 transition-colors"
+                      className="text-[9px] text-red border border-dark-theme-border px-2 py-1 hover:bg-white/5 transition-colors"
                     >
                       Confirm
                     </button>

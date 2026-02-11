@@ -21,7 +21,7 @@ export function HeroCounter({ value, label, sublabel }: HeroCounterProps) {
 
   return (
     <div className="py-16 md:py-20 text-center relative overflow-hidden">
-      <p className="text-[9px] tracking-[0.4em] text-grayscale50 mb-4">{label}</p>
+      <p className="text-[9px] tracking-[0.4em] text-grayscale50 mb-4 font-display">{label}</p>
       <div className="relative inline-block">
         <motion.span
           className="text-[80px] md:text-[120px] font-bold leading-[0.85] tracking-tighter text-green"
