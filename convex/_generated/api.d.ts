@@ -17,7 +17,7 @@ import type * as friends_getFriendProfile from "../friends/getFriendProfile.js";
 import type * as friends_getFriends from "../friends/getFriends.js";
 import type * as friends_getPendingRequests from "../friends/getPendingRequests.js";
 import type * as friends_mutations from "../friends/mutations.js";
-import type * as friends_searchUsersByHandle from "../friends/searchUsersByHandle.js";
+import type * as friends_searchUsers from "../friends/searchUsers.js";
 import type * as getDashboardData from "../getDashboardData.js";
 import type * as journal from "../journal.js";
 import type * as pills_createPill from "../pills/createPill.js";
@@ -43,7 +43,7 @@ declare const fullApi: ApiFromModules<{
   "friends/getFriends": typeof friends_getFriends;
   "friends/getPendingRequests": typeof friends_getPendingRequests;
   "friends/mutations": typeof friends_mutations;
-  "friends/searchUsersByHandle": typeof friends_searchUsersByHandle;
+  "friends/searchUsers": typeof friends_searchUsers;
   getDashboardData: typeof getDashboardData;
   journal: typeof journal;
   "pills/createPill": typeof pills_createPill;

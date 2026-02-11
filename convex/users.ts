@@ -64,6 +64,66 @@ export const updatePillOrder = mutation({
     },
 });
 
+// Check handle availability
+export const checkHandleAvailability = query({
+    args: { handle: v.string() },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) return { available: false, reason: "Unauthenticated" };
+
+        const handle = args.handle.toLowerCase();
+        const regex = /^[a-z0-9][a-z0-9_]{1,18}[a-z0-9]$/;
+        if (!regex.test(handle)) {
+            return { available: false, reason: "3-20 chars, lowercase alphanumeric and underscores only" };
+        }
+
+        const existing = await ctx.db
+            .query("users")
+            .withIndex("by_handle", (q) => q.eq("handle", handle))
+            .first();
+
+        if (existing && existing.clerk_id !== identity.subject) {
+            return { available: false, reason: "Handle already taken" };
+        }
+
+        return { available: true, reason: null };
+    },
+});
+
+// Update user handle
+export const updateHandle = mutation({
+    args: { handle: v.string() },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Unauthenticated");
+
+        const handle = args.handle.toLowerCase();
+        const regex = /^[a-z0-9][a-z0-9_]{1,18}[a-z0-9]$/;
+        if (!regex.test(handle)) {
+            throw new Error("Invalid handle format");
+        }
+
+        const existing = await ctx.db
+            .query("users")
+            .withIndex("by_handle", (q) => q.eq("handle", handle))
+            .first();
+
+        if (existing && existing.clerk_id !== identity.subject) {
+            throw new Error("Handle already taken");
+        }
+
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_clerk_id", (q) => q.eq("clerk_id", identity.subject))
+            .first();
+
+        if (!user) throw new Error("User not found");
+
+        await ctx.db.patch(user._id, { handle });
+        return { success: true };
+    },
+});
+
 // Delete account (Hard delete for now, or soft delete if preferred - following plan for cascade)
 export const deleteAccount = mutation({
     args: {},

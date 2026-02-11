@@ -15,6 +15,7 @@ import { OnboardingAsciiBackground } from "@/components/onboarding/OnboardingAsc
 
 type OnboardingData = {
     name: string
+    handle: string
     timezone: string
     pills: PillDraft[]
 }
@@ -27,6 +28,7 @@ export const Onboarding = () => {
 
     const [data, setData] = useState<OnboardingData>({
         name: "",
+        handle: "",
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         pills: [
             { ...HABIT_CONFIG["TRAIN RESISTANCE"], name: "TRAIN RESISTANCE" },
@@ -46,6 +48,7 @@ export const Onboarding = () => {
                 // Submit to Convex
                 await completeOnboarding({
                     name: data.name,
+                    handle: data.handle,
                     timezone: data.timezone,
                     pills: data.pills.map(p => ({
                         name: p.name,
@@ -102,7 +105,9 @@ export const Onboarding = () => {
                     {step === 1 && (
                         <IdentityStep
                             name={data.name}
+                            handle={data.handle}
                             onChange={(name) => setData({ ...data, name })}
+                            onHandleChange={(handle) => setData({ ...data, handle })}
                         />
                     )}
 
@@ -148,7 +153,7 @@ export const Onboarding = () => {
                     <GridCell span={6} className="p-0">
                         <Button
                             onClick={handleNext}
-                            disabled={(step === 1 && !data.name) || (step === 3 && data.pills.some(p => !p.name || p.frequency_per_week < 1 || p.frequency_per_week > 7 || (p.measurement_type !== 'boolean' && (p.target_value < 1 || !p.unit))))}
+                            disabled={(step === 1 && (!data.name || !data.handle || data.handle.length < 3 || !/^[a-z0-9][a-z0-9_]{1,18}[a-z0-9]$/.test(data.handle))) || (step === 3 && data.pills.some(p => !p.name || p.frequency_per_week < 1 || p.frequency_per_week > 7 || (p.measurement_type !== 'boolean' && (p.target_value < 1 || !p.unit))))}
                             variant="primary"
                             icon={ArrowRight}
                             className="w-full h-20"
