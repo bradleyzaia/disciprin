@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V17: Radical Minimalism</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.5; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 40px 24px; }
+  
+  .page { max-width: 400px; width: 100%; }
+  
+  .label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.4em; color: var(--g50); margin-bottom: 48px; }
+  
+  /* Each friend = one line */
+  .friend-line { display: flex; align-items: baseline; padding: 20px 0; border-bottom: 1px solid var(--g25); cursor: pointer; transition: all 0.4s; position: relative; }
+  .friend-line:first-child { border-top: 1px solid var(--g25); }
+  .friend-line:hover { padding-left: 8px; }
+  .friend-line:hover .fl-pct { opacity: 1; transform: translateX(0); }
+  
+  .fl-name { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; flex: 1; transition: color 0.3s; }
+  .friend-line:hover .fl-name { color: var(--green); }
+  .friend-line.yellow:hover .fl-name { color: var(--yellow); }
+  .friend-line.pink:hover .fl-name { color: var(--pink); }
+  
+  .fl-streak { font-size: 10px; color: var(--g50); text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.3s; }
+  
+  .fl-pct { position: absolute; right: 0; font-size: 32px; font-weight: 700; opacity: 0; transform: translateX(8px); transition: all 0.4s cubic-bezier(0.23,1,0.32,1); color: var(--green); }
+  .friend-line.yellow .fl-pct { color: var(--yellow); }
+  .friend-line.pink .fl-pct { color: var(--pink); }
+  
+  /* Underline progress */
+  .fl-bar { position: absolute; bottom: -1px; left: 0; height: 1px; transition: all 0.6s cubic-bezier(0.23,1,0.32,1); width: 0; }
+  .friend-line:hover .fl-bar { width: var(--pct); }
+  
+  .footer { margin-top: 48px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.3em; color: var(--g50); display: flex; justify-content: space-between; }
+  
+  /* Expanded detail */
+  .fl-detail { max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.23,1,0.32,1); }
+  .fl-detail-inner { padding: 16px 0 8px; }
+  .fl-detail-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--g50); text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 0; }
+  .fl-detail-val { color: var(--g100); font-weight: 600; }
+  
+  .friend-line.expanded .fl-detail { max-height: 200px; }
+  .friend-line.expanded { padding-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="label">Your Crew · This Week</div>
+  
+  <div class="friend-line" style="--pct:100%" onclick="toggle(this)">
+    <span class="fl-name">Anna</span>
+    <span class="fl-streak">16w</span>
+    <span class="fl-pct">100</span>
+    <div class="fl-bar" style="background:var(--green)"></div>
+    <div class="fl-detail"><div class="fl-detail-inner">
+      <div class="fl-detail-row"><span>Streak</span><span class="fl-detail-val">16 Weeks · Running</span></div>
+      <div class="fl-detail-row"><span>Entries</span><span class="fl-detail-val">401</span></div>
+      <div class="fl-detail-row"><span>Week</span><span class="fl-detail-val">7/7</span></div>
+    </div></div>
+  </div>
+  
+  <div class="friend-line" style="--pct:92%" onclick="toggle(this)">
+    <span class="fl-name">Kyle</span>
+    <span class="fl-streak">12w</span>
+    <span class="fl-pct">92</span>
+    <div class="fl-bar" style="background:var(--green)"></div>
+    <div class="fl-detail"><div class="fl-detail-inner">
+      <div class="fl-detail-row"><span>Streak</span><span class="fl-detail-val">12 Weeks · Meditation</span></div>
+      <div class="fl-detail-row"><span>Entries</span><span class="fl-detail-val">247</span></div>
+      <div class="fl-detail-row"><span>Week</span><span class="fl-detail-val">7/7</span></div>
+    </div></div>
+  </div>
+  
+  <div class="friend-line" style="--pct:88%" onclick="toggle(this)">
+    <span class="fl-name">You</span>
+    <span class="fl-streak">8w</span>
+    <span class="fl-pct">88</span>
+    <div class="fl-bar" style="background:var(--green)"></div>
+    <div class="fl-detail"><div class="fl-detail-inner">
+      <div class="fl-detail-row"><span>Streak</span><span class="fl-detail-val">8 Weeks · Meditation</span></div>
+      <div class="fl-detail-row"><span>Entries</span><span class="fl-detail-val">312</span></div>
+      <div class="fl-detail-row"><span>Week</span><span class="fl-detail-val">6/7</span></div>
+    </div></div>
+  </div>
+  
+  <div class="friend-line" style="--pct:85%" onclick="toggle(this)">
+    <span class="fl-name">Mia</span>
+    <span class="fl-streak">6w</span>
+    <span class="fl-pct">85</span>
+    <div class="fl-bar" style="background:var(--green)"></div>
+    <div class="fl-detail"><div class="fl-detail-inner">
+      <div class="fl-detail-row"><span>Streak</span><span class="fl-detail-val">6 Weeks · Yoga</span></div>
+      <div class="fl-detail-row"><span>Entries</span><span class="fl-detail-val">178</span></div>
+      <div class="fl-detail-row"><span>Week</span><span class="fl-detail-val">6/7</span></div>
+    </div></div>
+  </div>
+  
+  <div class="friend-line yellow" style="--pct:71%" onclick="toggle(this)">
+    <span class="fl-name">Bradley</span>
+    <span class="fl-streak">3w</span>
+    <span class="fl-pct">71</span>
+    <div class="fl-bar" style="background:var(--yellow)"></div>
+    <div class="fl-detail"><div class="fl-detail-inner">
+      <div class="fl-detail-row"><span>Streak</span><span class="fl-detail-val">3 Weeks · Workout</span></div>
+      <div class="fl-detail-row"><span>Entries</span><span class="fl-detail-val">89</span></div>
+      <div class="fl-detail-row"><span>Week</span><span class="fl-detail-val">5/7</span></div>
+    </div></div>
+  </div>
+  
+  <div class="friend-line pink" style="--pct:43%" onclick="toggle(this)">
+    <span class="fl-name">Sam</span>
+    <span class="fl-streak">1w</span>
+    <span class="fl-pct">43</span>
+    <div class="fl-bar" style="background:var(--pink)"></div>
+    <div class="fl-detail"><div class="fl-detail-inner">
+      <div class="fl-detail-row"><span>Streak</span><span class="fl-detail-val">1 Week · Stretching</span></div>
+      <div class="fl-detail-row"><span>Entries</span><span class="fl-detail-val">52</span></div>
+      <div class="fl-detail-row"><span>Week</span><span class="fl-detail-val">3/7</span></div>
+    </div></div>
+  </div>
+  
+  <div class="footer">
+    <span>6 Friends</span>
+    <span>82% Avg</span>
+  </div>
+</div>
+
+<script>
+function toggle(el) {
+  el.classList.toggle('expanded');
+}
+</script>
+</body>
+</html>

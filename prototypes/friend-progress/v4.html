@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V4: Grid/Bento</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; }
+  .app { max-width: 520px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; }
+
+  .header { padding: 20px 16px; position: sticky; top: 0; background: var(--bg); z-index: 10; border-bottom: 1px solid var(--g25); display: flex; justify-content: space-between; align-items: baseline; }
+  .header h1 { font-size: 14px; font-weight: 700; }
+  .add-btn { background: none; border: 1px solid var(--g25); color: var(--g100); padding: 6px 14px; font-family: inherit; font-size: 10px; text-transform: uppercase; cursor: pointer; transition: all 0.4s; position: relative; overflow: hidden; }
+  .add-btn::before { content: ''; position: absolute; inset: 0; background: var(--g100); transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.23,1,0.32,1); }
+  .add-btn:hover::before { transform: translateX(0); }
+  .add-btn span { position: relative; z-index: 1; }
+  .add-btn:hover span { color: var(--bg); }
+
+  /* Bento Grid */
+  .bento { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; padding: 16px; background: var(--g25); margin: 0; }
+  .bento > * { background: var(--bg); }
+  
+  .bento-card { padding: 16px; transition: all 0.3s; cursor: pointer; position: relative; overflow: hidden; }
+  .bento-card:hover { background: rgba(255,255,255,0.02); }
+  .bento-card.wide { grid-column: span 2; }
+  .bento-card.featured { grid-column: span 2; padding: 24px 16px; }
+  
+  .bento-avatar { width: 28px; height: 28px; border: 1px solid var(--g50); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; margin-bottom: 10px; }
+  .bento-name { font-size: 11px; font-weight: 600; margin-bottom: 2px; }
+  .bento-handle { font-size: 9px; color: var(--g50); margin-bottom: 10px; }
+  
+  .bento-big-num { font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .bento-label { font-size: 9px; color: var(--g50); letter-spacing: 0.15em; }
+  
+  .bento-event { font-size: 10px; color: var(--g75); margin-top: 8px; line-height: 1.5; }
+  
+  /* Progress ring */
+  .ring-container { position: relative; width: 48px; height: 48px; margin-bottom: 8px; }
+  .ring-container svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--g25); stroke-width: 3; }
+  .ring-fill { fill: none; stroke-width: 3; stroke-linecap: square; transition: stroke-dashoffset 1s cubic-bezier(0.23,1,0.32,1); }
+  .ring-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+
+  /* Featured card layout */
+  .featured-inner { display: flex; align-items: center; gap: 16px; }
+  .featured-right { flex: 1; }
+  .featured-event { font-size: 12px; margin-bottom: 4px; }
+  .featured-sub { font-size: 10px; color: var(--g50); }
+
+  /* Heat row */
+  .heat-row { display: flex; gap: 2px; margin-top: 8px; }
+  .heat-cell { width: 8px; height: 8px; background: var(--g25); }
+  .heat-cell.l1 { background: rgba(0,255,140,0.2); }
+  .heat-cell.l2 { background: rgba(0,255,140,0.4); }
+  .heat-cell.l3 { background: rgba(0,255,140,0.7); }
+  .heat-cell.l4 { background: var(--green); }
+
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 520px; display: flex; border-top: 1px solid var(--g25); background: var(--bg); }
+  .bottom-nav a { flex: 1; padding: 14px 0; text-align: center; font-size: 10px; color: var(--g50); text-decoration: none; }
+  .bottom-nav a.active { color: var(--g100); }
+
+  @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  .bento-card { animation: scaleIn 0.4s cubic-bezier(0.23,1,0.32,1) both; }
+  .bento-card:nth-child(1) { animation-delay: 0s; }
+  .bento-card:nth-child(2) { animation-delay: 0.06s; }
+  .bento-card:nth-child(3) { animation-delay: 0.12s; }
+  .bento-card:nth-child(4) { animation-delay: 0.18s; }
+  .bento-card:nth-child(5) { animation-delay: 0.24s; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Friends</h1>
+    <button class="add-btn"><span>+ Add Friend</span></button>
+  </div>
+
+  <div class="bento">
+    <!-- Featured -->
+    <div class="bento-card featured">
+      <div class="featured-inner">
+        <div class="ring-container">
+          <svg width="48" height="48" viewBox="0 0 48 48">
+            <circle class="ring-bg" cx="24" cy="24" r="20"/>
+            <circle class="ring-fill" cx="24" cy="24" r="20" stroke="var(--green)" stroke-dasharray="125.6" stroke-dashoffset="0"/>
+          </svg>
+          <div class="ring-text" style="color:var(--green)">🔥</div>
+        </div>
+        <div class="featured-right">
+          <div class="bento-name">Kyle @kyle</div>
+          <div class="featured-event">12-week streak on <strong>Meditation</strong></div>
+          <div class="featured-sub">100% completion this week</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card -->
+    <div class="bento-card">
+      <div class="bento-avatar" style="border-color:var(--pink);color:var(--pink)">B</div>
+      <div class="bento-name">Bradley</div>
+      <div class="bento-handle">@bradley</div>
+      <div class="bento-big-num" style="color:var(--pink)">86%</div>
+      <div class="bento-label">This week</div>
+      <div class="heat-row">
+        <div class="heat-cell l3"></div><div class="heat-cell l4"></div><div class="heat-cell l4"></div>
+        <div class="heat-cell l2"></div><div class="heat-cell"></div><div class="heat-cell l4"></div><div class="heat-cell l4"></div>
+      </div>
+    </div>
+
+    <div class="bento-card">
+      <div class="bento-avatar" style="border-color:var(--yellow);color:var(--yellow)">A</div>
+      <div class="bento-name">Anna</div>
+      <div class="bento-handle">@anna</div>
+      <div class="bento-big-num" style="color:var(--yellow)">100</div>
+      <div class="bento-label">Total entries 🏆</div>
+      <div class="bento-event">Century club milestone</div>
+    </div>
+
+    <div class="bento-card">
+      <div class="bento-avatar" style="border-color:var(--green);color:var(--green)">M</div>
+      <div class="bento-name">Marcus</div>
+      <div class="bento-handle">@marcus</div>
+      <div class="bento-big-num" style="color:var(--green)">8w</div>
+      <div class="bento-label">Streak · Cold shower</div>
+    </div>
+
+    <div class="bento-card">
+      <div class="bento-avatar">S</div>
+      <div class="bento-name">Sarah</div>
+      <div class="bento-handle">@sarah</div>
+      <div class="bento-big-num" style="color:var(--g75)">71%</div>
+      <div class="bento-label">This week</div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="#">Dashboard</a>
+    <a href="#">Analytics</a>
+    <a href="#" class="active">Friends</a>
+    <a href="#">Settings</a>
+  </nav>
+</div>
+</body>
+</html>

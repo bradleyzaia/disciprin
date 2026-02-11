@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — Prototypes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; padding: 40px 24px; }
+  .container { max-width: 800px; margin: 0 auto; }
+  h1 { font-size: 10px; letter-spacing: 0.4em; color: var(--g50); margin-bottom: 8px; }
+  h2 { font-size: 24px; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 32px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1px; background: var(--g25); }
+  .card { background: var(--bg); padding: 24px; transition: all 0.3s; cursor: pointer; text-decoration: none; color: inherit; display: block; position: relative; }
+  .card:hover { background: rgba(255,255,255,0.02); }
+  .card:hover .card-num { color: var(--green); }
+  .card-num { font-size: 32px; font-weight: 700; line-height: 1; color: var(--g25); transition: color 0.3s; margin-bottom: 12px; }
+  .card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; margin-bottom: 4px; }
+  .card-desc { font-size: 9px; color: var(--g50); letter-spacing: 0.05em; text-transform: none; line-height: 1.6; }
+  .section-label { font-size: 9px; letter-spacing: 0.3em; color: var(--g50); padding: 24px 0 12px; border-bottom: 1px solid var(--g25); margin-bottom: 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Disciprin</h1>
+  <h2>Friend Progress Prototypes</h2>
+  
+  <div class="section-label">V1 — V10 · Initial Explorations</div>
+  <div class="grid">
+    <a class="card" href="v1.html"><div class="card-num">01</div><div class="card-title">Card Feed</div><div class="card-desc">Vertical feed of activity cards with hover accents</div></a>
+    <a class="card" href="v2.html"><div class="card-num">02</div><div class="card-title">Timeline</div><div class="card-desc">Chronological timeline with dot indicators</div></a>
+    <a class="card" href="v3.html"><div class="card-num">03</div><div class="card-title">Compact List</div><div class="card-desc">Data-dense list view with week dots</div></a>
+    <a class="card" href="v4.html"><div class="card-num">04</div><div class="card-title">Grid / Bento</div><div class="card-desc">Bento grid layout with progress rings</div></a>
+    <a class="card" href="v5.html"><div class="card-num">05</div><div class="card-title">Social / Stories</div><div class="card-desc">Stories row + Instagram-style post feed</div></a>
+    <a class="card" href="v6.html"><div class="card-num">06</div><div class="card-title">Terminal / CLI</div><div class="card-desc">Terminal aesthetic with ASCII progress bars</div></a>
+    <a class="card" href="v7.html"><div class="card-num">07</div><div class="card-title">Profile-First</div><div class="card-desc">Friend detail view with chip selector</div></a>
+    <a class="card" href="v8.html"><div class="card-num">08</div><div class="card-title">Bold Typographic</div><div class="card-desc">Full-bleed sections with oversized numbers</div></a>
+    <a class="card" href="v9.html"><div class="card-num">09</div><div class="card-title">Data Dashboard</div><div class="card-desc">Table-driven comparison with inline charts</div></a>
+    <a class="card" href="v10.html"><div class="card-num">10</div><div class="card-title">Playful / Gamified</div><div class="card-desc">XP bars, achievements, leaderboard ranks</div></a>
+  </div>
+  
+  <div class="section-label" style="margin-top:32px">V11 — V20 · Boundary-Pushing</div>
+  <div class="grid">
+    <a class="card" href="v11.html"><div class="card-num">11</div><div class="card-title">Constellation Map</div><div class="card-desc">Interactive star map with parallax, connected nodes, and detail panel</div></a>
+    <a class="card" href="v12.html"><div class="card-num">12</div><div class="card-title">Orbital / Radial</div><div class="card-desc">Concentric orbits with you at center, friends by performance ring</div></a>
+    <a class="card" href="v13.html"><div class="card-num">13</div><div class="card-title">Split Comparison</div><div class="card-desc">Side-by-side you vs friend with winner indicators</div></a>
+    <a class="card" href="v14.html"><div class="card-num">14</div><div class="card-title">Conversational UI</div><div class="card-desc">Chat-style crew report with inline data cards and quick replies</div></a>
+    <a class="card" href="v15.html"><div class="card-num">15</div><div class="card-title">Magazine Editorial</div><div class="card-desc">Newspaper-style weekly digest with masthead, columns, pull quotes</div></a>
+    <a class="card" href="v16.html"><div class="card-num">16</div><div class="card-title">Ambient Particles</div><div class="card-desc">Generative particle background with glassmorphism cards</div></a>
+    <a class="card" href="v17.html"><div class="card-num">17</div><div class="card-title">Radical Minimalism</div><div class="card-desc">Pure text lines with hover-reveal percentages and expand details</div></a>
+    <a class="card" href="v18.html"><div class="card-num">18</div><div class="card-title">Ticker / Motion-First</div><div class="card-desc">Marquee tickers, animated counters, horizontal scroll, live feed</div></a>
+    <a class="card" href="v19.html"><div class="card-num">19</div><div class="card-title">Card Stack / Swipe</div><div class="card-desc">Tinder-style swipeable friend cards with drag interactions</div></a>
+    <a class="card" href="v20.html"><div class="card-num">20</div><div class="card-title">Topographic Terrain</div><div class="card-desc">Contour map with elevation = completion %, marching squares algorithm</div></a>
+  </div>
+</div>
+</body>
+</html>

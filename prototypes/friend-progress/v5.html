@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V5: Social/Stories</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; }
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; }
+
+  .header { padding: 16px; position: sticky; top: 0; background: var(--bg); z-index: 10; }
+  .header h1 { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+
+  /* Stories row — horizontal scroll of friend avatars */
+  .stories { display: flex; gap: 16px; overflow-x: auto; padding: 0 16px 16px; border-bottom: 1px solid var(--g25); -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .stories::-webkit-scrollbar { display: none; }
+  .story { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; cursor: pointer; }
+  .story-ring { width: 52px; height: 52px; border-radius: 50%; padding: 2px; background: conic-gradient(var(--green) 0%, var(--green) var(--pct), var(--g30) var(--pct), var(--g30) 100%); display: flex; align-items: center; justify-content: center; transition: transform 0.3s; }
+  .story:hover .story-ring { transform: scale(1.1); }
+  .story-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; border: 2px solid var(--bg); }
+  .story-name { font-size: 9px; color: var(--g75); max-width: 56px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .story.active .story-name { color: var(--g100); }
+  .story-add .story-ring { background: var(--g25); }
+  .story-add .story-avatar { border-color: var(--g25); color: var(--g50); font-size: 20px; }
+
+  /* Feed — Instagram-esque posts */
+  .feed { padding: 0; }
+  .post { border-bottom: 1px solid var(--g25); }
+  .post-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
+  .post-avatar { width: 28px; height: 28px; border: 1px solid var(--g50); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; flex-shrink: 0; }
+  .post-user { flex: 1; }
+  .post-name { font-weight: 600; font-size: 11px; }
+  .post-time { font-size: 9px; color: var(--g50); }
+  
+  /* The "image" area — big stat display */
+  .post-visual { padding: 32px 16px; background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 100%); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; min-height: 160px; justify-content: center; position: relative; }
+  .post-visual::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 39px, var(--g25) 39px, var(--g25) 40px); opacity: 0.3; }
+  .post-visual * { position: relative; }
+  .post-big { font-size: 48px; font-weight: 700; line-height: 1; }
+  .post-unit { font-size: 11px; color: var(--g75); letter-spacing: 0.2em; }
+  .post-pill { font-size: 10px; color: var(--g50); margin-top: 4px; }
+  
+  .post-body { padding: 12px 16px; }
+  .post-event { font-size: 11px; color: var(--g75); }
+  .post-event strong { color: var(--g100); }
+  
+  .post-actions { display: flex; gap: 16px; padding: 8px 16px 12px; }
+  .post-action { font-size: 10px; color: var(--g50); cursor: pointer; transition: color 0.2s; }
+  .post-action:hover { color: var(--g100); }
+
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; display: flex; border-top: 1px solid var(--g25); background: var(--bg); }
+  .bottom-nav a { flex: 1; padding: 14px 0; text-align: center; font-size: 10px; color: var(--g50); text-decoration: none; }
+  .bottom-nav a.active { color: var(--g100); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .post { animation: fadeUp 0.5s ease both; }
+  .post:nth-child(1) { animation-delay: 0.1s; }
+  .post:nth-child(2) { animation-delay: 0.2s; }
+  .post:nth-child(3) { animation-delay: 0.3s; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Friends</h1>
+  </div>
+
+  <div class="stories">
+    <div class="story story-add">
+      <div class="story-ring"><div class="story-avatar">+</div></div>
+      <span class="story-name">Add</span>
+    </div>
+    <div class="story active">
+      <div class="story-ring" style="--pct: 100%"><div class="story-avatar" style="color:var(--green)">K</div></div>
+      <span class="story-name">Kyle</span>
+    </div>
+    <div class="story">
+      <div class="story-ring" style="--pct: 86%; background: conic-gradient(var(--pink) 0%, var(--pink) 86%, var(--g30) 86%, var(--g30) 100%)"><div class="story-avatar" style="color:var(--pink)">B</div></div>
+      <span class="story-name">Bradley</span>
+    </div>
+    <div class="story">
+      <div class="story-ring" style="--pct: 71%; background: conic-gradient(var(--yellow) 0%, var(--yellow) 71%, var(--g30) 71%, var(--g30) 100%)"><div class="story-avatar" style="color:var(--yellow)">A</div></div>
+      <span class="story-name">Anna</span>
+    </div>
+    <div class="story">
+      <div class="story-ring" style="--pct: 100%"><div class="story-avatar" style="color:var(--green)">M</div></div>
+      <span class="story-name">Marcus</span>
+    </div>
+    <div class="story">
+      <div class="story-ring" style="--pct: 71%; background: conic-gradient(var(--g75) 0%, var(--g75) 71%, var(--g30) 71%, var(--g30) 100%)"><div class="story-avatar">S</div></div>
+      <span class="story-name">Sarah</span>
+    </div>
+  </div>
+
+  <div class="feed">
+    <div class="post">
+      <div class="post-header">
+        <div class="post-avatar" style="border-color:var(--green);color:var(--green)">K</div>
+        <div class="post-user"><span class="post-name">Kyle</span></div>
+        <span class="post-time">2h ago</span>
+      </div>
+      <div class="post-visual">
+        <div class="post-big" style="color:var(--green)">12</div>
+        <div class="post-unit">Week Streak 🔥</div>
+        <div class="post-pill">Meditation</div>
+      </div>
+      <div class="post-body">
+        <div class="post-event"><strong>Kyle</strong> hit a 12-week streak on meditation — longest in the crew</div>
+      </div>
+      <div class="post-actions">
+        <span class="post-action">🔥 Fire</span>
+        <span class="post-action">View profile →</span>
+      </div>
+    </div>
+
+    <div class="post">
+      <div class="post-header">
+        <div class="post-avatar" style="border-color:var(--pink);color:var(--pink)">B</div>
+        <div class="post-user"><span class="post-name">Bradley</span></div>
+        <span class="post-time">5h ago</span>
+      </div>
+      <div class="post-visual">
+        <div class="post-big" style="color:var(--pink)">86%</div>
+        <div class="post-unit">Weekly Completion</div>
+        <div class="post-pill">6 / 7 pills</div>
+      </div>
+      <div class="post-body">
+        <div class="post-event"><strong>Bradley</strong> completed 6 out of 7 pills this week. 4-week streak going.</div>
+      </div>
+      <div class="post-actions">
+        <span class="post-action">👏 Props</span>
+        <span class="post-action">View profile →</span>
+      </div>
+    </div>
+
+    <div class="post">
+      <div class="post-header">
+        <div class="post-avatar" style="border-color:var(--yellow);color:var(--yellow)">A</div>
+        <div class="post-user"><span class="post-name">Anna</span></div>
+        <span class="post-time">1d ago</span>
+      </div>
+      <div class="post-visual">
+        <div class="post-big" style="color:var(--yellow)">100</div>
+        <div class="post-unit">Total Entries 🏆</div>
+        <div class="post-pill">Century Club</div>
+      </div>
+      <div class="post-body">
+        <div class="post-event"><strong>Anna</strong> reached 100 total entries. Milestone unlocked.</div>
+      </div>
+      <div class="post-actions">
+        <span class="post-action">🏆 Congrats</span>
+        <span class="post-action">View profile →</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="#">Dashboard</a>
+    <a href="#">Analytics</a>
+    <a href="#" class="active">Friends</a>
+    <a href="#">Settings</a>
+  </nav>
+</div>
+</body>
+</html>

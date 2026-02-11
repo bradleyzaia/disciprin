@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V20: Topographic / Terrain Map</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; }
+  .app { max-width: 520px; margin: 0 auto; min-height: 100vh; }
+  
+  .header { padding: 16px 20px; position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px solid var(--g25); display: flex; justify-content: space-between; align-items: center; }
+  .header h1 { font-size: 10px; letter-spacing: 0.25em; color: var(--g50); }
+  .header-right { font-size: 9px; color: var(--g50); }
+  
+  /* Topo map canvas */
+  .topo-section { position: relative; padding: 0; aspect-ratio: 4/3; overflow: hidden; border-bottom: 1px solid var(--g25); }
+  canvas#topo { width: 100%; height: 100%; display: block; }
+  
+  /* Markers overlaid on topo */
+  .markers { position: absolute; inset: 0; pointer-events: none; }
+  .marker { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; cursor: pointer; z-index: 5; }
+  .marker-pin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--green); background: var(--bg); transition: all 0.3s; position: relative; }
+  .marker:hover .marker-pin { transform: scale(1.5); box-shadow: 0 0 12px rgba(0,255,140,0.3); }
+  .marker.yellow .marker-pin { border-color: var(--yellow); }
+  .marker:hover.yellow .marker-pin { box-shadow: 0 0 12px rgba(251,255,0,0.3); }
+  .marker.pink .marker-pin { border-color: var(--pink); }
+  .marker:hover.pink .marker-pin { box-shadow: 0 0 12px rgba(255,0,178,0.3); }
+  .marker-label { position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-shadow: 0 0 8px var(--bg), 0 0 16px var(--bg); }
+  .marker-elev { position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); font-size: 8px; color: var(--g50); white-space: nowrap; text-shadow: 0 0 8px var(--bg); }
+  
+  /* Contour legend */
+  .legend { position: absolute; bottom: 12px; left: 12px; display: flex; flex-direction: column; gap: 4px; z-index: 5; }
+  .legend-row { display: flex; align-items: center; gap: 6px; font-size: 8px; color: var(--g50); }
+  .legend-line { width: 16px; height: 1px; }
+  
+  /* Elevation list below */
+  .elevation-list { padding: 0; }
+  .el-item { display: grid; grid-template-columns: 40px 1fr 80px 60px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--g25); transition: background 0.2s; cursor: pointer; }
+  .el-item:hover { background: rgba(255,255,255,0.02); }
+  .el-rank { font-size: 10px; color: var(--g50); }
+  .el-name-group { }
+  .el-name { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; }
+  .el-handle { font-size: 9px; color: var(--g50); }
+  
+  /* Elevation bar */
+  .el-bar { height: 3px; background: var(--g25); position: relative; }
+  .el-bar-fill { height: 100%; transition: width 1s cubic-bezier(0.23,1,0.32,1); }
+  .el-val { font-size: 14px; font-weight: 700; text-align: right; }
+  
+  /* Coordinate grid labels */
+  .grid-label { position: absolute; font-size: 7px; color: var(--g50); opacity: 0.5; letter-spacing: 0.1em; }
+  
+  /* Footer */
+  .map-footer { padding: 16px 20px; display: flex; justify-content: space-between; font-size: 9px; color: var(--g50); letter-spacing: 0.15em; }
+  
+  @media (max-width: 400px) {
+    .topo-section { aspect-ratio: 3/2; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>Terrain Map</h1>
+    <div class="header-right">Week 6 · Feb 2026</div>
+  </div>
+  
+  <div class="topo-section">
+    <canvas id="topo"></canvas>
+    <div class="markers" id="markers"></div>
+    <div class="legend">
+      <div class="legend-row"><div class="legend-line" style="background:rgba(0,255,140,0.3)"></div> &gt;80%</div>
+      <div class="legend-row"><div class="legend-line" style="background:rgba(251,255,0,0.2)"></div> 50-80%</div>
+      <div class="legend-row"><div class="legend-line" style="background:rgba(255,0,178,0.15)"></div> &lt;50%</div>
+    </div>
+  </div>
+  
+  <div class="elevation-list" id="elevList"></div>
+  
+  <div class="map-footer">
+    <span>6 Climbers</span>
+    <span>Peak: 100% · Anna</span>
+  </div>
+</div>
+
+<script>
+const friends = [
+  { name: 'Anna', handle: '@anna', pct: 100, streak: '16W', color: 'green', x: 0.65, y: 0.2 },
+  { name: 'Kyle', handle: '@kyle', pct: 92, streak: '12W', color: 'green', x: 0.45, y: 0.35 },
+  { name: 'You', handle: '@you', pct: 88, streak: '8W', color: 'green', x: 0.3, y: 0.45 },
+  { name: 'Mia', handle: '@mia', pct: 85, streak: '6W', color: 'green', x: 0.7, y: 0.5 },
+  { name: 'Bradley', handle: '@brad', pct: 71, streak: '3W', color: 'yellow', x: 0.2, y: 0.65 },
+  { name: 'Sam', handle: '@samwise', pct: 43, streak: '1W', color: 'pink', x: 0.5, y: 0.8 },
+];
+
+// Draw topographic contour lines
+const canvas = document.getElementById('topo');
+const ctx = canvas.getContext('2d');
+const section = canvas.parentElement;
+
+function drawTopo() {
+  const W = canvas.width = section.offsetWidth * 2;
+  const H = canvas.height = section.offsetHeight * 2;
+  ctx.scale(2, 2);
+  const w = W / 2, h = H / 2;
+  
+  // Generate elevation field from friend positions (higher pct = higher elevation)
+  function elevation(px, py) {
+    let elev = 0;
+    friends.forEach(f => {
+      const dx = px - f.x;
+      const dy = py - f.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      elev += (f.pct / 100) * Math.exp(-d * d * 8);
+    });
+    return elev;
+  }
+  
+  // Draw contour lines
+  const levels = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
+  const res = 2;
+  
+  levels.forEach((level, li) => {
+    const alpha = 0.08 + li * 0.02;
+    let color;
+    if (level > 0.6) color = `rgba(0,255,140,${alpha})`;
+    else if (level > 0.3) color = `rgba(251,255,0,${alpha * 0.7})`;
+    else color = `rgba(255,0,178,${alpha * 0.5})`;
+    
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 0.5;
+    
+    // Simple marching squares approximation
+    for (let y = 0; y < h - res; y += res) {
+      for (let x = 0; x < w - res; x += res) {
+        const tl = elevation(x / w, y / h);
+        const tr = elevation((x + res) / w, y / h);
+        const bl = elevation(x / w, (y + res) / h);
+        const br = elevation((x + res) / w, (y + res) / h);
+        
+        const above = [tl > level, tr > level, br > level, bl > level];
+        const code = above[0] * 8 + above[1] * 4 + above[2] * 2 + above[3];
+        
+        if (code === 0 || code === 15) continue;
+        
+        ctx.beginPath();
+        // Simplified: draw segments for common cases
+        if (code === 1 || code === 14) { ctx.moveTo(x, y + res/2); ctx.lineTo(x + res/2, y + res); }
+        else if (code === 2 || code === 13) { ctx.moveTo(x + res/2, y + res); ctx.lineTo(x + res, y + res/2); }
+        else if (code === 4 || code === 11) { ctx.moveTo(x + res, y + res/2); ctx.lineTo(x + res/2, y); }
+        else if (code === 8 || code === 7) { ctx.moveTo(x + res/2, y); ctx.lineTo(x, y + res/2); }
+        else if (code === 3 || code === 12) { ctx.moveTo(x, y + res/2); ctx.lineTo(x + res, y + res/2); }
+        else if (code === 6 || code === 9) { ctx.moveTo(x + res/2, y); ctx.lineTo(x + res/2, y + res); }
+        else { ctx.moveTo(x, y + res/2); ctx.lineTo(x + res, y + res/2); }
+        ctx.stroke();
+      }
+    }
+  });
+  
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x < w; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+  for (let y = 0; y < h; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+}
+
+// Place markers
+const markersEl = document.getElementById('markers');
+friends.forEach(f => {
+  const m = document.createElement('div');
+  m.className = `marker ${f.color}`;
+  m.style.left = (f.x * 100) + '%';
+  m.style.top = (f.y * 100) + '%';
+  m.innerHTML = `
+    <div class="marker-elev">${f.pct}%</div>
+    <div class="marker-pin"></div>
+    <div class="marker-label">${f.name}</div>
+  `;
+  markersEl.appendChild(m);
+});
+
+// Elevation list
+const list = document.getElementById('elevList');
+friends.sort((a, b) => b.pct - a.pct).forEach((f, i) => {
+  const colorVar = f.color === 'green' ? 'var(--green)' : f.color === 'pink' ? 'var(--pink)' : 'var(--yellow)';
+  const el = document.createElement('div');
+  el.className = 'el-item';
+  el.innerHTML = `
+    <div class="el-rank">${String(i + 1).padStart(2, '0')}</div>
+    <div class="el-name-group"><div class="el-name">${f.name}</div><div class="el-handle">${f.handle} · ${f.streak}</div></div>
+    <div class="el-bar"><div class="el-bar-fill" style="width:${f.pct}%;background:${colorVar}"></div></div>
+    <div class="el-val" style="color:${colorVar}">${f.pct}%</div>
+  `;
+  list.appendChild(el);
+});
+
+drawTopo();
+window.addEventListener('resize', drawTopo);
+</script>
+</body>
+</html>

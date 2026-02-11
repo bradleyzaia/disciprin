@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V8: Bold/Typographic</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.5; }
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; overflow: hidden; }
+
+  /* Full-bleed sections */
+  .section { min-height: 60vh; display: flex; flex-direction: column; justify-content: center; padding: 40px 24px; border-bottom: 1px solid var(--g25); position: relative; }
+  
+  .section-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.3em; color: var(--g50); margin-bottom: 16px; }
+  
+  /* Hero section */
+  .hero { min-height: 40vh; padding: 32px 24px; }
+  .hero-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.3em; color: var(--g50); }
+  .hero-big { font-size: 64px; font-weight: 700; line-height: 0.9; text-transform: uppercase; letter-spacing: -0.03em; margin: 16px 0; }
+  .hero-sub { font-size: 11px; color: var(--g50); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* Big number typography */
+  .big-event { margin-bottom: 48px; }
+  .big-event:last-child { margin-bottom: 0; }
+  .event-user { font-size: 10px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--g50); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .event-user::before { content: ''; width: 20px; height: 1px; background: var(--g50); }
+  .event-number { font-size: 80px; font-weight: 700; line-height: 0.85; letter-spacing: -0.04em; }
+  .event-unit { font-size: 14px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--g75); margin-top: 4px; }
+  .event-context { font-size: 10px; color: var(--g50); margin-top: 8px; text-transform: uppercase; letter-spacing: 0.1em; }
+  
+  /* Divider line with label */
+  .divider { display: flex; align-items: center; gap: 12px; padding: 0 24px; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--g25); }
+  .divider span { font-size: 9px; color: var(--g50); text-transform: uppercase; letter-spacing: 0.3em; white-space: nowrap; }
+
+  /* Crew summary — big stacked numbers */
+  .crew-row { display: flex; align-items: baseline; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--g25); }
+  .crew-row:last-child { border-bottom: none; }
+  .crew-name { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; }
+  .crew-pct { font-size: 28px; font-weight: 700; }
+  .crew-streak { font-size: 10px; color: var(--g50); }
+
+  /* Scroll indicator */
+  .scroll-hint { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--g50); text-transform: uppercase; letter-spacing: 0.2em; animation: pulse 2s ease infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+  /* Smooth scroll */
+  html { scroll-behavior: smooth; scroll-snap-type: y proximity; }
+  .section, .hero { scroll-snap-align: start; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  .big-event { animation: fadeUp 0.8s cubic-bezier(0.23,1,0.32,1) both; }
+  .big-event:nth-child(2) { animation-delay: 0.15s; }
+  .big-event:nth-child(3) { animation-delay: 0.3s; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hero section">
+    <div class="hero-title">Disciprin</div>
+    <div class="hero-big">Your<br>Crew</div>
+    <div class="hero-sub">5 friends · This week</div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Streak Milestone</div>
+    <div class="big-event">
+      <div class="event-user">Kyle · @kyle</div>
+      <div class="event-number" style="color:var(--green)">12</div>
+      <div class="event-unit">Week Streak 🔥</div>
+      <div class="event-context">Meditation · 100% this week</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Weekly Completion</div>
+    <div class="big-event">
+      <div class="event-user">Bradley · @bradley</div>
+      <div class="event-number" style="color:var(--pink)">86<span style="font-size:40px">%</span></div>
+      <div class="event-unit">This Week</div>
+      <div class="event-context">6/7 pills · 4-week streak</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Entry Milestone</div>
+    <div class="big-event">
+      <div class="event-user">Anna · @anna</div>
+      <div class="event-number" style="color:var(--yellow)">100</div>
+      <div class="event-unit">Total Entries 🏆</div>
+      <div class="event-context">Century Club · 71% this week</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Crew Rankings · This Week</div>
+    <div class="crew-row">
+      <span class="crew-name">01 Kyle</span>
+      <span class="crew-pct" style="color:var(--green)">100%</span>
+    </div>
+    <div class="crew-row">
+      <span class="crew-name">02 Marcus</span>
+      <span class="crew-pct" style="color:var(--green)">100%</span>
+    </div>
+    <div class="crew-row">
+      <span class="crew-name">03 Bradley</span>
+      <span class="crew-pct" style="color:var(--pink)">86%</span>
+    </div>
+    <div class="crew-row">
+      <span class="crew-name">04 Anna</span>
+      <span class="crew-pct" style="color:var(--yellow)">71%</span>
+    </div>
+    <div class="crew-row">
+      <span class="crew-name">05 Sarah</span>
+      <span class="crew-pct" style="color:var(--g75)">71%</span>
+    </div>
+  </div>
+
+  <div class="scroll-hint">Scroll ↓</div>
+</div>
+
+<script>
+  // Hide scroll hint after first scroll
+  window.addEventListener('scroll', () => {
+    document.querySelector('.scroll-hint').style.opacity = '0';
+  }, { once: true });
+</script>
+</body>
+</html>

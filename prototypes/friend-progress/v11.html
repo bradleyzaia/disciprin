@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V11: Constellation Map</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; overflow: hidden; height: 100vh; }
+  
+  .universe { position: fixed; inset: 0; overflow: hidden; }
+  
+  /* Starfield */
+  .stars { position: absolute; inset: 0; }
+  .star { position: absolute; width: 1px; height: 1px; background: var(--g50); border-radius: 50%; }
+  .star.bright { width: 2px; height: 2px; background: var(--g75); }
+  
+  /* SVG constellation lines */
+  .constellation-lines { position: absolute; inset: 0; pointer-events: none; }
+  .constellation-lines svg { width: 100%; height: 100%; }
+  .constellation-lines line { stroke: var(--g25); stroke-width: 1; stroke-dasharray: 4 4; }
+  
+  /* Friend nodes */
+  .node { position: absolute; transform: translate(-50%, -50%); cursor: pointer; transition: transform 0.6s cubic-bezier(0.23,1,0.32,1); z-index: 2; }
+  .node:hover { transform: translate(-50%, -50%) scale(1.2); z-index: 10; }
+  .node-core { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid var(--green); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; background: var(--bg); position: relative; transition: all 0.4s; }
+  .node:hover .node-core { box-shadow: 0 0 30px rgba(0,255,140,0.2); }
+  .node.pink .node-core { border-color: var(--pink); }
+  .node.yellow .node-core { border-color: var(--yellow); }
+  .node.me .node-core { width: 64px; height: 64px; font-size: 20px; border-width: 2px; }
+  
+  /* Pulse ring */
+  .node-pulse { position: absolute; inset: -8px; border-radius: 50%; border: 1px solid var(--green); opacity: 0; animation: nodePulse 3s ease-out infinite; }
+  .node.pink .node-pulse { border-color: var(--pink); }
+  .node.yellow .node-pulse { border-color: var(--yellow); }
+  @keyframes nodePulse { 0% { transform: scale(0.8); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
+  
+  /* Streak orbit */
+  .orbit { position: absolute; inset: -12px; border-radius: 50%; border: 1px dashed var(--g25); animation: spin 20s linear infinite; }
+  .orbit-dot { position: absolute; top: -3px; left: 50%; width: 6px; height: 6px; background: var(--green); border-radius: 50%; transform: translateX(-50%); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  
+  .node-label { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); white-space: nowrap; text-align: center; pointer-events: none; }
+  .node-name { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; }
+  .node-stat { font-size: 9px; color: var(--g50); margin-top: 2px; }
+  
+  /* Detail panel */
+  .detail-panel { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 1px solid var(--g25); transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.23,1,0.32,1); z-index: 20; max-height: 50vh; overflow-y: auto; }
+  .detail-panel.open { transform: translateY(0); }
+  .detail-header { padding: 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--g25); }
+  .detail-avatar { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--green); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; }
+  .detail-name { font-size: 13px; font-weight: 600; }
+  .detail-handle { font-size: 10px; color: var(--g50); }
+  .detail-close { margin-left: auto; background: none; border: 1px solid var(--g25); color: var(--g100); width: 32px; height: 32px; font-family: inherit; cursor: pointer; font-size: 14px; }
+  .detail-stats { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--g25); }
+  .detail-stat { padding: 16px; text-align: center; border-right: 1px solid var(--g25); }
+  .detail-stat:last-child { border-right: none; }
+  .detail-stat-val { font-size: 22px; font-weight: 700; }
+  .detail-stat-label { font-size: 9px; color: var(--g50); margin-top: 2px; }
+  .detail-pills { padding: 16px; }
+  .detail-pill { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--g25); }
+  .detail-pill:last-child { border-bottom: none; }
+  .dp-dot { width: 6px; height: 6px; background: var(--green); flex-shrink: 0; }
+  .dp-name { flex: 1; font-size: 10px; }
+  .dp-streak { font-size: 10px; font-weight: 600; color: var(--green); }
+  
+  /* Header overlay */
+  .map-header { position: fixed; top: 0; left: 0; right: 0; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 15; background: linear-gradient(180deg, var(--bg) 0%, transparent 100%); }
+  .map-header h1 { font-size: 10px; letter-spacing: 0.25em; color: var(--g50); }
+  .map-legend { display: flex; gap: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 9px; color: var(--g50); }
+  .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+  
+  /* Touch hint */
+  .hint { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--g50); letter-spacing: 0.15em; z-index: 15; animation: fadeHint 4s ease forwards; }
+  @keyframes fadeHint { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+  
+  @media (max-width: 480px) {
+    .node-core { width: 40px; height: 40px; font-size: 14px; }
+    .node.me .node-core { width: 52px; height: 52px; font-size: 18px; }
+    .map-legend { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="universe" id="universe">
+  <div class="stars" id="stars"></div>
+  <svg class="constellation-lines" id="lines"><svg>
+  
+  <div class="map-header">
+    <h1>Your Constellation</h1>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> &gt;80%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> 50-80%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--pink)"></div> &lt;50%</div>
+    </div>
+  </div>
+</div>
+
+<div class="detail-panel" id="detail">
+  <div class="detail-header">
+    <div class="detail-avatar" id="detailAvatar">K</div>
+    <div>
+      <div class="detail-name" id="detailName">Kyle</div>
+      <div class="detail-handle" id="detailHandle">@kyle</div>
+    </div>
+    <button class="detail-close" onclick="closeDetail()">×</button>
+  </div>
+  <div class="detail-stats">
+    <div class="detail-stat"><div class="detail-stat-val" style="color:var(--green)" id="detailPct">92%</div><div class="detail-stat-label">This Week</div></div>
+    <div class="detail-stat"><div class="detail-stat-val" id="detailStreak">12W</div><div class="detail-stat-label">Best Streak</div></div>
+    <div class="detail-stat"><div class="detail-stat-val" id="detailTotal">247</div><div class="detail-stat-label">Entries</div></div>
+  </div>
+  <div class="detail-pills" id="detailPills">
+    <div class="detail-pill"><div class="dp-dot"></div><div class="dp-name">Meditation</div><div class="dp-streak">12W 🔥</div></div>
+    <div class="detail-pill"><div class="dp-dot" style="background:var(--yellow)"></div><div class="dp-name">Exercise</div><div class="dp-streak">4W</div></div>
+    <div class="detail-pill"><div class="dp-dot" style="background:var(--pink)"></div><div class="dp-name">Reading</div><div class="dp-streak">1W</div></div>
+  </div>
+</div>
+
+<div class="hint">Tap a star to explore</div>
+
+<script>
+const friends = [
+  { id: 'me', name: 'You', handle: '@you', letter: 'Y', pct: 88, streak: '8W', total: 312, color: 'green', pills: [{n:'Meditation',s:'8W',c:'green'},{n:'Journaling',s:'6W',c:'green'},{n:'Exercise',s:'3W',c:'yellow'}] },
+  { id: 'kyle', name: 'Kyle', handle: '@kyle', letter: 'K', pct: 92, streak: '12W', total: 247, color: 'green', pills: [{n:'Meditation',s:'12W',c:'green'},{n:'Exercise',s:'4W',c:'yellow'},{n:'Reading',s:'1W',c:'pink'}] },
+  { id: 'anna', name: 'Anna', handle: '@anna', letter: 'A', pct: 100, streak: '16W', total: 401, color: 'green', pills: [{n:'Running',s:'16W',c:'green'},{n:'Vitamins',s:'16W',c:'green'}] },
+  { id: 'brad', name: 'Bradley', handle: '@brad', letter: 'B', pct: 71, streak: '3W', total: 89, color: 'yellow', pills: [{n:'Workout',s:'3W',c:'yellow'},{n:'Sleep Tracker',s:'1W',c:'pink'}] },
+  { id: 'sam', name: 'Sam', handle: '@samwise', letter: 'S', pct: 43, streak: '1W', total: 52, color: 'pink', pills: [{n:'Stretching',s:'1W',c:'pink'},{n:'Water',s:'0W',c:'pink'}] },
+  { id: 'mia', name: 'Mia', handle: '@mia', letter: 'M', pct: 85, streak: '6W', total: 178, color: 'green', pills: [{n:'Yoga',s:'6W',c:'green'},{n:'Journaling',s:'4W',c:'yellow'}] },
+];
+
+const universe = document.getElementById('universe');
+const starsEl = document.getElementById('stars');
+const W = window.innerWidth, H = window.innerHeight;
+
+// Generate starfield
+for (let i = 0; i < 200; i++) {
+  const s = document.createElement('div');
+  s.className = 'star' + (Math.random() > 0.9 ? ' bright' : '');
+  s.style.left = Math.random() * 100 + '%';
+  s.style.top = Math.random() * 100 + '%';
+  s.style.animationDelay = Math.random() * 4 + 's';
+  s.style.opacity = 0.2 + Math.random() * 0.6;
+  starsEl.appendChild(s);
+}
+
+// Position nodes
+const positions = [
+  { x: 50, y: 45 },  // me - center
+  { x: 28, y: 25 },
+  { x: 75, y: 20 },
+  { x: 20, y: 65 },
+  { x: 78, y: 70 },
+  { x: 55, y: 78 },
+];
+
+friends.forEach((f, i) => {
+  const pos = positions[i];
+  const node = document.createElement('div');
+  node.className = `node ${f.color}${f.id === 'me' ? ' me' : ''}`;
+  node.style.left = pos.x + '%';
+  node.style.top = pos.y + '%';
+  node.innerHTML = `
+    <div class="node-pulse"></div>
+    <div class="orbit"><div class="orbit-dot" style="background:var(--${f.color})"></div></div>
+    <div class="node-core">${f.letter}</div>
+    <div class="node-label">
+      <div class="node-name">${f.name}</div>
+      <div class="node-stat">${f.pct}% · ${f.streak}</div>
+    </div>
+  `;
+  node.style.animationDelay = i * 0.1 + 's';
+  node.addEventListener('click', () => openDetail(f));
+  universe.appendChild(node);
+  f.pos = pos;
+});
+
+// Draw constellation lines
+const svg = document.querySelector('#lines svg');
+svg.setAttribute('viewBox', `0 0 100 100`);
+svg.setAttribute('preserveAspectRatio', 'none');
+const connections = [[0,1],[0,2],[0,3],[0,4],[0,5],[1,2],[3,5]];
+connections.forEach(([a, b]) => {
+  const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line.setAttribute('x1', positions[a].x);
+  line.setAttribute('y1', positions[a].y);
+  line.setAttribute('x2', positions[b].x);
+  line.setAttribute('y2', positions[b].y);
+  svg.appendChild(line);
+});
+
+function openDetail(f) {
+  document.getElementById('detailAvatar').textContent = f.letter;
+  document.getElementById('detailAvatar').style.borderColor = `var(--${f.color})`;
+  document.getElementById('detailName').textContent = f.name;
+  document.getElementById('detailHandle').textContent = f.handle;
+  document.getElementById('detailPct').textContent = f.pct + '%';
+  document.getElementById('detailStreak').textContent = f.streak;
+  document.getElementById('detailTotal').textContent = f.total;
+  const pillsEl = document.getElementById('detailPills');
+  pillsEl.innerHTML = f.pills.map(p => `
+    <div class="detail-pill"><div class="dp-dot" style="background:var(--${p.c})"></div><div class="dp-name">${p.n}</div><div class="dp-streak">${p.s}</div></div>
+  `).join('');
+  document.getElementById('detail').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detail').classList.remove('open');
+}
+
+// Parallax on mouse move
+document.addEventListener('mousemove', (e) => {
+  const x = (e.clientX / W - 0.5) * 10;
+  const y = (e.clientY / H - 0.5) * 10;
+  starsEl.style.transform = `translate(${x}px, ${y}px)`;
+});
+</script>
+</body>
+</html>
