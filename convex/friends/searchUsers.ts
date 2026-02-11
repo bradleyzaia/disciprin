@@ -2,21 +2,21 @@ import { query } from "../_generated/server";
 import { v } from "convex/values";
 
 /**
- * Search users by @handle prefix. Returns up to 10 results, excluding self.
+ * Search users by name or @handle prefix. Returns up to 10 results, excluding self.
  */
 export default query({
     args: {
-        handle: v.string(),
+        query: v.string(),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) return [];
         const userId = identity.subject;
 
-        const searchTerm = args.handle.replace(/^@/, "").toLowerCase();
+        const searchTerm = args.query.replace(/^@/, "").toLowerCase();
         if (searchTerm.length < 2) return [];
 
-        // Convex doesn't have LIKE queries, so we fetch users with handles and filter
+        // Convex doesn't have LIKE queries, so we fetch users and filter
         // For production, use a search index. This works for MVP scale.
         const allUsers = await ctx.db
             .query("users")
@@ -25,8 +25,9 @@ export default query({
         const results = allUsers
             .filter((u) => {
                 if (u.clerk_id === userId) return false;
-                if (!u.handle) return false;
-                return u.handle.toLowerCase().startsWith(searchTerm);
+                const handleMatch = u.handle?.toLowerCase().startsWith(searchTerm);
+                const nameMatch = u.name?.toLowerCase().includes(searchTerm);
+                return handleMatch || nameMatch;
             })
             .slice(0, 10);
 

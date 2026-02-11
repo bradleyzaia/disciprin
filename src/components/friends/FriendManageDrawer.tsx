@@ -63,8 +63,8 @@ export function FriendManageDrawer({ isOpen, onClose }: FriendManageDrawerProps)
 
 function SearchTab({ searchQuery, setSearchQuery }: { searchQuery: string; setSearchQuery: (q: string) => void }) {
   const results = useQuery(
-    api.friends.searchUsersByHandle.default,
-    searchQuery.length >= 2 ? { handle: searchQuery } : "skip"
+    api.friends.searchUsers.default,
+    searchQuery.length >= 2 ? { query: searchQuery } : "skip"
   )
   const sendRequest = useMutation(api.friends.mutations.sendFriendRequest)
   const [sending, setSending] = useState<string | null>(null)
@@ -89,7 +89,7 @@ function SearchTab({ searchQuery, setSearchQuery }: { searchQuery: string; setSe
       <div className="relative mb-6">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-grayscale50" />
         <Input
-          placeholder="Search @handle..."
+          placeholder="Search by name or @handle"
           value={searchQuery}
           onChange={(e) => setSearchQuery((e.target as HTMLInputElement).value)}
           className="!pl-10"
