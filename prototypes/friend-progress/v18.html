@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V18: Ticker / Motion-First</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; overflow-x: hidden; }
+  .app { max-width: 100%; min-height: 100vh; }
+  
+  /* Marquee ticker at top */
+  .ticker { border-bottom: 1px solid var(--g25); padding: 10px 0; overflow: hidden; white-space: nowrap; position: sticky; top: 0; z-index: 10; background: var(--bg); }
+  .ticker-inner { display: inline-flex; animation: scroll 30s linear infinite; }
+  .ticker-item { padding: 0 32px; font-size: 10px; letter-spacing: 0.15em; color: var(--g50); flex-shrink: 0; }
+  .ticker-item .val { font-weight: 700; }
+  .ticker-item .val.green { color: var(--green); }
+  .ticker-item .val.pink { color: var(--pink); }
+  .ticker-item .val.yellow { color: var(--yellow); }
+  .ticker-sep { color: var(--g25); padding: 0 8px; }
+  @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  
+  /* Hero section with animated counter */
+  .hero { padding: 80px 24px 60px; text-align: center; position: relative; overflow: hidden; }
+  .hero-label { font-size: 9px; letter-spacing: 0.4em; color: var(--g50); margin-bottom: 16px; }
+  .hero-number { font-size: 120px; font-weight: 700; line-height: 0.85; letter-spacing: -0.05em; color: var(--green); position: relative; }
+  .hero-number::after { content: '%'; font-size: 40px; vertical-align: super; color: var(--g50); }
+  .hero-sub { font-size: 11px; color: var(--g50); letter-spacing: 0.2em; margin-top: 16px; }
+  
+  /* Horizontal scroll cards */
+  .h-scroll-section { padding: 24px 0; border-top: 1px solid var(--g25); }
+  .h-scroll-label { padding: 0 24px 16px; font-size: 9px; letter-spacing: 0.3em; color: var(--g50); }
+  .h-scroll { display: flex; gap: 1px; overflow-x: auto; padding: 0 24px; scrollbar-width: none; scroll-snap-type: x mandatory; }
+  .h-scroll::-webkit-scrollbar { display: none; }
+  
+  .h-card { flex-shrink: 0; width: 280px; scroll-snap-align: start; border: 1px solid var(--g25); padding: 24px; transition: all 0.4s; position: relative; overflow: hidden; }
+  .h-card:hover { border-color: var(--g50); }
+  .h-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--green); transform: scaleX(0); transform-origin: left; transition: transform 0.6s cubic-bezier(0.23,1,0.32,1); }
+  .h-card:hover::after { transform: scaleX(1); }
+  .h-card.yellow::after { background: var(--yellow); }
+  .h-card.pink::after { background: var(--pink); }
+  
+  .hc-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px; }
+  .hc-name { font-size: 14px; font-weight: 700; letter-spacing: 0.1em; }
+  .hc-handle { font-size: 9px; color: var(--g50); margin-top: 2px; }
+  .hc-pct { font-size: 28px; font-weight: 700; color: var(--green); }
+  .h-card.yellow .hc-pct { color: var(--yellow); }
+  .h-card.pink .hc-pct { color: var(--pink); }
+  
+  .hc-streak { font-size: 11px; color: var(--g75); margin-bottom: 12px; }
+  .hc-streak strong { color: var(--g100); }
+  
+  /* Animated dots */
+  .hc-week { display: flex; gap: 4px; }
+  .hc-dot { width: 8px; height: 8px; background: var(--g25); animation: dotIn 0.3s cubic-bezier(0.23,1,0.32,1) both; }
+  .hc-dot.done { background: var(--green); }
+  .hc-dot.miss { background: var(--pink); opacity: 0.5; }
+  .hc-dot:nth-child(1) { animation-delay: 0.1s; }
+  .hc-dot:nth-child(2) { animation-delay: 0.15s; }
+  .hc-dot:nth-child(3) { animation-delay: 0.2s; }
+  .hc-dot:nth-child(4) { animation-delay: 0.25s; }
+  .hc-dot:nth-child(5) { animation-delay: 0.3s; }
+  .hc-dot:nth-child(6) { animation-delay: 0.35s; }
+  .hc-dot:nth-child(7) { animation-delay: 0.4s; }
+  @keyframes dotIn { from { transform: scale(0); } to { transform: scale(1); } }
+  
+  /* Vertical marquee — live updates */
+  .live-section { border-top: 1px solid var(--g25); padding: 24px; overflow: hidden; height: 200px; position: relative; }
+  .live-label { font-size: 9px; letter-spacing: 0.3em; color: var(--g50); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 1.5s ease infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .live-feed { animation: scrollUp 20s linear infinite; }
+  .live-item { padding: 8px 0; font-size: 11px; color: var(--g75); border-bottom: 1px solid var(--g25); }
+  .live-item .name { color: var(--g100); font-weight: 600; }
+  .live-item .hl { font-weight: 700; }
+  .live-item .hl.green { color: var(--green); }
+  .live-item .hl.pink { color: var(--pink); }
+  .live-item .hl.yellow { color: var(--yellow); }
+  .live-item .time { color: var(--g50); font-size: 9px; }
+  @keyframes scrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+  .live-section::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60px; background: linear-gradient(transparent, var(--bg)); pointer-events: none; }
+  
+  /* Bottom marquee — reverse direction */
+  .ticker-bottom { border-top: 1px solid var(--g25); padding: 10px 0; overflow: hidden; white-space: nowrap; }
+  .ticker-bottom .ticker-inner { animation-direction: reverse; animation-duration: 25s; }
+  
+  @media (max-width: 480px) {
+    .hero-number { font-size: 80px; }
+    .h-card { width: 240px; padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="ticker">
+    <div class="ticker-inner">
+      <span class="ticker-item">Anna <span class="val green">100%</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Kyle <span class="val green">92%</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">You <span class="val green">88%</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Mia <span class="val green">85%</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Bradley <span class="val yellow">71%</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Sam <span class="val pink">43%</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Anna <span class="val green">100%</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Kyle <span class="val green">92%</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">You <span class="val green">88%</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Mia <span class="val green">85%</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Bradley <span class="val yellow">71%</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Sam <span class="val pink">43%</span></span><span class="ticker-sep">◆</span>
+    </div>
+  </div>
+  
+  <div class="hero">
+    <div class="hero-label">Crew Average</div>
+    <div class="hero-number" id="heroNum">82</div>
+    <div class="hero-sub">Week of Feb 10, 2026</div>
+  </div>
+  
+  <div class="h-scroll-section">
+    <div class="h-scroll-label">Your Crew</div>
+    <div class="h-scroll">
+      <div class="h-card">
+        <div class="hc-top"><div><div class="hc-name">Anna</div><div class="hc-handle">@anna</div></div><div class="hc-pct">100%</div></div>
+        <div class="hc-streak"><strong>16W</strong> streak · Running</div>
+        <div class="hc-week"><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot done"></div></div>
+      </div>
+      <div class="h-card">
+        <div class="hc-top"><div><div class="hc-name">Kyle</div><div class="hc-handle">@kyle</div></div><div class="hc-pct">92%</div></div>
+        <div class="hc-streak"><strong>12W</strong> streak · Meditation</div>
+        <div class="hc-week"><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot done"></div></div>
+      </div>
+      <div class="h-card">
+        <div class="hc-top"><div><div class="hc-name">You</div><div class="hc-handle">@you</div></div><div class="hc-pct">88%</div></div>
+        <div class="hc-streak"><strong>8W</strong> streak · Meditation</div>
+        <div class="hc-week"><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot miss"></div><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot done"></div></div>
+      </div>
+      <div class="h-card yellow">
+        <div class="hc-top"><div><div class="hc-name">Bradley</div><div class="hc-handle">@brad</div></div><div class="hc-pct">71%</div></div>
+        <div class="hc-streak"><strong>3W</strong> streak · Workout</div>
+        <div class="hc-week"><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot miss"></div><div class="hc-dot done"></div><div class="hc-dot done"></div><div class="hc-dot miss"></div><div class="hc-dot done"></div></div>
+      </div>
+      <div class="h-card pink">
+        <div class="hc-top"><div><div class="hc-name">Sam</div><div class="hc-handle">@samwise</div></div><div class="hc-pct">43%</div></div>
+        <div class="hc-streak"><strong>1W</strong> streak · Stretching</div>
+        <div class="hc-week"><div class="hc-dot done"></div><div class="hc-dot miss"></div><div class="hc-dot miss"></div><div class="hc-dot done"></div><div class="hc-dot miss"></div><div class="hc-dot done"></div><div class="hc-dot miss"></div></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="live-section">
+    <div class="live-label"><div class="live-dot"></div> Live Updates</div>
+    <div class="live-feed">
+      <div class="live-item"><span class="name">Anna</span> completed Running <span class="hl green">✓</span> <span class="time">2h ago</span></div>
+      <div class="live-item"><span class="name">Kyle</span> hit <span class="hl green">12-week</span> milestone <span class="time">5h ago</span></div>
+      <div class="live-item"><span class="name">You</span> logged Journaling <span class="hl green">✓</span> <span class="time">6h ago</span></div>
+      <div class="live-item"><span class="name">Mia</span> completed Yoga <span class="hl green">✓</span> <span class="time">1d ago</span></div>
+      <div class="live-item"><span class="name">Bradley</span> resumed Workout streak <span class="hl yellow">↑</span> <span class="time">1d ago</span></div>
+      <div class="live-item"><span class="name">Sam</span> missed Stretching <span class="hl pink">✗</span> <span class="time">2d ago</span></div>
+      <div class="live-item"><span class="name">Anna</span> reached <span class="hl green">400 entries</span> <span class="time">2d ago</span></div>
+      <div class="live-item"><span class="name">Kyle</span> completed Meditation <span class="hl green">✓</span> <span class="time">3d ago</span></div>
+      <!-- duplicate for seamless loop -->
+      <div class="live-item"><span class="name">Anna</span> completed Running <span class="hl green">✓</span> <span class="time">2h ago</span></div>
+      <div class="live-item"><span class="name">Kyle</span> hit <span class="hl green">12-week</span> milestone <span class="time">5h ago</span></div>
+      <div class="live-item"><span class="name">You</span> logged Journaling <span class="hl green">✓</span> <span class="time">6h ago</span></div>
+      <div class="live-item"><span class="name">Mia</span> completed Yoga <span class="hl green">✓</span> <span class="time">1d ago</span></div>
+      <div class="live-item"><span class="name">Bradley</span> resumed Workout streak <span class="hl yellow">↑</span> <span class="time">1d ago</span></div>
+      <div class="live-item"><span class="name">Sam</span> missed Stretching <span class="hl pink">✗</span> <span class="time">2d ago</span></div>
+      <div class="live-item"><span class="name">Anna</span> reached <span class="hl green">400 entries</span> <span class="time">2d ago</span></div>
+      <div class="live-item"><span class="name">Kyle</span> completed Meditation <span class="hl green">✓</span> <span class="time">3d ago</span></div>
+    </div>
+  </div>
+  
+  <div class="ticker-bottom">
+    <div class="ticker-inner">
+      <span class="ticker-item">Crew Avg <span class="val green">82%</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Top Streak <span class="val green">16W</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Total Entries <span class="val">1279</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Active <span class="val">5/6</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Crew Avg <span class="val green">82%</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Top Streak <span class="val green">16W</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Total Entries <span class="val">1279</span></span><span class="ticker-sep">◆</span>
+      <span class="ticker-item">Active <span class="val">5/6</span></span><span class="ticker-sep">◆</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// Animate hero counter
+let count = 0;
+const target = 82;
+const heroNum = document.getElementById('heroNum');
+function animateCount() {
+  if (count < target) {
+    count += 2;
+    if (count > target) count = target;
+    heroNum.textContent = count;
+    requestAnimationFrame(animateCount);
+  }
+}
+setTimeout(animateCount, 500);
+</script>
+</body>
+</html>

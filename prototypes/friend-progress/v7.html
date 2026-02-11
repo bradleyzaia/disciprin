@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V7: Profile-First / Friend Detail</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; }
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; }
+
+  /* Top friend selector — horizontal pills */
+  .friend-selector { display: flex; gap: 8px; padding: 16px; overflow-x: auto; border-bottom: 1px solid var(--g25); position: sticky; top: 0; background: var(--bg); z-index: 10; scrollbar-width: none; }
+  .friend-selector::-webkit-scrollbar { display: none; }
+  .friend-chip { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--g25); flex-shrink: 0; cursor: pointer; transition: all 0.3s; font-size: 10px; font-family: inherit; text-transform: uppercase; background: none; color: var(--g75); }
+  .friend-chip:hover { border-color: var(--g50); }
+  .friend-chip.active { border-color: var(--g100); color: var(--g100); background: rgba(255,255,255,0.05); }
+  .chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--g50); }
+  .friend-chip.active .chip-dot { background: var(--green); }
+
+  /* Profile Hero */
+  .profile-hero { padding: 32px 16px; text-align: center; border-bottom: 1px solid var(--g25); }
+  .hero-avatar { width: 64px; height: 64px; border: 2px solid var(--green); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; margin: 0 auto 12px; color: var(--green); }
+  .hero-name { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+  .hero-handle { font-size: 10px; color: var(--g50); margin-bottom: 16px; }
+  
+  .hero-stats { display: flex; justify-content: center; gap: 32px; }
+  .hero-stat { text-align: center; }
+  .hero-stat-val { font-size: 24px; font-weight: 700; line-height: 1; }
+  .hero-stat-label { font-size: 9px; color: var(--g50); margin-top: 4px; letter-spacing: 0.1em; }
+
+  /* Pills section */
+  .pills-section { padding: 16px; }
+  .pills-title { font-size: 10px; color: var(--g50); letter-spacing: 0.15em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--g25); }
+  
+  .pill-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--g25); gap: 12px; }
+  .pill-row:last-child { border-bottom: none; }
+  .pill-icon { width: 8px; height: 8px; background: var(--green); flex-shrink: 0; }
+  .pill-info { flex: 1; }
+  .pill-name { font-size: 11px; font-weight: 600; }
+  .pill-detail { font-size: 9px; color: var(--g50); }
+  .pill-streak { text-align: right; }
+  .pill-streak-val { font-size: 14px; font-weight: 700; color: var(--green); }
+  .pill-streak-unit { font-size: 9px; color: var(--g50); }
+  
+  /* Mini heatmap */
+  .pill-heat { display: flex; gap: 2px; margin-top: 4px; }
+  .h { width: 8px; height: 8px; }
+  .h0 { background: var(--g25); }
+  .h1 { background: rgba(0,255,140,0.3); }
+  .h2 { background: rgba(0,255,140,0.6); }
+  .h3 { background: var(--green); }
+
+  /* Activity log */
+  .activity { padding: 16px; }
+  .activity-title { font-size: 10px; color: var(--g50); letter-spacing: 0.15em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--g25); }
+  .activity-item { padding: 8px 0; border-bottom: 1px solid var(--g25); display: flex; justify-content: space-between; align-items: center; }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-text { font-size: 10px; color: var(--g75); }
+  .activity-text strong { color: var(--g100); }
+  .activity-when { font-size: 9px; color: var(--g50); flex-shrink: 0; }
+
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; display: flex; border-top: 1px solid var(--g25); background: var(--bg); }
+  .bottom-nav a { flex: 1; padding: 14px 0; text-align: center; font-size: 10px; color: var(--g50); text-decoration: none; }
+  .bottom-nav a.active { color: var(--g100); }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .profile-hero, .pills-section, .activity { animation: fadeIn 0.5s ease both; }
+  .pills-section { animation-delay: 0.1s; }
+  .activity { animation-delay: 0.2s; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="friend-selector">
+    <button class="friend-chip active"><span class="chip-dot"></span> Kyle</button>
+    <button class="friend-chip"><span class="chip-dot"></span> Bradley</button>
+    <button class="friend-chip"><span class="chip-dot"></span> Anna</button>
+    <button class="friend-chip"><span class="chip-dot"></span> Marcus</button>
+    <button class="friend-chip"><span class="chip-dot"></span> Sarah</button>
+  </div>
+
+  <div class="profile-hero">
+    <div class="hero-avatar">K</div>
+    <div class="hero-name">Kyle</div>
+    <div class="hero-handle">@kyle · Friends since Jan 2026</div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-val" style="color:var(--green)">12w</div>
+        <div class="hero-stat-label">Best Streak</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">94%</div>
+        <div class="hero-stat-label">Avg Completion</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">84</div>
+        <div class="hero-stat-label">Total Entries</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pills-section">
+    <div class="pills-title">Visible Pills (3)</div>
+    <div class="pill-row">
+      <div class="pill-icon" style="background:var(--green)"></div>
+      <div class="pill-info">
+        <div class="pill-name">Meditation</div>
+        <div class="pill-detail">Daily · 15 min</div>
+        <div class="pill-heat">
+          <div class="h h3"></div><div class="h h3"></div><div class="h h3"></div><div class="h h3"></div>
+          <div class="h h3"></div><div class="h h3"></div><div class="h h3"></div>
+        </div>
+      </div>
+      <div class="pill-streak">
+        <div class="pill-streak-val">12w</div>
+        <div class="pill-streak-unit">Streak</div>
+      </div>
+    </div>
+    <div class="pill-row">
+      <div class="pill-icon" style="background:var(--pink)"></div>
+      <div class="pill-info">
+        <div class="pill-name">Reading</div>
+        <div class="pill-detail">5x / week · 30 min</div>
+        <div class="pill-heat">
+          <div class="h h3"></div><div class="h h2"></div><div class="h h3"></div><div class="h h0"></div>
+          <div class="h h3"></div><div class="h h2"></div><div class="h h3"></div>
+        </div>
+      </div>
+      <div class="pill-streak">
+        <div class="pill-streak-val" style="color:var(--pink)">6w</div>
+        <div class="pill-streak-unit">Streak</div>
+      </div>
+    </div>
+    <div class="pill-row">
+      <div class="pill-icon" style="background:var(--yellow)"></div>
+      <div class="pill-info">
+        <div class="pill-name">Journaling</div>
+        <div class="pill-detail">3x / week</div>
+        <div class="pill-heat">
+          <div class="h h3"></div><div class="h h0"></div><div class="h h3"></div><div class="h h0"></div>
+          <div class="h h3"></div><div class="h h0"></div><div class="h h0"></div>
+        </div>
+      </div>
+      <div class="pill-streak">
+        <div class="pill-streak-val" style="color:var(--yellow)">3w</div>
+        <div class="pill-streak-unit">Streak</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="activity">
+    <div class="activity-title">Recent Activity</div>
+    <div class="activity-item">
+      <span class="activity-text">🔥 <strong>12-week streak</strong> on Meditation</span>
+      <span class="activity-when">2h ago</span>
+    </div>
+    <div class="activity-item">
+      <span class="activity-text">Completed <strong>7/7</strong> pills this week</span>
+      <span class="activity-when">5h ago</span>
+    </div>
+    <div class="activity-item">
+      <span class="activity-text">🔥 <strong>11-week streak</strong> on Meditation</span>
+      <span class="activity-when">1w ago</span>
+    </div>
+    <div class="activity-item">
+      <span class="activity-text">Completed <strong>7/7</strong> pills this week</span>
+      <span class="activity-when">1w ago</span>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="#">Dashboard</a>
+    <a href="#">Analytics</a>
+    <a href="#" class="active">Friends</a>
+    <a href="#">Settings</a>
+  </nav>
+</div>
+</body>
+</html>

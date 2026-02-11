@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V9: Data Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; }
+  .app { max-width: 520px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; }
+
+  .header { padding: 16px; position: sticky; top: 0; background: var(--bg); z-index: 10; border-bottom: 1px solid var(--g25); display: flex; justify-content: space-between; align-items: center; }
+  .header h1 { font-size: 12px; font-weight: 700; letter-spacing: 0.15em; }
+  .header-week { font-size: 10px; color: var(--g50); }
+
+  /* Summary bar */
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--g25); }
+  .summary-cell { padding: 16px; text-align: center; border-right: 1px solid var(--g25); }
+  .summary-cell:last-child { border-right: none; }
+  .summary-val { font-size: 24px; font-weight: 700; line-height: 1; }
+  .summary-label { font-size: 9px; color: var(--g50); margin-top: 4px; letter-spacing: 0.1em; }
+
+  /* Comparison table */
+  .table { width: 100%; border-collapse: collapse; }
+  .table th { font-size: 9px; color: var(--g50); letter-spacing: 0.1em; padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--g25); font-weight: 400; }
+  .table th:first-child { padding-left: 16px; }
+  .table th:last-child { padding-right: 16px; }
+  .table td { padding: 12px 8px; border-bottom: 1px solid var(--g25); font-size: 11px; vertical-align: middle; }
+  .table td:first-child { padding-left: 16px; }
+  .table td:last-child { padding-right: 16px; }
+  .table tr { transition: background 0.2s; cursor: pointer; }
+  .table tr:hover { background: rgba(255,255,255,0.02); }
+  
+  .table-user { display: flex; align-items: center; gap: 8px; }
+  .table-avatar { width: 24px; height: 24px; border: 1px solid var(--g50); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 10px; flex-shrink: 0; }
+  .table-rank { font-size: 10px; color: var(--g50); width: 20px; }
+  
+  /* Inline bar chart */
+  .bar-cell { width: 80px; }
+  .bar-track { height: 6px; background: var(--g25); width: 100%; position: relative; }
+  .bar-fill { height: 100%; transition: width 1s cubic-bezier(0.23,1,0.32,1); }
+  .bar-label { font-size: 9px; color: var(--g50); margin-top: 2px; }
+
+  /* Week grid */
+  .week-grid { display: flex; gap: 2px; }
+  .wg { width: 8px; height: 8px; }
+  .wg.done { background: var(--green); }
+  .wg.miss { background: var(--pink); opacity: 0.4; }
+  .wg.empty { background: var(--g25); }
+
+  /* Streak badges */
+  .streak-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; }
+  .streak-badge .fire { font-size: 10px; }
+
+  /* Activity log compact */
+  .activity-log { padding: 0 16px; }
+  .log-title { font-size: 9px; color: var(--g50); letter-spacing: 0.15em; padding: 12px 0 8px; border-bottom: 1px solid var(--g25); }
+  .log-item { display: grid; grid-template-columns: 60px 1fr auto; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--g25); font-size: 10px; align-items: center; }
+  .log-time { color: var(--g50); }
+  .log-event { color: var(--g75); }
+  .log-event strong { color: var(--g100); }
+  .log-val { text-align: right; font-weight: 600; }
+
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 520px; display: flex; border-top: 1px solid var(--g25); background: var(--bg); }
+  .bottom-nav a { flex: 1; padding: 14px 0; text-align: center; font-size: 10px; color: var(--g50); text-decoration: none; }
+  .bottom-nav a.active { color: var(--g100); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Friend Dashboard</h1>
+    <span class="header-week">Week of Feb 10</span>
+  </div>
+
+  <div class="summary">
+    <div class="summary-cell">
+      <div class="summary-val" style="color:var(--green)">86%</div>
+      <div class="summary-label">Crew Avg</div>
+    </div>
+    <div class="summary-cell">
+      <div class="summary-val">12w</div>
+      <div class="summary-label">Top Streak</div>
+    </div>
+    <div class="summary-cell">
+      <div class="summary-val" style="color:var(--yellow)">3</div>
+      <div class="summary-label">Milestones</div>
+    </div>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr><th>#</th><th>Friend</th><th>Week</th><th>Completion</th><th>Streak</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="table-rank">01</span></td>
+        <td><div class="table-user"><div class="table-avatar" style="border-color:var(--green);color:var(--green)">K</div> Kyle</div></td>
+        <td><div class="week-grid"><div class="wg done"></div><div class="wg done"></div><div class="wg done"></div><div class="wg done"></div><div class="wg done"></div><div class="wg done"></div><div class="wg done"></div></div></td>
+        <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--green)"></div></div><div class="bar-label">100%</div></div></td>
+        <td><span class="streak-badge" style="color:var(--green)"><span class="fire">🔥</span> 12w</span></td>
+      </tr>
+      <tr>
+        <td><span class="table-rank">02</span></td>
+        <td><div class="table-user"><div class="table-avatar" style="border-color:var(--green);color:var(--green)">M</div> Marcus</div></td>
+        <td><div class="week-grid"><div class="wg done"></div><div class="wg done"></div><div class="wg done"></div><div class="wg done"></div><div class="wg done"></div><div class="wg done"></div><div class="wg done"></div></div></td>
+        <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--green)"></div></div><div class="bar-label">100%</div></div></td>
+        <td><span class="streak-badge" style="color:var(--green)">8w</span></td>
+      </tr>
+      <tr>
+        <td><span class="table-rank">03</span></td>
+        <td><div class="table-user"><div class="table-avatar" style="border-color:var(--pink);color:var(--pink)">B</div> Bradley</div></td>
+        <td><div class="week-grid"><div class="wg done"></div><div class="wg done"></div><div class="wg done"></div><div class="wg done"></div><div class="wg miss"></div><div class="wg done"></div><div class="wg done"></div></div></td>
+        <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:86%;background:var(--pink)"></div></div><div class="bar-label">86%</div></div></td>
+        <td><span class="streak-badge" style="color:var(--pink)">4w</span></td>
+      </tr>
+      <tr>
+        <td><span class="table-rank">04</span></td>
+        <td><div class="table-user"><div class="table-avatar" style="border-color:var(--yellow);color:var(--yellow)">A</div> Anna</div></td>
+        <td><div class="week-grid"><div class="wg done"></div><div class="wg done"></div><div class="wg miss"></div><div class="wg done"></div><div class="wg done"></div><div class="wg empty"></div><div class="wg empty"></div></div></td>
+        <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:71%;background:var(--yellow)"></div></div><div class="bar-label">71%</div></div></td>
+        <td><span class="streak-badge" style="color:var(--yellow)">2w</span></td>
+      </tr>
+      <tr>
+        <td><span class="table-rank">05</span></td>
+        <td><div class="table-user"><div class="table-avatar">S</div> Sarah</div></td>
+        <td><div class="week-grid"><div class="wg done"></div><div class="wg miss"></div><div class="wg done"></div><div class="wg done"></div><div class="wg done"></div><div class="wg miss"></div><div class="wg done"></div></div></td>
+        <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:71%;background:var(--g75)"></div></div><div class="bar-label">71%</div></div></td>
+        <td><span class="streak-badge" style="color:var(--g75)">1w</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="activity-log">
+    <div class="log-title">Activity Log</div>
+    <div class="log-item"><span class="log-time">2h ago</span><span class="log-event"><strong>Kyle</strong> · 12w streak</span><span class="log-val" style="color:var(--green)">🔥</span></div>
+    <div class="log-item"><span class="log-time">5h ago</span><span class="log-event"><strong>Bradley</strong> · 6/7 pills</span><span class="log-val" style="color:var(--pink)">86%</span></div>
+    <div class="log-item"><span class="log-time">1d ago</span><span class="log-event"><strong>Anna</strong> · 100 entries</span><span class="log-val" style="color:var(--yellow)">🏆</span></div>
+    <div class="log-item"><span class="log-time">2d ago</span><span class="log-event"><strong>Marcus</strong> · 8w streak</span><span class="log-val" style="color:var(--green)">🔥</span></div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="#">Dashboard</a>
+    <a href="#">Analytics</a>
+    <a href="#" class="active">Friends</a>
+    <a href="#">Settings</a>
+  </nav>
+</div>
+</body>
+</html>

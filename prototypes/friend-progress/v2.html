@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V2: Timeline</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; }
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; }
+  
+  .header { padding: 20px 16px 16px; position: sticky; top: 0; background: var(--bg); z-index: 10; border-bottom: 1px solid var(--g25); }
+  .header h1 { font-size: 11px; letter-spacing: 0.2em; color: var(--g50); margin-bottom: 4px; }
+  .header h2 { font-size: 20px; font-weight: 700; letter-spacing: 0.05em; }
+
+  /* Timeline */
+  .timeline { padding: 0 16px 80px; position: relative; }
+  .timeline::before { content: ''; position: absolute; left: 31px; top: 0; bottom: 0; width: 1px; background: var(--g25); }
+  
+  .day-group { margin-top: 24px; }
+  .day-label { font-size: 10px; color: var(--g50); padding: 4px 0 12px 48px; letter-spacing: 0.15em; }
+  
+  .tl-item { display: flex; gap: 12px; padding: 8px 0; position: relative; }
+  .tl-dot { width: 12px; height: 12px; border: 2px solid var(--g50); background: var(--bg); flex-shrink: 0; margin-top: 2px; z-index: 1; transition: all 0.3s; }
+  .tl-dot.green { border-color: var(--green); box-shadow: 0 0 8px rgba(0,255,140,0.3); }
+  .tl-dot.pink { border-color: var(--pink); box-shadow: 0 0 8px rgba(255,0,178,0.3); }
+  .tl-dot.yellow { border-color: var(--yellow); box-shadow: 0 0 8px rgba(251,255,0,0.3); }
+  
+  .tl-content { flex: 1; padding-bottom: 16px; border-bottom: 1px solid var(--g25); }
+  .tl-item:last-child .tl-content { border-bottom: none; }
+  
+  .tl-user { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .tl-avatar { font-weight: 700; font-size: 10px; width: 20px; height: 20px; border: 1px solid var(--g50); display: flex; align-items: center; justify-content: center; }
+  .tl-name { font-weight: 600; font-size: 11px; }
+  .tl-time { color: var(--g50); font-size: 10px; margin-left: auto; }
+  
+  .tl-event { font-size: 11px; line-height: 1.6; color: var(--g75); }
+  .tl-event strong { color: var(--g100); }
+  .tl-event .val { font-weight: 700; }
+  .tl-event .val.green { color: var(--green); }
+  .tl-event .val.pink { color: var(--pink); }
+  .tl-event .val.yellow { color: var(--yellow); }
+  
+  .tl-badge { display: inline-block; padding: 2px 6px; border: 1px solid; font-size: 9px; font-weight: 600; margin-top: 6px; }
+  .tl-badge.fire { border-color: var(--green); color: var(--green); }
+  .tl-badge.milestone { border-color: var(--yellow); color: var(--yellow); }
+  
+  /* Stats bar inline */
+  .tl-stats { display: flex; gap: 12px; margin-top: 8px; }
+  .tl-stat { font-size: 10px; color: var(--g50); }
+  .tl-stat span { color: var(--g100); font-weight: 600; }
+
+  /* Bottom Nav */
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; display: flex; border-top: 1px solid var(--g25); background: var(--bg); z-index: 10; }
+  .bottom-nav a { flex: 1; padding: 14px 0; text-align: center; font-size: 10px; color: var(--g50); text-decoration: none; transition: color 0.3s; }
+  .bottom-nav a.active { color: var(--green); }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+  .tl-item { animation: fadeIn 0.4s ease both; }
+  .tl-item:nth-child(1) { animation-delay: 0.05s; }
+  .tl-item:nth-child(2) { animation-delay: 0.1s; }
+  .tl-item:nth-child(3) { animation-delay: 0.15s; }
+  .tl-item:nth-child(4) { animation-delay: 0.2s; }
+  .tl-item:nth-child(5) { animation-delay: 0.25s; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Friend Activity</h1>
+    <h2>Timeline</h2>
+  </div>
+  
+  <div class="timeline">
+    <div class="day-group">
+      <div class="day-label">Today</div>
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-content">
+          <div class="tl-user">
+            <div class="tl-avatar">K</div>
+            <span class="tl-name">Kyle</span>
+            <span class="tl-time">2h</span>
+          </div>
+          <div class="tl-event">Hit a <span class="val green">12-week streak</span> on <strong>Meditation</strong></div>
+          <div class="tl-badge fire">🔥 On fire</div>
+          <div class="tl-stats">
+            <div class="tl-stat">Streak: <span>12w</span></div>
+            <div class="tl-stat">Week: <span>7/7</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot pink"></div>
+        <div class="tl-content">
+          <div class="tl-user">
+            <div class="tl-avatar">B</div>
+            <span class="tl-name">Bradley</span>
+            <span class="tl-time">5h</span>
+          </div>
+          <div class="tl-event">Completed <span class="val pink">6/7 pills</span> this week</div>
+          <div class="tl-stats">
+            <div class="tl-stat">Rate: <span>86%</span></div>
+            <div class="tl-stat">Streak: <span>4w</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="day-group">
+      <div class="day-label">Yesterday</div>
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-content">
+          <div class="tl-user">
+            <div class="tl-avatar">A</div>
+            <span class="tl-name">Anna</span>
+            <span class="tl-time">1d</span>
+          </div>
+          <div class="tl-event">Reached <span class="val yellow">100 total entries</span></div>
+          <div class="tl-badge milestone">🏆 Century club</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-group">
+      <div class="day-label">Feb 9</div>
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-content">
+          <div class="tl-user">
+            <div class="tl-avatar">M</div>
+            <span class="tl-name">Marcus</span>
+            <span class="tl-time">2d</span>
+          </div>
+          <div class="tl-event">Hit a <span class="val green">8-week streak</span> on <strong>Cold Shower</strong></div>
+          <div class="tl-stats">
+            <div class="tl-stat">Week: <span>7/7</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot pink"></div>
+        <div class="tl-content">
+          <div class="tl-user">
+            <div class="tl-avatar">S</div>
+            <span class="tl-name">Sarah</span>
+            <span class="tl-time">2d</span>
+          </div>
+          <div class="tl-event">Completed <span class="val pink">5/7 pills</span> this week</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="#">Dashboard</a>
+    <a href="#">Analytics</a>
+    <a href="#" class="active">Friends</a>
+    <a href="#">Settings</a>
+  </nav>
+</div>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V10: Playful/Gamified</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; }
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; }
+
+  .header { padding: 16px; position: sticky; top: 0; background: var(--bg); z-index: 10; border-bottom: 1px solid var(--g25); text-align: center; }
+  .header h1 { font-size: 12px; letter-spacing: 0.2em; font-weight: 400; color: var(--g50); }
+  .header h2 { font-size: 18px; font-weight: 700; margin-top: 4px; }
+
+  /* XP-style level banner */
+  .level-banner { padding: 16px; border-bottom: 1px solid var(--g25); }
+  .level-label { font-size: 9px; color: var(--g50); letter-spacing: 0.15em; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .level-bar { height: 3px; background: var(--g25); position: relative; overflow: hidden; }
+  .level-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--yellow)); transition: width 1.5s cubic-bezier(0.23,1,0.32,1); }
+
+  /* Achievement cards — horizontal scroll */
+  .achievements { padding: 16px; border-bottom: 1px solid var(--g25); }
+  .achievements-title { font-size: 9px; color: var(--g50); letter-spacing: 0.15em; margin-bottom: 12px; }
+  .achievement-scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+  .achievement-scroll::-webkit-scrollbar { display: none; }
+  .achievement { flex-shrink: 0; width: 120px; padding: 16px 12px; border: 1px solid var(--g25); text-align: center; transition: all 0.3s; cursor: pointer; }
+  .achievement:hover { border-color: var(--g50); transform: translateY(-2px); }
+  .achievement-icon { font-size: 24px; margin-bottom: 8px; }
+  .achievement-name { font-size: 9px; font-weight: 600; margin-bottom: 2px; }
+  .achievement-who { font-size: 8px; color: var(--g50); }
+
+  /* Leaderboard with rank animation */
+  .leaderboard { padding: 16px; }
+  .lb-title { font-size: 9px; color: var(--g50); letter-spacing: 0.15em; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .lb-toggle { display: flex; gap: 0; }
+  .lb-toggle button { background: none; border: 1px solid var(--g25); color: var(--g50); padding: 4px 10px; font-family: inherit; font-size: 9px; text-transform: uppercase; cursor: pointer; }
+  .lb-toggle button.active { background: var(--g25); color: var(--g100); border-color: var(--g50); }
+
+  .lb-entry { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--g25); position: relative; }
+  .lb-entry:last-child { border-bottom: none; }
+  
+  .lb-rank { font-size: 20px; font-weight: 700; width: 32px; text-align: center; }
+  .lb-rank.gold { color: var(--yellow); }
+  .lb-rank.silver { color: var(--g75); }
+  .lb-rank.bronze { color: #cd7f32; }
+  
+  .lb-avatar { width: 36px; height: 36px; border: 1px solid var(--g50); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; position: relative; }
+  .lb-badge { position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 7px; color: var(--bg); font-weight: 700; }
+  
+  .lb-info { flex: 1; }
+  .lb-name { font-weight: 600; font-size: 11px; }
+  .lb-sub { font-size: 9px; color: var(--g50); display: flex; gap: 8px; margin-top: 2px; }
+  
+  .lb-score { text-align: right; }
+  .lb-pct { font-size: 20px; font-weight: 700; line-height: 1; }
+  .lb-change { font-size: 9px; margin-top: 2px; }
+  .lb-change.up { color: var(--green); }
+  .lb-change.down { color: var(--pink); }
+  .lb-change.same { color: var(--g50); }
+
+  /* XP progress per person */
+  .lb-xp { margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+  .lb-xp-bar { flex: 1; height: 2px; background: var(--g25); }
+  .lb-xp-fill { height: 100%; background: var(--green); }
+  .lb-xp-label { font-size: 8px; color: var(--g50); }
+
+  /* Floating action */
+  .fab { position: fixed; bottom: 76px; right: calc(50% - 220px); width: 44px; height: 44px; background: var(--g100); color: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; z-index: 10; }
+  .fab:hover { transform: scale(1.1); box-shadow: 0 0 20px rgba(241,241,241,0.2); }
+  @media (max-width: 520px) { .fab { right: 16px; } }
+
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; display: flex; border-top: 1px solid var(--g25); background: var(--bg); }
+  .bottom-nav a { flex: 1; padding: 14px 0; text-align: center; font-size: 10px; color: var(--g50); text-decoration: none; }
+  .bottom-nav a.active { color: var(--g100); }
+
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+  .lb-entry { animation: slideIn 0.4s cubic-bezier(0.23,1,0.32,1) both; }
+  .lb-entry:nth-child(1) { animation-delay: 0s; }
+  .lb-entry:nth-child(2) { animation-delay: 0.06s; }
+  .lb-entry:nth-child(3) { animation-delay: 0.12s; }
+  .lb-entry:nth-child(4) { animation-delay: 0.18s; }
+  .lb-entry:nth-child(5) { animation-delay: 0.24s; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>The Crew</h1>
+    <h2>Week 06 · 2026</h2>
+  </div>
+
+  <div class="level-banner">
+    <div class="level-label"><span>Crew Level 7</span><span>2,450 / 3,000 XP</span></div>
+    <div class="level-bar"><div class="level-fill" style="width: 82%"></div></div>
+  </div>
+
+  <div class="achievements">
+    <div class="achievements-title">Recent Unlocks</div>
+    <div class="achievement-scroll">
+      <div class="achievement">
+        <div class="achievement-icon">🔥</div>
+        <div class="achievement-name">Inferno</div>
+        <div class="achievement-who">Kyle · 12w</div>
+      </div>
+      <div class="achievement">
+        <div class="achievement-icon">🏆</div>
+        <div class="achievement-name">Century</div>
+        <div class="achievement-who">Anna · 100</div>
+      </div>
+      <div class="achievement">
+        <div class="achievement-icon">🧊</div>
+        <div class="achievement-name">Ice King</div>
+        <div class="achievement-who">Marcus · 8w</div>
+      </div>
+      <div class="achievement">
+        <div class="achievement-icon">📈</div>
+        <div class="achievement-name">Consistent</div>
+        <div class="achievement-who">Bradley · 4w</div>
+      </div>
+      <div class="achievement">
+        <div class="achievement-icon">🌟</div>
+        <div class="achievement-name">New Start</div>
+        <div class="achievement-who">Sarah · 1w</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="leaderboard">
+    <div class="lb-title">
+      <span>Leaderboard</span>
+      <div class="lb-toggle">
+        <button class="active">Week</button>
+        <button>All Time</button>
+      </div>
+    </div>
+
+    <div class="lb-entry">
+      <div class="lb-rank gold">1</div>
+      <div class="lb-avatar" style="border-color:var(--green);color:var(--green)">K<div class="lb-badge">🔥</div></div>
+      <div class="lb-info">
+        <div class="lb-name">Kyle</div>
+        <div class="lb-sub"><span>12w streak</span><span>7/7</span></div>
+        <div class="lb-xp"><div class="lb-xp-bar"><div class="lb-xp-fill" style="width:95%"></div></div><span class="lb-xp-label">950 XP</span></div>
+      </div>
+      <div class="lb-score">
+        <div class="lb-pct" style="color:var(--green)">100%</div>
+        <div class="lb-change same">— same</div>
+      </div>
+    </div>
+
+    <div class="lb-entry">
+      <div class="lb-rank silver">2</div>
+      <div class="lb-avatar" style="border-color:var(--green);color:var(--green)">M</div>
+      <div class="lb-info">
+        <div class="lb-name">Marcus</div>
+        <div class="lb-sub"><span>8w streak</span><span>7/7</span></div>
+        <div class="lb-xp"><div class="lb-xp-bar"><div class="lb-xp-fill" style="width:80%"></div></div><span class="lb-xp-label">800 XP</span></div>
+      </div>
+      <div class="lb-score">
+        <div class="lb-pct" style="color:var(--green)">100%</div>
+        <div class="lb-change up">↑ +1</div>
+      </div>
+    </div>
+
+    <div class="lb-entry">
+      <div class="lb-rank bronze">3</div>
+      <div class="lb-avatar" style="border-color:var(--pink);color:var(--pink)">B</div>
+      <div class="lb-info">
+        <div class="lb-name">Bradley</div>
+        <div class="lb-sub"><span>4w streak</span><span>6/7</span></div>
+        <div class="lb-xp"><div class="lb-xp-bar"><div class="lb-xp-fill" style="width:65%;background:var(--pink)"></div></div><span class="lb-xp-label">650 XP</span></div>
+      </div>
+      <div class="lb-score">
+        <div class="lb-pct" style="color:var(--pink)">86%</div>
+        <div class="lb-change down">↓ -1</div>
+      </div>
+    </div>
+
+    <div class="lb-entry">
+      <div class="lb-rank">4</div>
+      <div class="lb-avatar" style="border-color:var(--yellow);color:var(--yellow)">A</div>
+      <div class="lb-info">
+        <div class="lb-name">Anna</div>
+        <div class="lb-sub"><span>2w streak</span><span>5/7</span></div>
+        <div class="lb-xp"><div class="lb-xp-bar"><div class="lb-xp-fill" style="width:50%;background:var(--yellow)"></div></div><span class="lb-xp-label">500 XP</span></div>
+      </div>
+      <div class="lb-score">
+        <div class="lb-pct" style="color:var(--yellow)">71%</div>
+        <div class="lb-change same">— same</div>
+      </div>
+    </div>
+
+    <div class="lb-entry">
+      <div class="lb-rank">5</div>
+      <div class="lb-avatar">S</div>
+      <div class="lb-info">
+        <div class="lb-name">Sarah</div>
+        <div class="lb-sub"><span>1w streak</span><span>5/7</span></div>
+        <div class="lb-xp"><div class="lb-xp-bar"><div class="lb-xp-fill" style="width:35%;background:var(--g75)"></div></div><span class="lb-xp-label">350 XP</span></div>
+      </div>
+      <div class="lb-score">
+        <div class="lb-pct" style="color:var(--g75)">71%</div>
+        <div class="lb-change up">↑ +2</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fab">+</div>
+
+  <nav class="bottom-nav">
+    <a href="#">Dashboard</a>
+    <a href="#">Analytics</a>
+    <a href="#" class="active">Friends</a>
+    <a href="#">Settings</a>
+  </nav>
+</div>
+</body>
+</html>

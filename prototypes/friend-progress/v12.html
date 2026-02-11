@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V12: Orbital / Radial</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; overflow: hidden; height: 100vh; display: flex; align-items: center; justify-content: center; }
+  
+  .radial-container { position: relative; width: 100vmin; height: 100vmin; max-width: 600px; max-height: 600px; }
+  
+  /* Concentric rings */
+  .ring { position: absolute; border-radius: 50%; border: 1px solid var(--g25); top: 50%; left: 50%; transform: translate(-50%, -50%); }
+  .ring-1 { width: 30%; height: 30%; }
+  .ring-2 { width: 55%; height: 55%; }
+  .ring-3 { width: 80%; height: 80%; border-style: dashed; }
+  
+  /* Center — YOU */
+  .center-node { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; text-align: center; cursor: pointer; }
+  .center-avatar { width: 72px; height: 72px; border-radius: 50%; border: 2px solid var(--green); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; background: var(--bg); margin: 0 auto 8px; position: relative; }
+  .center-glow { position: absolute; inset: -20px; border-radius: 50%; background: radial-gradient(circle, rgba(0,255,140,0.08) 0%, transparent 70%); pointer-events: none; }
+  .center-label { font-size: 9px; color: var(--g50); letter-spacing: 0.2em; }
+  .center-pct { font-size: 18px; font-weight: 700; color: var(--green); }
+  
+  /* Friend on orbit */
+  .orbital { position: absolute; top: 50%; left: 50%; transform-origin: 0 0; z-index: 5; }
+  .orbital-body { transform: translate(-50%, -50%); text-align: center; cursor: pointer; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1); }
+  .orbital-body:hover { transform: translate(-50%, -50%) scale(1.15); }
+  .orbital-avatar { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--green); background: var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; margin: 0 auto 4px; transition: all 0.4s; }
+  .orbital-body:hover .orbital-avatar { box-shadow: 0 0 20px rgba(0,255,140,0.15); }
+  .orbital-avatar.pink { border-color: var(--pink); }
+  .orbital-avatar.yellow { border-color: var(--yellow); }
+  .orbital-name { font-size: 9px; font-weight: 600; white-space: nowrap; }
+  .orbital-stat { font-size: 8px; color: var(--g50); white-space: nowrap; }
+  
+  /* Arc progress around avatar */
+  .arc-progress { position: absolute; inset: -4px; border-radius: 50%; }
+  .arc-progress svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .arc-bg { fill: none; stroke: var(--g25); stroke-width: 2; }
+  .arc-fill { fill: none; stroke-width: 2; stroke-linecap: round; transition: stroke-dashoffset 1.5s cubic-bezier(0.23,1,0.32,1); }
+  
+  /* Tooltip on hover */
+  .orbital-tooltip { position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); background: var(--g25); border: 1px solid var(--g30); padding: 10px 14px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; transform: translateX(-50%) translateY(4px); z-index: 20; }
+  .orbital-body:hover .orbital-tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .tooltip-row { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; margin-bottom: 4px; }
+  .tooltip-row:last-child { margin-bottom: 0; }
+  .tooltip-label { color: var(--g50); }
+  .tooltip-val { font-weight: 600; }
+  
+  /* Header */
+  .page-header { position: fixed; top: 0; left: 0; right: 0; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 15; }
+  .page-header h1 { font-size: 10px; letter-spacing: 0.25em; color: var(--g50); }
+  .friend-count-badge { font-size: 9px; color: var(--g75); border: 1px solid var(--g25); padding: 4px 10px; }
+  
+  /* Bottom stats */
+  .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; display: flex; border-top: 1px solid var(--g25); background: var(--bg); z-index: 15; }
+  .bottom-stat { flex: 1; padding: 12px; text-align: center; border-right: 1px solid var(--g25); }
+  .bottom-stat:last-child { border-right: none; }
+  .bottom-val { font-size: 16px; font-weight: 700; }
+  .bottom-label { font-size: 8px; color: var(--g50); margin-top: 2px; letter-spacing: 0.1em; }
+  
+  @media (max-width: 480px) {
+    .orbital-avatar { width: 36px; height: 36px; font-size: 13px; }
+    .center-avatar { width: 56px; height: 56px; font-size: 20px; }
+    .orbital-tooltip { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Orbit View</h1>
+  <div class="friend-count-badge">5 Friends</div>
+</div>
+
+<div class="radial-container" id="radial">
+  <div class="ring ring-1"></div>
+  <div class="ring ring-2"></div>
+  <div class="ring ring-3"></div>
+  
+  <div class="center-node">
+    <div class="center-glow"></div>
+    <div class="center-avatar">Y</div>
+    <div class="center-pct">88%</div>
+    <div class="center-label">This Week</div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="bottom-stat"><div class="bottom-val" style="color:var(--green)">82%</div><div class="bottom-label">Crew Avg</div></div>
+  <div class="bottom-stat"><div class="bottom-val">5</div><div class="bottom-label">Active</div></div>
+  <div class="bottom-stat"><div class="bottom-val" style="color:var(--yellow)">3</div><div class="bottom-label">Streaking</div></div>
+</div>
+
+<script>
+const friends = [
+  { name: 'Kyle', letter: 'K', pct: 92, streak: '12W', total: 247, ring: 1, color: 'green' },
+  { name: 'Anna', letter: 'A', pct: 100, streak: '16W', total: 401, ring: 1, color: 'green' },
+  { name: 'Mia', letter: 'M', pct: 85, streak: '6W', total: 178, ring: 2, color: 'green' },
+  { name: 'Bradley', letter: 'B', pct: 71, streak: '3W', total: 89, ring: 2, color: 'yellow' },
+  { name: 'Sam', letter: 'S', pct: 43, streak: '1W', total: 52, ring: 3, color: 'pink' },
+];
+
+const radial = document.getElementById('radial');
+const ringRadii = { 1: 15, 2: 27.5, 3: 40 }; // % of container
+
+// Group friends by ring
+const rings = {};
+friends.forEach(f => {
+  if (!rings[f.ring]) rings[f.ring] = [];
+  rings[f.ring].push(f);
+});
+
+Object.entries(rings).forEach(([ring, group]) => {
+  const r = ringRadii[ring];
+  group.forEach((f, i) => {
+    const angle = (i / group.length) * Math.PI * 2 - Math.PI / 2;
+    const x = 50 + r * Math.cos(angle);
+    const y = 50 + r * Math.sin(angle);
+    
+    const circ = 2 * Math.PI * 20;
+    const offset = circ - (f.pct / 100) * circ;
+    const strokeColor = f.color === 'green' ? '#00FF8C' : f.color === 'pink' ? '#FF00B2' : '#FBFF00';
+    
+    const el = document.createElement('div');
+    el.className = 'orbital';
+    el.style.left = x + '%';
+    el.style.top = y + '%';
+    el.innerHTML = `
+      <div class="orbital-body">
+        <div class="orbital-tooltip">
+          <div class="tooltip-row"><span class="tooltip-label">Week</span><span class="tooltip-val" style="color:${strokeColor}">${f.pct}%</span></div>
+          <div class="tooltip-row"><span class="tooltip-label">Streak</span><span class="tooltip-val">${f.streak}</span></div>
+          <div class="tooltip-row"><span class="tooltip-label">Total</span><span class="tooltip-val">${f.total}</span></div>
+        </div>
+        <div class="orbital-avatar ${f.color}" style="position:relative">
+          <div class="arc-progress">
+            <svg viewBox="0 0 44 44"><circle class="arc-bg" cx="22" cy="22" r="20"/><circle class="arc-fill" cx="22" cy="22" r="20" stroke="${strokeColor}" stroke-dasharray="${circ}" stroke-dashoffset="${offset}"/></svg>
+          </div>
+          ${f.letter}
+        </div>
+        <div class="orbital-name">${f.name}</div>
+        <div class="orbital-stat">${f.pct}%</div>
+      </div>
+    `;
+    radial.appendChild(el);
+  });
+});
+</script>
+</body>
+</html>

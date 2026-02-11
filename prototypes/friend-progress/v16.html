@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V16: Ambient Particles</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; }
+  
+  canvas#particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  
+  .app { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; }
+  
+  .header { padding: 20px 16px; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(1,1,1,0.7); border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .header h1 { font-size: 10px; letter-spacing: 0.3em; color: var(--g50); }
+  .header h2 { font-size: 18px; font-weight: 700; margin-top: 4px; }
+  
+  /* Glass cards */
+  .glass-feed { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  
+  .glass-card { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 20px; transition: all 0.5s cubic-bezier(0.23,1,0.32,1); position: relative; overflow: hidden; }
+  .glass-card:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); transform: translateY(-2px); }
+  
+  /* Glow accent */
+  .glass-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), var(--accent, rgba(0,255,140,0.04)) 0%, transparent 50%); pointer-events: none; transition: opacity 0.5s; opacity: 0; }
+  .glass-card:hover::before { opacity: 1; }
+  
+  .gc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .gc-avatar { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--green); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; backdrop-filter: blur(8px); background: rgba(1,1,1,0.5); }
+  .gc-avatar.pink { border-color: var(--pink); }
+  .gc-avatar.yellow { border-color: var(--yellow); }
+  .gc-meta { flex: 1; }
+  .gc-name { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; }
+  .gc-handle { font-size: 9px; color: var(--g50); }
+  .gc-time { font-size: 9px; color: var(--g50); }
+  
+  .gc-body { font-size: 12px; color: var(--g75); line-height: 1.7; text-transform: none; margin-bottom: 14px; }
+  .gc-body strong { color: var(--g100); }
+  .gc-body .hl { font-weight: 700; }
+  .gc-body .hl.green { color: var(--green); }
+  .gc-body .hl.pink { color: var(--pink); }
+  .gc-body .hl.yellow { color: var(--yellow); }
+  
+  /* Progress bar */
+  .gc-progress { height: 2px; background: rgba(255,255,255,0.05); margin-top: 12px; overflow: hidden; }
+  .gc-progress-fill { height: 100%; transition: width 1.5s cubic-bezier(0.23,1,0.32,1); }
+  
+  /* Stats row */
+  .gc-stats { display: flex; gap: 20px; margin-top: 12px; }
+  .gc-stat { }
+  .gc-stat-val { font-size: 16px; font-weight: 700; }
+  .gc-stat-label { font-size: 8px; color: var(--g50); letter-spacing: 0.15em; }
+  
+  /* Floating orb indicator */
+  .orb { position: fixed; width: 120px; height: 120px; border-radius: 50%; filter: blur(60px); pointer-events: none; z-index: 0; }
+  .orb-1 { top: 10%; right: -20px; background: var(--green); opacity: 0.06; animation: orbFloat 8s ease-in-out infinite; }
+  .orb-2 { bottom: 20%; left: -30px; background: var(--pink); opacity: 0.04; animation: orbFloat 12s ease-in-out infinite reverse; }
+  @keyframes orbFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
+  
+  @media (max-width: 480px) {
+    .glass-card { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="app">
+  <div class="header">
+    <h1>Friends</h1>
+    <h2>This Week</h2>
+  </div>
+  
+  <div class="glass-feed">
+    <div class="glass-card" style="--accent:rgba(0,255,140,0.06)">
+      <div class="gc-header">
+        <div class="gc-avatar">A</div>
+        <div class="gc-meta"><div class="gc-name">Anna</div><div class="gc-handle">@anna</div></div>
+        <div class="gc-time">2h ago</div>
+      </div>
+      <div class="gc-body">Hit a <span class="hl green">16-week streak</span> on Running. <strong>112 consecutive days.</strong> The longest streak in your crew.</div>
+      <div class="gc-stats">
+        <div class="gc-stat"><div class="gc-stat-val" style="color:var(--green)">100%</div><div class="gc-stat-label">This Week</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">401</div><div class="gc-stat-label">Total</div></div>
+      </div>
+      <div class="gc-progress"><div class="gc-progress-fill" style="width:100%;background:var(--green)"></div></div>
+    </div>
+    
+    <div class="glass-card" style="--accent:rgba(0,255,140,0.06)">
+      <div class="gc-header">
+        <div class="gc-avatar">K</div>
+        <div class="gc-meta"><div class="gc-name">Kyle</div><div class="gc-handle">@kyle</div></div>
+        <div class="gc-time">5h ago</div>
+      </div>
+      <div class="gc-body">Perfect week: <span class="hl green">7/7 completed</span>. Meditation streak is now at <span class="hl green">12 weeks</span>.</div>
+      <div class="gc-stats">
+        <div class="gc-stat"><div class="gc-stat-val" style="color:var(--green)">92%</div><div class="gc-stat-label">This Week</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">247</div><div class="gc-stat-label">Total</div></div>
+      </div>
+      <div class="gc-progress"><div class="gc-progress-fill" style="width:92%;background:var(--green)"></div></div>
+    </div>
+    
+    <div class="glass-card" style="--accent:rgba(0,255,140,0.04)">
+      <div class="gc-header">
+        <div class="gc-avatar">M</div>
+        <div class="gc-meta"><div class="gc-name">Mia</div><div class="gc-handle">@mia</div></div>
+        <div class="gc-time">1d ago</div>
+      </div>
+      <div class="gc-body">Solid week with <span class="hl green">85% completion</span>. Yoga streak at 6 weeks and counting.</div>
+      <div class="gc-stats">
+        <div class="gc-stat"><div class="gc-stat-val" style="color:var(--green)">85%</div><div class="gc-stat-label">This Week</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">178</div><div class="gc-stat-label">Total</div></div>
+      </div>
+      <div class="gc-progress"><div class="gc-progress-fill" style="width:85%;background:var(--green)"></div></div>
+    </div>
+    
+    <div class="glass-card" style="--accent:rgba(251,255,0,0.04)">
+      <div class="gc-header">
+        <div class="gc-avatar yellow">B</div>
+        <div class="gc-meta"><div class="gc-name">Bradley</div><div class="gc-handle">@brad</div></div>
+        <div class="gc-time">1d ago</div>
+      </div>
+      <div class="gc-body">Climbing back up: <span class="hl yellow">71% this week</span>. Workout streak recovering at 3 weeks.</div>
+      <div class="gc-stats">
+        <div class="gc-stat"><div class="gc-stat-val" style="color:var(--yellow)">71%</div><div class="gc-stat-label">This Week</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">89</div><div class="gc-stat-label">Total</div></div>
+      </div>
+      <div class="gc-progress"><div class="gc-progress-fill" style="width:71%;background:var(--yellow)"></div></div>
+    </div>
+    
+    <div class="glass-card" style="--accent:rgba(255,0,178,0.04)">
+      <div class="gc-header">
+        <div class="gc-avatar pink">S</div>
+        <div class="gc-meta"><div class="gc-name">Sam</div><div class="gc-handle">@samwise</div></div>
+        <div class="gc-time">2d ago</div>
+      </div>
+      <div class="gc-body">Struggling at <span class="hl pink">43%</span> this week. Streaks broken. Could use some encouragement.</div>
+      <div class="gc-stats">
+        <div class="gc-stat"><div class="gc-stat-val" style="color:var(--pink)">43%</div><div class="gc-stat-label">This Week</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">52</div><div class="gc-stat-label">Total</div></div>
+      </div>
+      <div class="gc-progress"><div class="gc-progress-fill" style="width:43%;background:var(--pink)"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Particle system
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = (Math.random() - 0.5) * 0.3;
+    this.r = Math.random() * 1.5 + 0.5;
+    this.alpha = Math.random() * 0.3 + 0.05;
+    const colors = ['0,255,140', '255,0,178', '251,255,0'];
+    this.color = colors[Math.floor(Math.random() * colors.length)];
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < 0 || this.x > W) this.vx *= -1;
+    if (this.y < 0 || this.y > H) this.vy *= -1;
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${this.color},${this.alpha})`;
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+function drawLines() {
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 120) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(255,255,255,${0.02 * (1 - d / 120)})`;
+        ctx.stroke();
+      }
+    }
+  }
+}
+
+function animate() {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach(p => { p.update(); p.draw(); });
+  drawLines();
+  requestAnimationFrame(animate);
+}
+animate();
+
+// Card glow follow mouse
+document.querySelectorAll('.glass-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--gx', ((e.clientX - r.left) / r.width * 100) + '%');
+    card.style.setProperty('--gy', ((e.clientY - r.top) / r.height * 100) + '%');
+  });
+});
+</script>
+</body>
+</html>

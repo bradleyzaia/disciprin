@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V1: Card Feed</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #010101; --g0: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1;
+    --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00;
+  }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; min-height: 100vh; }
+  
+  /* Layout */
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+  
+  /* Header */
+  .header { padding: 20px 16px 12px; border-bottom: 1px solid var(--g25); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg); z-index: 10; }
+  .header h1 { font-size: 14px; font-weight: 600; letter-spacing: 0.1em; }
+  .header-actions { display: flex; gap: 12px; }
+  .header-actions button { background: none; border: 1px solid var(--g25); color: var(--g100); padding: 6px 12px; font-family: inherit; font-size: 10px; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
+  .header-actions button:hover { border-color: var(--g100); background: var(--g100); color: var(--g0); }
+
+  /* Feed */
+  .feed { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  
+  /* Card */
+  .card { border: 1px solid var(--g25); padding: 16px; transition: border-color 0.3s, transform 0.2s; position: relative; overflow: hidden; }
+  .card:hover { border-color: var(--g50); }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--green); opacity: 0; transition: opacity 0.3s; }
+  .card:hover::before { opacity: 1; }
+  
+  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .avatar { width: 32px; height: 32px; border: 1px solid var(--g50); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+  .avatar.green { border-color: var(--green); color: var(--green); }
+  .avatar.pink { border-color: var(--pink); color: var(--pink); }
+  .avatar.yellow { border-color: var(--yellow); color: var(--yellow); }
+  .card-meta { flex: 1; }
+  .card-name { font-weight: 600; font-size: 11px; }
+  .card-handle { color: var(--g50); font-size: 10px; }
+  .card-time { color: var(--g50); font-size: 10px; }
+  
+  .card-body { margin-bottom: 12px; }
+  .card-event { font-size: 12px; line-height: 1.6; }
+  .card-event .highlight { color: var(--green); font-weight: 600; }
+  .card-event .highlight.pink { color: var(--pink); }
+  .card-event .highlight.yellow { color: var(--yellow); }
+  
+  .card-stats { display: flex; gap: 16px; padding-top: 12px; border-top: 1px solid var(--g25); }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-value { font-size: 16px; font-weight: 700; color: var(--green); }
+  .stat-label { font-size: 9px; color: var(--g50); }
+  
+  /* Streak bar */
+  .streak-bar { height: 4px; background: var(--g25); margin-top: 8px; overflow: hidden; }
+  .streak-bar-fill { height: 100%; background: var(--green); transition: width 0.8s cubic-bezier(0.23, 1, 0.32, 1); }
+  
+  /* Bottom Nav */
+  .bottom-nav { display: flex; border-top: 1px solid var(--g25); position: sticky; bottom: 0; background: var(--bg); }
+  .bottom-nav a { flex: 1; padding: 14px 0; text-align: center; font-size: 10px; color: var(--g50); text-decoration: none; transition: all 0.3s; border-top: 2px solid transparent; }
+  .bottom-nav a:hover { color: var(--g100); }
+  .bottom-nav a.active { color: var(--g100); border-top-color: var(--g100); }
+  
+  /* Milestone badge */
+  .milestone { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border: 1px solid var(--yellow); color: var(--yellow); font-size: 9px; font-weight: 600; margin-top: 8px; }
+  
+  /* Empty state */
+  .empty { text-align: center; padding: 60px 20px; color: var(--g50); }
+  .empty h2 { font-size: 14px; color: var(--g75); margin-bottom: 8px; }
+
+  /* Animations */
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .card { animation: slideUp 0.5s cubic-bezier(0.23, 1, 0.32, 1) both; }
+  .card:nth-child(1) { animation-delay: 0s; }
+  .card:nth-child(2) { animation-delay: 0.08s; }
+  .card:nth-child(3) { animation-delay: 0.16s; }
+  .card:nth-child(4) { animation-delay: 0.24s; }
+  .card:nth-child(5) { animation-delay: 0.32s; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Friends</h1>
+    <div class="header-actions">
+      <button>+ Add</button>
+    </div>
+  </div>
+  
+  <div class="feed">
+    <div class="card">
+      <div class="card-header">
+        <div class="avatar green">K</div>
+        <div class="card-meta">
+          <div class="card-name">Kyle</div>
+          <div class="card-handle">@kyle</div>
+        </div>
+        <div class="card-time">2h ago</div>
+      </div>
+      <div class="card-body">
+        <div class="card-event">Hit a <span class="highlight">12-week streak</span> on Meditation 🔥</div>
+        <div class="streak-bar"><div class="streak-bar-fill" style="width: 85%"></div></div>
+      </div>
+      <div class="card-stats">
+        <div class="stat"><span class="stat-value">12</span><span class="stat-label">Week streak</span></div>
+        <div class="stat"><span class="stat-value">94%</span><span class="stat-label">This week</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="avatar pink">B</div>
+        <div class="card-meta">
+          <div class="card-name">Bradley</div>
+          <div class="card-handle">@bradley</div>
+        </div>
+        <div class="card-time">5h ago</div>
+      </div>
+      <div class="card-body">
+        <div class="card-event">Completed <span class="highlight pink">6/7 pills</span> this week</div>
+      </div>
+      <div class="card-stats">
+        <div class="stat"><span class="stat-value" style="color:var(--pink)">86%</span><span class="stat-label">Completion</span></div>
+        <div class="stat"><span class="stat-value" style="color:var(--pink)">4</span><span class="stat-label">Week streak</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="avatar yellow">A</div>
+        <div class="card-meta">
+          <div class="card-name">Anna</div>
+          <div class="card-handle">@anna</div>
+        </div>
+        <div class="card-time">1d ago</div>
+      </div>
+      <div class="card-body">
+        <div class="card-event">Reached <span class="highlight yellow">100 total entries</span> 🏆</div>
+        <div class="milestone">⚡ Century Club</div>
+      </div>
+      <div class="card-stats">
+        <div class="stat"><span class="stat-value" style="color:var(--yellow)">100</span><span class="stat-label">Entries</span></div>
+        <div class="stat"><span class="stat-value" style="color:var(--yellow)">71%</span><span class="stat-label">This week</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="avatar green">M</div>
+        <div class="card-meta">
+          <div class="card-name">Marcus</div>
+          <div class="card-handle">@marcus</div>
+        </div>
+        <div class="card-time">2d ago</div>
+      </div>
+      <div class="card-body">
+        <div class="card-event">Hit a <span class="highlight">8-week streak</span> on Cold Shower</div>
+        <div class="streak-bar"><div class="streak-bar-fill" style="width: 62%"></div></div>
+      </div>
+      <div class="card-stats">
+        <div class="stat"><span class="stat-value">8</span><span class="stat-label">Week streak</span></div>
+        <div class="stat"><span class="stat-value">100%</span><span class="stat-label">This week</span></div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="#">Dashboard</a>
+    <a href="#">Analytics</a>
+    <a href="#" class="active">Friends</a>
+    <a href="#">Settings</a>
+  </nav>
+</div>
+</body>
+</html>

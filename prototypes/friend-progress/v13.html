@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V13: Split-Screen Comparison</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; }
+  .app { max-width: 520px; margin: 0 auto; min-height: 100vh; }
+  
+  .header { padding: 16px; position: sticky; top: 0; background: var(--bg); z-index: 10; border-bottom: 1px solid var(--g25); }
+  .header h1 { font-size: 10px; letter-spacing: 0.25em; color: var(--g50); margin-bottom: 4px; }
+  .header h2 { font-size: 16px; font-weight: 700; }
+  
+  /* Friend selector */
+  .selector { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; border-bottom: 1px solid var(--g25); scrollbar-width: none; }
+  .selector::-webkit-scrollbar { display: none; }
+  .sel-chip { padding: 6px 14px; border: 1px solid var(--g25); font-family: inherit; font-size: 10px; text-transform: uppercase; background: none; color: var(--g50); cursor: pointer; transition: all 0.3s; flex-shrink: 0; }
+  .sel-chip.active { border-color: var(--green); color: var(--green); }
+  .sel-chip:hover { border-color: var(--g50); color: var(--g75); }
+  
+  /* Split comparison */
+  .split { display: grid; grid-template-columns: 1fr 1px 1fr; min-height: calc(100vh - 120px); }
+  .divider-line { background: var(--g25); position: relative; }
+  .divider-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-90deg); font-size: 8px; color: var(--g50); letter-spacing: 0.3em; white-space: nowrap; background: var(--bg); padding: 8px; }
+  
+  .side { padding: 24px 16px; display: flex; flex-direction: column; gap: 24px; }
+  .side-header { text-align: center; padding-bottom: 16px; border-bottom: 1px solid var(--g25); }
+  .side-avatar { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; margin: 0 auto 8px; }
+  .side-name { font-size: 12px; font-weight: 600; }
+  .side-handle { font-size: 9px; color: var(--g50); }
+  
+  /* Stat rows */
+  .stat-block { text-align: center; }
+  .stat-label { font-size: 8px; color: var(--g50); letter-spacing: 0.2em; margin-bottom: 6px; }
+  .stat-big { font-size: 36px; font-weight: 700; line-height: 1; }
+  .stat-sub { font-size: 9px; color: var(--g50); margin-top: 4px; }
+  
+  /* Bar comparison */
+  .bar-block { text-align: center; }
+  .bar-label { font-size: 8px; color: var(--g50); letter-spacing: 0.2em; margin-bottom: 8px; }
+  .bar-track { height: 4px; background: var(--g25); margin: 0 auto; width: 80%; }
+  .bar-fill { height: 100%; transition: width 1.2s cubic-bezier(0.23,1,0.32,1); }
+  .bar-val { font-size: 11px; font-weight: 600; margin-top: 6px; }
+  
+  /* Week grid */
+  .week-block { text-align: center; }
+  .week-label { font-size: 8px; color: var(--g50); letter-spacing: 0.2em; margin-bottom: 8px; }
+  .week-row { display: flex; gap: 3px; justify-content: center; }
+  .wd { width: 10px; height: 10px; }
+  .wd.done { background: var(--green); }
+  .wd.miss { background: var(--pink); opacity: 0.4; }
+  .wd.future { background: var(--g25); opacity: 0.3; }
+  .day-labels { display: flex; gap: 3px; justify-content: center; margin-top: 4px; }
+  .day-labels span { width: 10px; text-align: center; font-size: 7px; color: var(--g50); }
+  
+  /* Winner indicator */
+  .winner { position: relative; }
+  .winner::after { content: '◆'; position: absolute; top: -2px; right: -12px; color: var(--green); font-size: 8px; }
+  
+  /* Verdict bar */
+  .verdict { padding: 16px; border-top: 1px solid var(--g25); text-align: center; background: var(--bg); position: sticky; bottom: 0; }
+  .verdict-text { font-size: 10px; color: var(--g75); }
+  .verdict-text strong { color: var(--green); }
+  
+  @media (max-width: 400px) {
+    .stat-big { font-size: 28px; }
+    .side { padding: 16px 10px; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>Compare</h1>
+    <h2>You vs Friend</h2>
+  </div>
+  
+  <div class="selector">
+    <div class="sel-chip active">Kyle</div>
+    <div class="sel-chip">Anna</div>
+    <div class="sel-chip">Bradley</div>
+    <div class="sel-chip">Sam</div>
+    <div class="sel-chip">Mia</div>
+  </div>
+  
+  <div class="split">
+    <!-- Left: You -->
+    <div class="side" id="sideLeft">
+      <div class="side-header">
+        <div class="side-avatar" style="border-color:var(--green);color:var(--green)">Y</div>
+        <div class="side-name">You</div>
+        <div class="side-handle">@you</div>
+      </div>
+      
+      <div class="stat-block">
+        <div class="stat-label">This Week</div>
+        <div class="stat-big" style="color:var(--green)">88%</div>
+        <div class="stat-sub">6/7 Days</div>
+      </div>
+      
+      <div class="bar-block">
+        <div class="bar-label">Best Streak</div>
+        <div class="bar-track"><div class="bar-fill" style="width:66%;background:var(--green)"></div></div>
+        <div class="bar-val" style="color:var(--green)">8W</div>
+      </div>
+      
+      <div class="stat-block">
+        <div class="stat-label">Total Entries</div>
+        <div class="stat-big">312</div>
+      </div>
+      
+      <div class="week-block">
+        <div class="week-label">This Week</div>
+        <div class="week-row">
+          <div class="wd done"></div>
+          <div class="wd done"></div>
+          <div class="wd miss"></div>
+          <div class="wd done"></div>
+          <div class="wd done"></div>
+          <div class="wd done"></div>
+          <div class="wd done"></div>
+        </div>
+        <div class="day-labels"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+      </div>
+    </div>
+    
+    <div class="divider-line">
+      <div class="divider-label">VS</div>
+    </div>
+    
+    <!-- Right: Friend -->
+    <div class="side" id="sideRight">
+      <div class="side-header">
+        <div class="side-avatar" style="border-color:var(--green);color:var(--green)">K</div>
+        <div class="side-name">Kyle</div>
+        <div class="side-handle">@kyle</div>
+      </div>
+      
+      <div class="stat-block">
+        <div class="stat-label">This Week</div>
+        <div class="stat-big winner" style="color:var(--green)">92%</div>
+        <div class="stat-sub">7/7 Days</div>
+      </div>
+      
+      <div class="bar-block">
+        <div class="bar-label">Best Streak</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--green)"></div></div>
+        <div class="bar-val winner" style="color:var(--green)">12W</div>
+      </div>
+      
+      <div class="stat-block">
+        <div class="stat-label">Total Entries</div>
+        <div class="stat-big winner">247</div>
+      </div>
+      
+      <div class="week-block">
+        <div class="week-label">This Week</div>
+        <div class="week-row">
+          <div class="wd done"></div>
+          <div class="wd done"></div>
+          <div class="wd done"></div>
+          <div class="wd done"></div>
+          <div class="wd done"></div>
+          <div class="wd done"></div>
+          <div class="wd done"></div>
+        </div>
+        <div class="day-labels"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="verdict">
+    <div class="verdict-text"><strong>Kyle</strong> leads this week by 4% · 🔥 Perfect streak</div>
+  </div>
+</div>
+
+<script>
+// Chip selection
+document.querySelectorAll('.sel-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.sel-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+  });
+});
+
+// Animate bars on load
+setTimeout(() => {
+  document.querySelectorAll('.bar-fill').forEach(b => {
+    const w = b.style.width;
+    b.style.width = '0%';
+    requestAnimationFrame(() => { b.style.width = w; });
+  });
+}, 100);
+</script>
+</body>
+</html>

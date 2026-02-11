@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V6: Terminal/CLI</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: none; letter-spacing: 0; line-height: 1.6; padding: 0; }
+  .app { max-width: 600px; margin: 0 auto; min-height: 100vh; }
+  
+  .terminal-bar { padding: 8px 16px; background: var(--g25); display: flex; align-items: center; gap: 8px; position: sticky; top: 0; z-index: 10; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.r { background: #ff5f57; }
+  .dot.y { background: #febc2e; }
+  .dot.g { background: #28c840; }
+  .terminal-title { flex: 1; text-align: center; font-size: 10px; color: var(--g50); text-transform: uppercase; letter-spacing: 0.15em; }
+
+  .terminal { padding: 16px; }
+  .line { margin-bottom: 2px; word-wrap: break-word; }
+  .prompt { color: var(--green); }
+  .cmd { color: var(--g100); }
+  .comment { color: var(--g50); }
+  .dim { color: var(--g50); }
+  .val { font-weight: 600; }
+  .val.green { color: var(--green); }
+  .val.pink { color: var(--pink); }
+  .val.yellow { color: var(--yellow); }
+  
+  .section { margin: 20px 0; }
+  .section-title { color: var(--g50); border-bottom: 1px solid var(--g25); padding-bottom: 4px; margin-bottom: 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; }
+  
+  .friend-block { margin: 12px 0; padding: 8px 0; border-left: 2px solid var(--g25); padding-left: 12px; transition: border-color 0.3s; cursor: pointer; }
+  .friend-block:hover { border-color: var(--g75); background: rgba(255,255,255,0.01); }
+  .friend-name { font-weight: 600; }
+  
+  /* ASCII progress bar */
+  .ascii-bar { color: var(--g50); }
+  .ascii-bar .filled { color: var(--green); }
+  .ascii-bar .filled.pink { color: var(--pink); }
+  .ascii-bar .filled.yellow { color: var(--yellow); }
+  
+  /* Blinking cursor */
+  .cursor { display: inline-block; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  
+  /* Type animation */
+  @keyframes typeIn { from { width: 0; } to { width: 100%; } }
+  .type-line { overflow: hidden; white-space: nowrap; animation: typeIn 0.6s steps(40) both; }
+
+  .input-line { margin-top: 20px; display: flex; gap: 4px; align-items: center; padding: 8px 0; border-top: 1px solid var(--g25); }
+  .input-line input { background: none; border: none; color: var(--g100); font-family: inherit; font-size: 12px; flex: 1; outline: none; }
+
+  @media (max-width: 480px) {
+    .terminal { padding: 12px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="terminal-bar">
+    <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+    <div class="terminal-title">disciprin — friends</div>
+  </div>
+
+  <div class="terminal">
+    <div class="line"><span class="prompt">$</span> <span class="cmd">disciprin friends --status</span></div>
+    <div class="line"><span class="comment">// Connected: 5 friends • Last sync: 2m ago</span></div>
+    
+    <div class="section">
+      <div class="section-title">── Recent Activity ──</div>
+      
+      <div class="friend-block">
+        <div class="line"><span class="friend-name">@kyle</span> <span class="dim">· 2h ago</span></div>
+        <div class="line">→ <span class="val green">12-week streak</span> on <span class="val">Meditation</span> 🔥</div>
+        <div class="line ascii-bar">[<span class="filled">████████████████████</span>····] <span class="val green">100%</span> this week</div>
+        <div class="line"><span class="dim">streak: 12w • entries: 84 • best: 14w</span></div>
+      </div>
+
+      <div class="friend-block">
+        <div class="line"><span class="friend-name">@bradley</span> <span class="dim">· 5h ago</span></div>
+        <div class="line">→ Completed <span class="val pink">6/7 pills</span> this week</div>
+        <div class="line ascii-bar">[<span class="filled pink">█████████████████</span>·······] <span class="val pink">86%</span></div>
+        <div class="line"><span class="dim">streak: 4w • missed: Wed</span></div>
+      </div>
+
+      <div class="friend-block">
+        <div class="line"><span class="friend-name">@anna</span> <span class="dim">· 1d ago</span></div>
+        <div class="line">→ Reached <span class="val yellow">100 total entries</span> 🏆</div>
+        <div class="line ascii-bar">[<span class="filled yellow">██████████████</span>··········] <span class="val yellow">71%</span> this week</div>
+        <div class="line"><span class="dim">milestone: CENTURY_CLUB • streak: 2w</span></div>
+      </div>
+
+      <div class="friend-block">
+        <div class="line"><span class="friend-name">@marcus</span> <span class="dim">· 2d ago</span></div>
+        <div class="line">→ <span class="val green">8-week streak</span> on <span class="val">Cold Shower</span></div>
+        <div class="line ascii-bar">[<span class="filled">████████████████████</span>····] <span class="val green">100%</span></div>
+        <div class="line"><span class="dim">streak: 8w • entries: 56</span></div>
+      </div>
+
+      <div class="friend-block">
+        <div class="line"><span class="friend-name">@sarah</span> <span class="dim">· 2d ago</span></div>
+        <div class="line">→ Completed <span class="val">5/7 pills</span> this week</div>
+        <div class="line ascii-bar">[<span class="filled">██████████████</span>··········] <span class="dim">71%</span></div>
+        <div class="line"><span class="dim">streak: 1w</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">── Crew Summary ──</div>
+      <div class="line">  AVG completion: <span class="val green">86%</span></div>
+      <div class="line">  Top streak:     <span class="val">@kyle</span> (12w)</div>
+      <div class="line">  Most improved:  <span class="val">@marcus</span> (+15%)</div>
+      <div class="line">  Needs nudge:    <span class="val">@sarah</span> (71%)</div>
+    </div>
+
+    <div class="input-line">
+      <span class="prompt">$</span>
+      <input type="text" placeholder="disciprin friends --add @handle" readonly>
+      <span class="cursor">█</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

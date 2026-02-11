@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Progress — V19: Micro-Interactions / Card Stack</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #010101; --g25: #222; --g30: #333; --g50: #555; --g75: #aaa; --g100: #f1f1f1; --green: #00FF8C; --pink: #FF00B2; --yellow: #FBFF00; }
+  body { background: var(--bg); color: var(--g100); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.5; overflow: hidden; height: 100vh; }
+  
+  .app { height: 100vh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; }
+  
+  .header { padding: 16px 20px; border-bottom: 1px solid var(--g25); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  .header h1 { font-size: 12px; font-weight: 700; letter-spacing: 0.15em; }
+  .counter { font-size: 10px; color: var(--g50); }
+  
+  /* Card stack area */
+  .stack-area { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  
+  .stack-card { position: absolute; width: calc(100% - 48px); max-width: 400px; background: var(--bg); border: 1px solid var(--g25); padding: 32px 24px; transition: all 0.5s cubic-bezier(0.23,1,0.32,1); cursor: grab; user-select: none; touch-action: none; }
+  .stack-card:active { cursor: grabbing; }
+  
+  .sc-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .sc-avatar { width: 56px; height: 56px; border-radius: 50%; border: 2px solid var(--green); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 22px; flex-shrink: 0; }
+  .sc-avatar.pink { border-color: var(--pink); }
+  .sc-avatar.yellow { border-color: var(--yellow); }
+  .sc-name { font-size: 18px; font-weight: 700; letter-spacing: 0.1em; }
+  .sc-handle { font-size: 10px; color: var(--g50); margin-top: 2px; }
+  
+  .sc-big-stat { text-align: center; margin-bottom: 24px; }
+  .sc-big-num { font-size: 72px; font-weight: 700; line-height: 0.9; }
+  .sc-big-label { font-size: 10px; color: var(--g50); letter-spacing: 0.2em; margin-top: 8px; }
+  
+  .sc-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--g25); margin-bottom: 24px; }
+  .sc-stat { background: var(--bg); padding: 16px; text-align: center; }
+  .sc-stat-val { font-size: 20px; font-weight: 700; }
+  .sc-stat-label { font-size: 8px; color: var(--g50); letter-spacing: 0.15em; margin-top: 4px; }
+  
+  .sc-week { display: flex; gap: 6px; justify-content: center; }
+  .sc-day { width: 12px; height: 12px; transition: transform 0.3s, background 0.3s; }
+  .sc-day.done { background: var(--green); }
+  .sc-day.miss { background: var(--pink); opacity: 0.5; }
+  .sc-day.future { background: var(--g25); }
+  
+  /* Swipe indicators */
+  .swipe-indicator { position: absolute; top: 50%; transform: translateY(-50%); font-size: 9px; letter-spacing: 0.2em; color: var(--g50); pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+  .swipe-left { left: -60px; color: var(--pink); }
+  .swipe-right { right: -60px; color: var(--green); }
+  
+  /* Bottom controls */
+  .controls { padding: 16px 24px; border-top: 1px solid var(--g25); display: flex; justify-content: center; gap: 24px; flex-shrink: 0; }
+  .ctrl-btn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--g25); background: none; color: var(--g100); font-family: inherit; font-size: 18px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
+  .ctrl-btn:hover { border-color: var(--g50); transform: scale(1.1); }
+  .ctrl-btn.prev { }
+  .ctrl-btn.next { }
+  .ctrl-btn.fire { border-color: var(--green); color: var(--green); }
+  .ctrl-btn.fire:hover { background: rgba(0,255,140,0.1); box-shadow: 0 0 20px rgba(0,255,140,0.1); }
+  
+  /* Progress dots */
+  .dots { display: flex; justify-content: center; gap: 8px; padding: 12px; flex-shrink: 0; }
+  .dot { width: 6px; height: 6px; background: var(--g25); border-radius: 50%; transition: all 0.3s; }
+  .dot.active { background: var(--g100); transform: scale(1.3); }
+  
+  @media (max-width: 400px) {
+    .sc-big-num { font-size: 56px; }
+    .sc-avatar { width: 44px; height: 44px; font-size: 18px; }
+    .sc-name { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>Friends</h1>
+    <div class="counter"><span id="current">1</span> / <span id="total">5</span></div>
+  </div>
+  
+  <div class="stack-area" id="stackArea"></div>
+  
+  <div class="dots" id="dots"></div>
+  
+  <div class="controls">
+    <button class="ctrl-btn prev" onclick="navigate(-1)">←</button>
+    <button class="ctrl-btn fire" onclick="sendFire()">🔥</button>
+    <button class="ctrl-btn next" onclick="navigate(1)">→</button>
+  </div>
+</div>
+
+<script>
+const friends = [
+  { name: 'Anna', handle: '@anna', letter: 'A', pct: 100, streak: '16W', total: 401, color: 'green', week: [1,1,1,1,1,1,1] },
+  { name: 'Kyle', handle: '@kyle', letter: 'K', pct: 92, streak: '12W', total: 247, color: 'green', week: [1,1,1,1,1,1,1] },
+  { name: 'Mia', handle: '@mia', letter: 'M', pct: 85, streak: '6W', total: 178, color: 'green', week: [1,1,0,1,1,1,1] },
+  { name: 'Bradley', handle: '@brad', letter: 'B', pct: 71, streak: '3W', total: 89, color: 'yellow', week: [1,1,0,1,1,0,1] },
+  { name: 'Sam', handle: '@samwise', letter: 'S', pct: 43, streak: '1W', total: 52, color: 'pink', week: [1,0,0,1,0,1,0] },
+];
+
+let currentIndex = 0;
+const area = document.getElementById('stackArea');
+const dotsEl = document.getElementById('dots');
+
+// Create dots
+friends.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  dotsEl.appendChild(d);
+});
+
+function getColor(c) {
+  return c === 'green' ? 'var(--green)' : c === 'pink' ? 'var(--pink)' : 'var(--yellow)';
+}
+
+function render() {
+  area.innerHTML = '';
+  friends.forEach((f, i) => {
+    const offset = i - currentIndex;
+    if (Math.abs(offset) > 2) return;
+    
+    const card = document.createElement('div');
+    card.className = 'stack-card';
+    const scale = 1 - Math.abs(offset) * 0.05;
+    const translateY = offset * 8;
+    const translateX = offset * 4;
+    const opacity = Math.abs(offset) > 1 ? 0 : 1 - Math.abs(offset) * 0.3;
+    const z = 10 - Math.abs(offset);
+    
+    card.style.transform = `translateY(${translateY}px) translateX(${translateX}px) scale(${scale})`;
+    card.style.opacity = opacity;
+    card.style.zIndex = z;
+    if (offset !== 0) card.style.pointerEvents = 'none';
+    
+    const weekDots = f.week.map(d => `<div class="sc-day ${d ? 'done' : 'miss'}"></div>`).join('');
+    
+    card.innerHTML = `
+      <div class="sc-header">
+        <div class="sc-avatar ${f.color}">${f.letter}</div>
+        <div><div class="sc-name">${f.name}</div><div class="sc-handle">${f.handle}</div></div>
+      </div>
+      <div class="sc-big-stat">
+        <div class="sc-big-num" style="color:${getColor(f.color)}">${f.pct}%</div>
+        <div class="sc-big-label">Completion This Week</div>
+      </div>
+      <div class="sc-stats">
+        <div class="sc-stat"><div class="sc-stat-val">${f.streak}</div><div class="sc-stat-label">Streak</div></div>
+        <div class="sc-stat"><div class="sc-stat-val">${f.total}</div><div class="sc-stat-label">Entries</div></div>
+      </div>
+      <div class="sc-week">${weekDots}</div>
+    `;
+    
+    // Touch/drag handling for active card
+    if (offset === 0) {
+      let startX = 0, dx = 0;
+      card.addEventListener('pointerdown', e => { startX = e.clientX; card.style.transition = 'none'; });
+      card.addEventListener('pointermove', e => {
+        if (!startX) return;
+        dx = e.clientX - startX;
+        card.style.transform = `translateX(${dx}px) rotate(${dx * 0.05}deg) scale(1)`;
+      });
+      const endDrag = () => {
+        card.style.transition = 'all 0.5s cubic-bezier(0.23,1,0.32,1)';
+        if (Math.abs(dx) > 80) {
+          navigate(dx > 0 ? -1 : 1);
+        } else {
+          card.style.transform = 'translateX(0) rotate(0) scale(1)';
+        }
+        startX = 0; dx = 0;
+      };
+      card.addEventListener('pointerup', endDrag);
+      card.addEventListener('pointercancel', endDrag);
+    }
+    
+    area.appendChild(card);
+  });
+  
+  document.getElementById('current').textContent = currentIndex + 1;
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentIndex));
+}
+
+function navigate(dir) {
+  currentIndex = Math.max(0, Math.min(friends.length - 1, currentIndex + dir));
+  render();
+}
+
+function sendFire() {
+  const btn = document.querySelector('.ctrl-btn.fire');
+  btn.style.transform = 'scale(1.3)';
+  btn.style.boxShadow = '0 0 30px rgba(0,255,140,0.3)';
+  setTimeout(() => { btn.style.transform = ''; btn.style.boxShadow = ''; }, 300);
+}
+
+render();
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') navigate(-1);
+  if (e.key === 'ArrowRight') navigate(1);
+});
+</script>
+</body>
+</html>
