@@ -31,6 +31,14 @@ Things like:
 - Default speaker: Kitchen HomePod
 ```
 
+### Linear
+- API Key: sourced from `/home/x/.env` as `LINEAR_API_KEY`
+- Usage: `set -a && source /home/x/.env && set +a` then use `curl` with `Authorization: $LINEAR_API_KEY` against `https://api.linear.app/graphql`
+- Use for: creating/updating issues, querying project status, reading comments
+
+### GitHub
+- CLI auth available via `gh` (user: bradleyzaia)
+
 ## Why Separate?
 
 Skills are shared. Your setup is yours. Keeping them apart means you can update skills without losing your notes, and share skills without leaking your infrastructure.

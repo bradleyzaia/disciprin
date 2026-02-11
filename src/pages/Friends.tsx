@@ -9,8 +9,8 @@ import { CrewScroll } from "@/components/friends/CrewScroll"
 import { LiveFeed } from "@/components/friends/LiveFeed"
 import { FriendManageDrawer } from "@/components/friends/FriendManageDrawer"
 import { FriendProfileModal } from "@/components/friends/FriendProfileModal"
-import { MOCK_FRIENDS, MOCK_LIVE_UPDATES, getCrewAverage, type FriendData, type LiveUpdate } from "@/lib/mock-friends"
-import { UserPlus } from "lucide-react"
+import { type FriendData, type LiveUpdate, getCompletionTier } from "@/lib/mock-friends"
+import { UserPlus, Users } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 
 export function Friends() {
@@ -25,9 +25,9 @@ export function Friends() {
   const isLoading = rawFriends === undefined || rawFeed === undefined || crewStats === undefined
   const hasFriends = rawFriends && rawFriends.length > 0
 
-  // Map real data to FriendData shape, fallback to mock if no friends
+  // Map real data to FriendData shape — no mock fallback
   const friends: FriendData[] = useMemo(() => {
-    if (!hasFriends) return MOCK_FRIENDS
+    if (!hasFriends) return []
     return (rawFriends ?? []).map((f) => ({
       id: f!.clerkId,
       name: f!.name,
@@ -40,7 +40,7 @@ export function Friends() {
   }, [rawFriends, hasFriends])
 
   const liveUpdates: LiveUpdate[] = useMemo(() => {
-    if (!hasFriends || !rawFeed || rawFeed.length === 0) return MOCK_LIVE_UPDATES
+    if (!hasFriends || !rawFeed || rawFeed.length === 0) return []
     return rawFeed.map((f) => ({
       id: f.id,
       name: f.name,
@@ -52,7 +52,7 @@ export function Friends() {
   }, [rawFeed, hasFriends])
 
   const crewAvg = useMemo(() => {
-    if (!hasFriends || !crewStats) return getCrewAverage(MOCK_FRIENDS)
+    if (!hasFriends || !crewStats) return 0
     return crewStats.crewAvg
   }, [crewStats, hasFriends])
 
@@ -60,14 +60,7 @@ export function Friends() {
   const weekLabel = `Week of ${today.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
 
   const bottomStats = useMemo(() => {
-    if (!hasFriends || !crewStats) {
-      return [
-        { label: "Crew Avg", value: `${getCrewAverage(MOCK_FRIENDS)}%`, color: "green" as const },
-        { label: "Top Streak", value: "16W", color: "green" as const },
-        { label: "Total Entries", value: "1279" },
-        { label: "Active", value: `${MOCK_FRIENDS.filter((f) => f.completionPct > 0).length}/${MOCK_FRIENDS.length}` },
-      ]
-    }
+    if (!hasFriends || !crewStats) return []
     return [
       { label: "Crew Avg", value: `${crewStats.crewAvg}%`, color: "green" as const },
       { label: "Top Streak", value: `${crewStats.topStreak}W`, color: "green" as const },
@@ -75,6 +68,42 @@ export function Friends() {
       { label: "Active", value: `${crewStats.activeCount}/${crewStats.totalCount}` },
     ]
   }, [crewStats, hasFriends])
+
+  // Empty state
+  if (!isLoading && !hasFriends) {
+    return (
+      <MasterGrid>
+        <Navbar />
+        <GridRow flex="pass">
+          <GridCell className="flex-1 !p-0">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center gap-6">
+              <div className="w-16 h-16 border border-grayscale25 flex items-center justify-center">
+                <Users className="w-7 h-7 text-grayscale50" />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold tracking-[0.15em] uppercase text-grayscale100 mb-2">
+                  No friends yet
+                </h2>
+                <p className="text-[11px] text-grayscale50 leading-relaxed max-w-[280px]">
+                  Add friends by their @handle to see their progress, streaks, and weekly stats right here.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                icon={UserPlus}
+                alwaysShowIcon
+                onClick={() => setManageOpen(true)}
+              >
+                Add Friends
+              </Button>
+            </div>
+          </GridCell>
+        </GridRow>
+        <FriendManageDrawer isOpen={manageOpen} onClose={() => setManageOpen(false)} />
+      </MasterGrid>
+    )
+  }
 
   return (
     <MasterGrid>
@@ -102,12 +131,12 @@ export function Friends() {
         </GridCell>
       </GridRow>
 
-      {/* Add friends button */}
+      {/* Friends count + manage */}
       <GridRow flex="pass">
         <GridCell className="flex-1 !p-0">
           <div className="border-t border-dark-theme-border px-6 py-3 flex items-center justify-between">
             <span className="text-[9px] tracking-[0.3em] text-grayscale50 uppercase">
-              {hasFriends ? `${friends.length} friends` : "Demo data — add friends to see real stats"}
+              {friends.length} friend{friends.length !== 1 ? "s" : ""}
             </span>
             <Button
               size="sm"
@@ -137,11 +166,13 @@ export function Friends() {
       </GridRow>
 
       {/* Bottom ticker — stats marquee */}
-      <GridRow flex="pass">
-        <GridCell className="flex-1 !p-0 overflow-hidden">
-          <Ticker friends={friends} stats={bottomStats} reverse />
-        </GridCell>
-      </GridRow>
+      {bottomStats.length > 0 && (
+        <GridRow flex="pass">
+          <GridCell className="flex-1 !p-0 overflow-hidden">
+            <Ticker friends={friends} stats={bottomStats} reverse />
+          </GridCell>
+        </GridRow>
+      )}
 
       {/* Friend manage drawer */}
       <FriendManageDrawer isOpen={manageOpen} onClose={() => setManageOpen(false)} />
