@@ -28,7 +28,7 @@
 
   --font-display: 'Cal Sans', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
-  --color-grayscale0: #0D0404;
+  --color-grayscale0: #010101;
   --color-grayscale25: #222222;
   --color-grayscale30: #333333;
   --color-grayscale50: #555555;
@@ -46,7 +46,7 @@
 
 @layer base {
   :root {
-    --background: #0D0404;
+    --background: #010101;
     --foreground: var(--color-dark-theme-text);
     --card: hsl(0 0% 3.9%);
     --card-foreground: var(--color-dark-theme-text);
@@ -76,7 +76,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-[#0D0404] text-dark-theme-text;
+    @apply bg-[#010101] text-dark-theme-text;
     font-family: var(--font-mono);
     line-height: 1.5;
     font-weight: 400;
