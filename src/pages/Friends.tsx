@@ -76,7 +76,7 @@ export function Friends() {
         <Navbar />
         <GridRow flex="pass">
           <GridCell className="flex-1 !p-0">
-            <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center gap-6 bg-black">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center gap-6 bg-black/80 backdrop-blur-none">
               <div className="w-16 h-16 border border-grayscale25 flex items-center justify-center">
                 <Users className="w-7 h-7 text-grayscale50" />
               </div>
