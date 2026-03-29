@@ -10,6 +10,7 @@ import { FriendManageDrawer } from "@/components/friends/FriendManageDrawer"
 import { FriendProfileModal } from "@/components/friends/FriendProfileModal"
 import { type FriendData, type LiveUpdate } from "@/lib/mock-friends"
 import { UserPlus, Users } from "lucide-react"
+import { Quote } from "@/components/Quote"
 import { Button } from "@/components/ui/Button"
 
 export function Friends() {
@@ -128,6 +129,13 @@ export function Friends() {
               Manage
             </Button>
           </div>
+        </GridCell>
+      </GridRow>
+
+      {/* Inspiration quote */}
+      <GridRow>
+        <GridCell span={12} className="p-0">
+          <Quote />
         </GridCell>
       </GridRow>
 
