@@ -32,7 +32,7 @@ export function FriendColumns() {
   return (
     <div className="border-b border-dark-theme-border bg-black/80 font-mono text-xs">
       {/* Day switcher row — full width */}
-      <div className="flex h-10 border-b border-dark-theme-border">
+      <div className="flex min-h-[80px] border-b border-dark-theme-border">
         <button
           onMouseDown={() => playSFX(SFX.ENTER)}
           onClick={() => setCurrentDate(subDays(currentDate, 1))}
