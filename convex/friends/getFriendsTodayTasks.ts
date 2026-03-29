@@ -33,10 +33,10 @@ export default query({
 
             // Respect user's custom pill order
             if (user.pill_order && user.pill_order.length > 0) {
-                const orderMap = new Map(user.pill_order.map((id: string, i: number) => [id, i]));
-                pills = pills.sort((a, b) => {
-                    const ai = orderMap.get(a._id as unknown as string) ?? 999;
-                    const bi = orderMap.get(b._id as unknown as string) ?? 999;
+                const orderMap = new Map(user.pill_order.map((id, i) => [id, i]));
+                pills = [...pills].sort((a, b) => {
+                    const ai = orderMap.get(String(a._id)) ?? 999;
+                    const bi = orderMap.get(String(b._id)) ?? 999;
                     return ai - bi;
                 });
             }
