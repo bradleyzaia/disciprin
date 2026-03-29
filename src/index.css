@@ -138,7 +138,7 @@
 .GridCell.interactive:hover .scramble-text,
 .scramble-link:hover .scramble-text,
 .scramble-link:hover {
-  color: var(--color-grayscale0) !important;
+  color: var(--color-green) !important;
 }
 
 /* MasterGrid Specific Overrides */
