@@ -16,6 +16,69 @@ export default query({
 
         const dateStr = args.date ?? new Date().toISOString().split("T")[0];
 
+        // Helper to build a user's task data for a given date
+        async function buildUserTasks(clerkId: string) {
+            const user = await ctx.db
+                .query("users")
+                .withIndex("by_clerk_id", (q) => q.eq("clerk_id", clerkId))
+                .first();
+            if (!user) return null;
+
+            const pills = await ctx.db
+                .query("pills")
+                .withIndex("by_user_active", (q) =>
+                    q.eq("user_id", clerkId).eq("is_active", true)
+                )
+                .collect();
+
+            const dayEntries = await ctx.db
+                .query("pill_entries")
+                .withIndex("by_user_date", (q) =>
+                    q.eq("user_id", clerkId).eq("date", dateStr)
+                )
+                .collect();
+
+            const tasks = pills.map((pill) => {
+                const entry = dayEntries.find((e) => e.pill_id === pill._id);
+                const value = entry?.value ?? 0;
+                const completed = entry
+                    ? pill.measurement_type === "boolean"
+                        ? entry.value === 1
+                        : entry.value >= pill.target_value
+                    : false;
+
+                return {
+                    id: pill._id,
+                    name: pill.name,
+                    category: pill.category ?? "OTHER",
+                    measurementType: pill.measurement_type,
+                    targetValue: pill.target_value,
+                    unit: pill.unit ?? null,
+                    value,
+                    completed,
+                    currentStreak: pill.current_streak,
+                };
+            });
+
+            const completedCount = tasks.filter((t) => t.completed).length;
+
+            return {
+                clerkId,
+                name: user.name,
+                handle: user.handle ? `@${user.handle}` : `@${user.name.toLowerCase()}`,
+                tasks,
+                completedCount,
+                totalCount: tasks.length,
+                completionPct: tasks.length > 0
+                    ? Math.round((completedCount / tasks.length) * 100)
+                    : 0,
+                isMe: clerkId === userId,
+            };
+        }
+
+        // Build current user's data first
+        const me = await buildUserTasks(userId);
+
         // Get all accepted friendships (both directions)
         const sentFriends = await ctx.db
             .query("friends")
@@ -34,67 +97,10 @@ export default query({
         const uniqueIds = [...new Set(friendClerkIds)];
 
         const friends = await Promise.all(
-            uniqueIds.map(async (friendClerkId) => {
-                const user = await ctx.db
-                    .query("users")
-                    .withIndex("by_clerk_id", (q) => q.eq("clerk_id", friendClerkId))
-                    .first();
-                if (!user) return null;
-
-                // Get active pills
-                const pills = await ctx.db
-                    .query("pills")
-                    .withIndex("by_user_active", (q) =>
-                        q.eq("user_id", friendClerkId).eq("is_active", true)
-                    )
-                    .collect();
-
-                // Get entries for requested date
-                const dayEntries = await ctx.db
-                    .query("pill_entries")
-                    .withIndex("by_user_date", (q) =>
-                        q.eq("user_id", friendClerkId).eq("date", dateStr)
-                    )
-                    .collect();
-
-                const tasks = pills.map((pill) => {
-                    const entry = dayEntries.find((e) => e.pill_id === pill._id);
-                    const value = entry?.value ?? 0;
-                    const completed = entry
-                        ? pill.measurement_type === "boolean"
-                            ? entry.value === 1
-                            : entry.value >= pill.target_value
-                        : false;
-
-                    return {
-                        id: pill._id,
-                        name: pill.name,
-                        category: pill.category ?? "OTHER",
-                        measurementType: pill.measurement_type,
-                        targetValue: pill.target_value,
-                        unit: pill.unit ?? null,
-                        value,
-                        completed,
-                        currentStreak: pill.current_streak,
-                    };
-                });
-
-                const completedCount = tasks.filter((t) => t.completed).length;
-
-                return {
-                    clerkId: friendClerkId,
-                    name: user.name,
-                    handle: user.handle ? `@${user.handle}` : `@${user.name.toLowerCase()}`,
-                    tasks,
-                    completedCount,
-                    totalCount: tasks.length,
-                    completionPct: tasks.length > 0
-                        ? Math.round((completedCount / tasks.length) * 100)
-                        : 0,
-                };
-            })
+            uniqueIds.map((friendClerkId) => buildUserTasks(friendClerkId))
         );
 
-        return friends.filter(Boolean);
+        const result = [me, ...friends].filter(Boolean);
+        return result;
     },
 });

@@ -94,7 +94,7 @@ export function FriendColumns() {
             <div className="border-b border-dark-theme-border px-4 py-3 flex items-center justify-between">
               <div className="min-w-0">
                 <div className="font-medium truncate">
-                  <ScrambleText text={friend!.name} />
+                  <ScrambleText text={friend!.isMe ? `${friend!.name} (You)` : friend!.name} />
                 </div>
                 <div className="text-[10px] text-dark-theme-text/50">
                   <ScrambleText text={friend!.handle ?? ""} />
