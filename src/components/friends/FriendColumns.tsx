@@ -17,7 +17,7 @@ export function FriendColumns() {
 
   if (friendsTasks === undefined) {
     return (
-      <div className="border-b border-dark-theme-border bg-black py-8">
+      <div className="border-b border-dark-theme-border bg-black/80 py-8">
         <div className="flex items-center justify-center">
           <span className="text-[10px] tracking-[0.15em] text-dark-theme-text animate-pulse font-mono">
             <ScrambleText text="Loading crew…" />
@@ -30,7 +30,7 @@ export function FriendColumns() {
   if (!friendsTasks || friendsTasks.length === 0) return null
 
   return (
-    <div className="border-b border-dark-theme-border bg-black overflow-x-auto font-mono text-xs">
+    <div className="border-b border-dark-theme-border bg-black/80 overflow-x-auto font-mono text-xs">
       {/* Day switcher row */}
       <div className="grid border-b border-dark-theme-border"
         style={{

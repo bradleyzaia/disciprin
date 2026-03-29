@@ -66,7 +66,7 @@ export function Friends() {
         <Navbar />
         <GridRow flex="pass">
           <GridCell className="flex-1 !p-0">
-            <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center gap-6 bg-grayscale0">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center gap-6 bg-black/80">
               <div className="w-16 h-16 border border-grayscale25 flex items-center justify-center">
                 <Users className="w-7 h-7 text-grayscale50" />
               </div>
@@ -114,7 +114,7 @@ export function Friends() {
         <GridCell className="flex-1 !p-0 overflow-hidden" style={{ minHeight: '200px' }}>
           <LiveFeed updates={liveUpdates} />
         </GridCell>
-        <GridCell className="!p-0 flex flex-col items-center justify-center" style={{ width: '15%' }}>
+        <GridCell className="!p-0 flex flex-col items-center justify-center bg-black/80" style={{ width: '15%' }}>
           <div className="flex flex-col items-center gap-3 p-4">
             <span className="text-[9px] tracking-[0.3em] text-grayscale50 uppercase font-mono">
               {friends.length} friend{friends.length !== 1 ? "s" : ""}

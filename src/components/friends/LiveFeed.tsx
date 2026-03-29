@@ -16,7 +16,7 @@ export function LiveFeed({ updates }: LiveFeedProps) {
   const doubled = [...updates, ...updates]
 
   return (
-    <div className="border-t border-dark-theme-border flex flex-col h-full">
+    <div className="border-t border-dark-theme-border flex flex-col h-full bg-black/80">
       {/* Header — fixed outside scroll */}
       <div className="flex items-center gap-2 text-[9px] tracking-[0.3em] text-grayscale50 px-6 py-3 border-b border-dark-theme-border shrink-0">
         <motion.div
