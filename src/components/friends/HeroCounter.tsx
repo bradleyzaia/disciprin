@@ -24,12 +24,11 @@ export function HeroCounter({ value, label, sublabel }: HeroCounterProps) {
       <p className="text-[9px] tracking-[0.4em] text-grayscale50 mb-4 font-display">{label}</p>
       <div className="relative inline-block">
         <motion.span
-          className="text-[80px] md:text-[120px] font-bold leading-[0.85] tracking-tighter text-green"
+          className="text-2xl md:text-5xl font-mono tracking-normal text-dark-theme-text"
         >
-          {/* Use a subscribing component to avoid re-renders */}
           <CounterDisplay value={rounded} />
         </motion.span>
-        <span className="text-[28px] md:text-[40px] align-super text-grayscale50">%</span>
+        <span className="text-2xl md:text-5xl font-mono tracking-normal text-dark-theme-text">%</span>
       </div>
       <p className="text-[11px] tracking-[0.2em] text-grayscale50 mt-4">{sublabel}</p>
     </div>
