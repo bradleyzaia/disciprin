@@ -30,58 +30,37 @@ export function FriendColumns() {
   if (!friendsTasks || friendsTasks.length === 0) return null
 
   return (
-    <div className="border-b border-dark-theme-border bg-black/80 overflow-x-auto font-mono text-xs">
-      {/* Day switcher row */}
-      <div className="grid border-b border-dark-theme-border"
-        style={{
-          gridTemplateColumns: `repeat(${friendsTasks.length}, minmax(240px, 1fr))`,
-          minWidth: friendsTasks.length > 3 ? `${friendsTasks.length * 240}px` : undefined,
-        }}
-      >
-        {friendsTasks.map((friend, i) => (
-          <div
-            key={`nav-${friend!.clerkId}`}
-            className={cn(
-              "border-r border-dark-theme-border last:border-r-0",
-              i === 0 ? "" : ""
-            )}
-          >
-            {/* Only render nav in first column, span visually */}
-            {i === 0 ? (
-              <div className="flex h-10">
-                <button
-                  onMouseDown={() => playSFX(SFX.ENTER)}
-                  onClick={() => setCurrentDate(subDays(currentDate, 1))}
-                  className="w-10 flex items-center justify-center hover:bg-white hover:text-black transition-colors border-r border-dark-theme-border"
-                >
-                  <ChevronLeft className="size-4" />
-                </button>
-                <button
-                  onMouseDown={() => playSFX(SFX.ENTER)}
-                  onClick={() => setCurrentDate(new Date())}
-                  className={cn(
-                    "flex-1 flex items-center justify-center hover:bg-white hover:text-black transition-colors uppercase text-[10px]",
-                    isToday ? "text-dark-theme-text/30" : "text-dark-theme-text"
-                  )}
-                >
-                  <ScrambleText text={format(currentDate, "EEE, MMM d")} />
-                </button>
-                <button
-                  onMouseDown={() => playSFX(SFX.ENTER)}
-                  onClick={() => setCurrentDate(addDays(currentDate, 1))}
-                  className="w-10 flex items-center justify-center hover:bg-white hover:text-black transition-colors border-l border-dark-theme-border"
-                >
-                  <ChevronRight className="size-4" />
-                </button>
-              </div>
-            ) : (
-              <div className="h-10" />
-            )}
-          </div>
-        ))}
+    <div className="border-b border-dark-theme-border bg-black/80 font-mono text-xs">
+      {/* Day switcher row — full width */}
+      <div className="flex h-10 border-b border-dark-theme-border">
+        <button
+          onMouseDown={() => playSFX(SFX.ENTER)}
+          onClick={() => setCurrentDate(subDays(currentDate, 1))}
+          className="w-10 flex items-center justify-center hover:text-green transition-colors border-r border-dark-theme-border"
+        >
+          <ChevronLeft className="size-4" />
+        </button>
+        <button
+          onMouseDown={() => playSFX(SFX.ENTER)}
+          onClick={() => setCurrentDate(new Date())}
+          className={cn(
+            "flex-1 flex items-center justify-center hover:text-green transition-colors uppercase text-[10px]",
+            isToday ? "text-dark-theme-text/30" : "text-dark-theme-text"
+          )}
+        >
+          <ScrambleText text={format(currentDate, "EEE, MMM d")} />
+        </button>
+        <button
+          onMouseDown={() => playSFX(SFX.ENTER)}
+          onClick={() => setCurrentDate(addDays(currentDate, 1))}
+          className="w-10 flex items-center justify-center hover:text-green transition-colors border-l border-dark-theme-border"
+        >
+          <ChevronRight className="size-4" />
+        </button>
       </div>
 
       {/* Friend columns: each friend = header + pill rows */}
+      <div className="overflow-x-auto">
       <div className="grid"
         style={{
           gridTemplateColumns: `repeat(${friendsTasks.length}, minmax(240px, 1fr))`,
@@ -208,6 +187,7 @@ export function FriendColumns() {
             )}
           </div>
         ))}
+      </div>
       </div>
     </div>
   )
