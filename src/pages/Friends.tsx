@@ -111,7 +111,7 @@ export function Friends() {
         <GridCell className="!p-0" style={{ width: '25%' }}>
           <HeroCounter value={crewAvg} label="Crew Average" sublabel={weekLabel} />
         </GridCell>
-        <GridCell className="flex-1 !p-0 overflow-hidden" style={{ minHeight: '200px' }}>
+        <GridCell className="flex-1 !p-0 overflow-hidden" style={{ minHeight: '200px', maxHeight: '360px' }}>
           <LiveFeed updates={liveUpdates} />
         </GridCell>
         <GridCell className="!p-0 flex flex-col items-center justify-center bg-black/80" style={{ width: '15%' }}>
