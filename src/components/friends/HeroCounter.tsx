@@ -20,7 +20,7 @@ export function HeroCounter({ value, label, sublabel }: HeroCounterProps) {
   }, [value, count])
 
   return (
-    <div className="py-16 md:py-20 text-center relative overflow-hidden bg-black/80">
+    <div className="text-center relative overflow-hidden bg-black/80 h-full flex flex-col items-center justify-center">
       <p className="text-[9px] tracking-[0.4em] text-grayscale50 mb-4 font-display">{label}</p>
       <div className="relative inline-block">
         <motion.span
