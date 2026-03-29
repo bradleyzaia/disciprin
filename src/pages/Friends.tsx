@@ -3,7 +3,6 @@ import { useQuery } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { MasterGrid, GridRow, GridCell } from "@/components/layout/grid"
 import { Navbar } from "@/components/layout/Navbar"
-import { Ticker } from "@/components/friends/Ticker"
 import { HeroCounter } from "@/components/friends/HeroCounter"
 import { FriendColumns } from "@/components/friends/FriendColumns"
 import { LiveFeed } from "@/components/friends/LiveFeed"
@@ -59,16 +58,6 @@ export function Friends() {
   const today = new Date()
   const weekLabel = `Week of ${today.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
 
-  const bottomStats = useMemo(() => {
-    if (!hasFriends || !crewStats) return []
-    return [
-      { label: "Crew Avg", value: `${crewStats.crewAvg}%`, color: "green" as const },
-      { label: "Top Streak", value: `${crewStats.topStreak}W`, color: "green" as const },
-      { label: "Total Entries", value: String(crewStats.totalEntries) },
-      { label: "Active", value: `${crewStats.activeCount}/${crewStats.totalCount}` },
-    ]
-  }, [crewStats, hasFriends])
-
   // Empty state
   if (!isLoading && !hasFriends) {
     return (
@@ -116,33 +105,12 @@ export function Friends() {
         </GridCell>
       </GridRow>
 
-      {/* Top ticker — friend completion marquee */}
+      {/* Crew Average + Live Feed — single row, two columns */}
       <GridRow flex="pass">
-        <GridCell className="flex-1 !p-0 overflow-hidden">
-          {isLoading ? (
-            <div className="border-b border-dark-theme-border py-2.5 bg-grayscale0">
-              <div className="flex items-center justify-center">
-                <span className="text-[10px] tracking-[0.15em] text-grayscale50 animate-pulse">Loading crew…</span>
-              </div>
-            </div>
-          ) : (
-            <Ticker friends={friends} />
-          )}
-        </GridCell>
-      </GridRow>
-
-      {/* Hero counter */}
-      <GridRow flex="pass">
-        <GridCell className="flex-1 !p-0">
+        <GridCell className="!p-0" style={{ width: '33%' }}>
           <HeroCounter value={crewAvg} label="Crew Average" sublabel={weekLabel} />
-        </GridCell>
-      </GridRow>
-
-      {/* Friends count + manage */}
-      <GridRow flex="pass">
-        <GridCell className="flex-1 !p-0">
           <div className="border-t border-dark-theme-border px-6 py-3 flex items-center justify-between">
-            <span className="text-[9px] tracking-[0.3em] text-grayscale50 uppercase">
+            <span className="text-[9px] tracking-[0.3em] text-grayscale50 uppercase font-mono">
               {friends.length} friend{friends.length !== 1 ? "s" : ""}
             </span>
             <Button
@@ -156,23 +124,10 @@ export function Friends() {
             </Button>
           </div>
         </GridCell>
-      </GridRow>
-
-      {/* Live feed */}
-      <GridRow flex="pass">
         <GridCell className="flex-1 !p-0 overflow-hidden">
           <LiveFeed updates={liveUpdates} />
         </GridCell>
       </GridRow>
-
-      {/* Bottom ticker — stats marquee */}
-      {bottomStats.length > 0 && (
-        <GridRow flex="pass">
-          <GridCell className="flex-1 !p-0 overflow-hidden">
-            <Ticker friends={friends} stats={bottomStats} reverse />
-          </GridCell>
-        </GridRow>
-      )}
 
       {/* Friend manage drawer */}
       <FriendManageDrawer isOpen={manageOpen} onClose={() => setManageOpen(false)} />
