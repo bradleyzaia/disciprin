@@ -107,7 +107,7 @@ export function Friends() {
       </GridRow>
 
       {/* Crew Average + Live Feed + Manage — single row, three columns */}
-      <GridRow flex="pass">
+      <GridRow flex="pass" style={{ width: '100%', minWidth: '100%' }}>
         <GridCell className="flex-1 !p-0">
           <HeroCounter value={crewAvg} label="Crew Average" sublabel={weekLabel} />
         </GridCell>

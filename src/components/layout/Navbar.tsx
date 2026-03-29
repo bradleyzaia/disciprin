@@ -21,25 +21,25 @@ export function Navbar() {
                     <Link to="/dashboard" onMouseDown={() => playSFX(SFX.ENTER)} className="flex items-center justify-center text-current transition-colors hover:text-green">
                         <LayoutGrid className="size-4" strokeWidth={1} />
                     </Link>
-                    <ScrambleLink to="/dashboard" className="px-2 py-1 transition-colors hover:bg-green hover:text-black hidden md:inline-block">Dashboard</ScrambleLink>
+                    <ScrambleLink to="/dashboard" className="px-2 py-1 transition-colors hover:text-green hidden md:inline-block">Dashboard</ScrambleLink>
                 </div>
                 <div className="flex-1 flex items-center justify-center gap-2" title="Analytics">
                     <Link to="/analytics" onMouseDown={() => playSFX(SFX.ENTER)} className="flex items-center justify-center text-current transition-colors hover:text-green">
                         <BarChart3 className="size-4" strokeWidth={1} />
                     </Link>
-                    <ScrambleLink to="/analytics" className="px-2 py-1 transition-colors hover:bg-green hover:text-black hidden md:inline-block">Analytics</ScrambleLink>
+                    <ScrambleLink to="/analytics" className="px-2 py-1 transition-colors hover:text-green hidden md:inline-block">Analytics</ScrambleLink>
                 </div>
                 <div className="flex-1 flex items-center justify-center gap-2" title="Journal">
                     <Link to="/journal" onMouseDown={() => playSFX(SFX.ENTER)} className="flex items-center justify-center text-current transition-colors hover:text-green">
                         <Book className="size-4" strokeWidth={1} />
                     </Link>
-                    <ScrambleLink to="/journal" className="px-2 py-1 transition-colors hover:bg-green hover:text-black hidden md:inline-block">Journal</ScrambleLink>
+                    <ScrambleLink to="/journal" className="px-2 py-1 transition-colors hover:text-green hidden md:inline-block">Journal</ScrambleLink>
                 </div>
                 <div className="flex-1 flex items-center justify-center gap-2" title="Friends">
                     <Link to="/friends" onMouseDown={() => playSFX(SFX.ENTER)} className="flex items-center justify-center text-current transition-colors hover:text-green">
                         <Users className="size-4" strokeWidth={1} />
                     </Link>
-                    <ScrambleLink to="/friends" className="px-2 py-1 transition-colors hover:bg-green hover:text-black hidden md:inline-block">Friends</ScrambleLink>
+                    <ScrambleLink to="/friends" className="px-2 py-1 transition-colors hover:text-green hidden md:inline-block">Friends</ScrambleLink>
                 </div>
             </GridCell>
             <GridCell hug="pass" className="group flex items-center justify-center w-12 md:w-16 !p-0 !backdrop-blur-none bg-black/80" to="/settings">
