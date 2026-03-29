@@ -5,7 +5,7 @@ import { MasterGrid, GridRow, GridCell } from "@/components/layout/grid"
 import { Navbar } from "@/components/layout/Navbar"
 import { Ticker } from "@/components/friends/Ticker"
 import { HeroCounter } from "@/components/friends/HeroCounter"
-import { CrewScroll } from "@/components/friends/CrewScroll"
+import { FriendColumns } from "@/components/friends/FriendColumns"
 import { LiveFeed } from "@/components/friends/LiveFeed"
 import { FriendManageDrawer } from "@/components/friends/FriendManageDrawer"
 import { FriendProfileModal } from "@/components/friends/FriendProfileModal"
@@ -109,6 +109,13 @@ export function Friends() {
     <MasterGrid>
       <Navbar />
 
+      {/* Friend columns — today's tasks per friend */}
+      <GridRow flex="pass">
+        <GridCell className="flex-1 !p-0 overflow-hidden">
+          <FriendColumns />
+        </GridCell>
+      </GridRow>
+
       {/* Top ticker — friend completion marquee */}
       <GridRow flex="pass">
         <GridCell className="flex-1 !p-0 overflow-hidden">
@@ -148,13 +155,6 @@ export function Friends() {
               Manage
             </Button>
           </div>
-        </GridCell>
-      </GridRow>
-
-      {/* Crew horizontal scroll cards */}
-      <GridRow flex="pass">
-        <GridCell className="flex-1 !p-0 overflow-hidden">
-          <CrewScroll friends={friends} onFriendClick={(id) => setSelectedFriendId(id)} />
         </GridCell>
       </GridRow>
 

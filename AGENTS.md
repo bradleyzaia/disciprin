@@ -17,6 +17,24 @@ Before doing anything else:
 
 Don't ask permission. Just do it.
 
+
+## Commands
+
+### `/a` — Start Work (開工)
+1. Read `HANDOFF.md` — pick up where we left off
+2. Read `memory/YYYY-MM-DD.md` for today and yesterday
+3. Read `MEMORY.md`
+4. Brief the user on state of the world: open threads, priorities, what needs attention
+
+### `/z` — Wrap Up (收工)
+1. Write/update `memory/YYYY-MM-DD.md` with today's raw log
+2. Write `HANDOFF.md` — clean handoff for next session:
+   - What happened this session
+   - Active projects + status
+   - Next session priorities
+3. Update `MEMORY.md` if anything significant happened
+4. Confirm wrap-up complete
+
 ## Memory
 
 You wake up fresh each session. These files are your continuity:
@@ -210,3 +228,30 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
+
+
+## /收工 (Wrap Up)
+
+When you see `/收工` from your human, execute the handoff protocol:
+
+1. **Summarize** the entire session: key actions, decisions, current state, open items, lessons
+2. **Write `handoff.md`** in your workspace root (overwrites previous)
+3. **Update `memory/YYYY-MM-DD.md`** with key points
+4. **Reply** with a concise summary, ending with "✅ Handoff written."
+
+On session startup: if `handoff.md` exists, read it first — it is the previous session briefing you.
+
+Full protocol: `/home/x/.openclaw/workspace/protocols/shougong.md`
+
+
+## /開工 (Start Work)
+
+When you see `/開工` from your human, get yourself up to speed:
+
+1. **Read `handoff.md`** if it exists — this is the previous session briefing
+2. **Read recent memory** — `memory/YYYY-MM-DD.md` (today + yesterday), `MEMORY.md` if main session
+3. **Check current state** — git status, running processes, anything changed since handoff
+4. **Reply** with a concise status: what you're picking up from, current state, what's ready to work on
+5. **Archive handoff** — rename to `handoff-YYYY-MM-DD.md` after absorbing
+
+Full protocol: `/home/x/.openclaw/workspace/protocols/kaigong.md`
