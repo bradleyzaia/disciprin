@@ -41,10 +41,10 @@ export function FriendCard({ friend, index, onClick }: FriendCardProps) {
     >
       <div className="flex justify-between items-start mb-4">
         <div>
-          <div className="text-sm font-bold tracking-widest">{friend.name}</div>
+          <div className="text-sm font-normal tracking-widest">{friend.name}</div>
           <div className="text-[9px] text-grayscale50 mt-0.5">{friend.handle}</div>
         </div>
-        <div className={`text-[28px] font-bold ${PCT_COLORS[tier]}`}>
+        <div className={`text-[28px] font-normal ${PCT_COLORS[tier]}`}>
           {friend.completionPct}%
         </div>
       </div>

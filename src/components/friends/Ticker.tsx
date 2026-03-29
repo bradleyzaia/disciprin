@@ -33,7 +33,7 @@ export function Ticker({ friends, reverse = false, stats }: TickerProps) {
           <span key={i} className="flex items-center shrink-0">
             <span className="px-8 text-[10px] tracking-[0.15em] text-grayscale50">
               {item.label}{' '}
-              <span className={`font-bold ${item.color ? COLOR_MAP[item.color] : 'text-dark-theme-text'}`}>
+              <span className={`font-normal ${item.color ? COLOR_MAP[item.color] : 'text-dark-theme-text'}`}>
                 {item.value}
               </span>
             </span>

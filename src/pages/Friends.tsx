@@ -71,7 +71,7 @@ export function Friends() {
                 <Users className="w-7 h-7 text-grayscale50" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold tracking-[0.15em] uppercase text-grayscale100 mb-2">
+                <h2 className="text-sm font-normal tracking-[0.15em] uppercase text-grayscale100 mb-2">
                   No friends yet
                 </h2>
                 <p className="text-[11px] text-grayscale50 leading-relaxed max-w-[280px]">

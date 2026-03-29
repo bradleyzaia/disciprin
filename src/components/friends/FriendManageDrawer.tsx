@@ -232,7 +232,7 @@ function FriendsListTab() {
                 <div className="text-[9px] text-grayscale50">{f.handle}</div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-[10px] text-green font-bold">{f.completionPct}%</span>
+                <span className="text-[10px] text-green font-normal">{f.completionPct}%</span>
                 {confirming === f.clerkId ? (
                   <div className="flex gap-1">
                     <button

@@ -173,7 +173,7 @@ export function CompletionChart({ className, data, timeRange = 'W' }: Completion
                             <div className="text-stable-light/50">
                                 {timeRange === 'W' ? formatDate(data[hoverIndex].date) : `WEEK OF ${formatDate(data[hoverIndex].date)}`}
                             </div>
-                            <div className="text-primary font-bold">{Math.round(data[hoverIndex].completionRate)}% COMPLETION</div>
+                            <div className="text-primary font-normal">{Math.round(data[hoverIndex].completionRate)}% COMPLETION</div>
                         </div>
                     )}
                 </div>

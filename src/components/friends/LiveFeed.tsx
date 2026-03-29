@@ -34,9 +34,9 @@ export function LiveFeed({ updates }: LiveFeedProps) {
         >
           {doubled.map((u, i) => (
             <div key={`${u.id}-${i}`} className="py-2 text-[11px] text-grayscale75 border-b border-dark-theme-border">
-              <span className="text-dark-theme-text font-semibold">{u.name}</span>{' '}
+              <span className="text-dark-theme-text font-normal">{u.name}</span>{' '}
               {u.action}{' '}
-              <span className={`font-bold ${HL_COLORS[u.highlightColor]}`}>{u.highlight}</span>{' '}
+              <span className={`font-normal ${HL_COLORS[u.highlightColor]}`}>{u.highlight}</span>{' '}
               <span className="text-grayscale50 text-[9px]">{u.timeAgo}</span>
             </div>
           ))}

@@ -72,7 +72,7 @@ export function FriendColumns() {
             {/* Friend header */}
             <div className="border-b border-dark-theme-border px-4 py-3 flex items-center justify-between">
               <div className="min-w-0">
-                <div className="font-medium truncate">
+                <div className="font-normal truncate">
                   <ScrambleText text={friend!.isMe ? `${friend!.name} (You)` : friend!.name} />
                 </div>
                 <div className="text-[10px] text-dark-theme-text/50">
@@ -80,7 +80,7 @@ export function FriendColumns() {
                 </div>
               </div>
               <div className={cn(
-                "text-lg font-bold tabular-nums",
+                "text-lg font-normal tabular-nums",
                 friend!.completionPct >= 90 ? "text-green" :
                 friend!.completionPct >= 40 ? "text-yellow" : "text-red"
               )}>
@@ -108,7 +108,7 @@ export function FriendColumns() {
                     {/* Pill name column */}
                     <div className="px-4 border-r border-dark-theme-border flex items-center">
                       <div className="min-w-0">
-                        <div className="font-medium truncate">
+                        <div className="font-normal truncate">
                           <ScrambleText text={task.name} />
                         </div>
                         <div className="text-[10px] text-dark-theme-text/50 flex flex-col leading-relaxed">

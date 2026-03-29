@@ -113,10 +113,10 @@ function ProfileContent({ profile }: { profile: ProfileData }) {
       {/* Name + handle + big completion % */}
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h2 className="text-xl font-bold tracking-wider">{profile.name}</h2>
+          <h2 className="text-xl font-normal tracking-wider">{profile.name}</h2>
           <p className="text-[9px] text-grayscale50 mt-0.5">{profile.handle}</p>
         </div>
-        <div className={`text-[48px] font-bold leading-none ${PCT_COLORS[tier]}`}>
+        <div className={`text-[48px] font-normal leading-none ${PCT_COLORS[tier]}`}>
           {profile.stats.weeklyCompletionPct}%
         </div>
       </div>
@@ -145,7 +145,7 @@ function ProfileContent({ profile }: { profile: ProfileData }) {
             className="border border-dark-theme-border p-4"
           >
             <p className="text-[9px] tracking-[0.2em] text-grayscale50 uppercase mb-1">{stat.label}</p>
-            <p className="text-lg font-bold text-green">{stat.value}</p>
+            <p className="text-lg font-normal text-green">{stat.value}</p>
           </div>
         ))}
       </div>
@@ -167,7 +167,7 @@ function ProfileContent({ profile }: { profile: ProfileData }) {
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-sm font-semibold tracking-wider">{pill.name}</span>
+                  <span className="text-sm font-normal tracking-wider">{pill.name}</span>
                   <span className="text-[8px] text-grayscale25 tracking-[0.15em] uppercase">
                     {CATEGORY_LABELS[pill.category] ?? pill.category}
                   </span>
@@ -176,7 +176,7 @@ function ProfileContent({ profile }: { profile: ProfileData }) {
                   {pill.completedThisWeek}/{pill.frequencyPerWeek} this week · {pill.currentStreak}W streak
                 </div>
               </div>
-              <div className={`text-lg font-bold ${PCT_COLORS[pillTier]}`}>
+              <div className={`text-lg font-normal ${PCT_COLORS[pillTier]}`}>
                 {pill.completionPct}%
               </div>
             </motion.div>
