@@ -1,15 +1,20 @@
 import { query } from "../_generated/server";
+import { v } from "convex/values";
 
 /**
- * Get all friends with their tasks and today's completion status.
- * Returns each friend's active pills + whether each was completed today.
+ * Get all friends with their tasks and completion status for a given date.
+ * Returns each friend's active pills + whether each was completed on that date.
  */
 export default query({
-    args: {},
-    handler: async (ctx) => {
+    args: {
+        date: v.optional(v.string()), // YYYY-MM-DD, defaults to today
+    },
+    handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) return [];
         const userId = identity.subject;
+
+        const dateStr = args.date ?? new Date().toISOString().split("T")[0];
 
         // Get all accepted friendships (both directions)
         const sentFriends = await ctx.db
@@ -28,8 +33,6 @@ export default query({
         ];
         const uniqueIds = [...new Set(friendClerkIds)];
 
-        const todayStr = new Date().toISOString().split("T")[0];
-
         const friends = await Promise.all(
             uniqueIds.map(async (friendClerkId) => {
                 const user = await ctx.db
@@ -46,22 +49,22 @@ export default query({
                     )
                     .collect();
 
-                // Get today's entries
-                const todayEntries = await ctx.db
+                // Get entries for requested date
+                const dayEntries = await ctx.db
                     .query("pill_entries")
                     .withIndex("by_user_date", (q) =>
-                        q.eq("user_id", friendClerkId).eq("date", todayStr)
+                        q.eq("user_id", friendClerkId).eq("date", dateStr)
                     )
                     .collect();
 
                 const tasks = pills.map((pill) => {
-                    const entry = todayEntries.find((e) => e.pill_id === pill._id);
+                    const entry = dayEntries.find((e) => e.pill_id === pill._id);
+                    const value = entry?.value ?? 0;
                     const completed = entry
                         ? pill.measurement_type === "boolean"
                             ? entry.value === 1
                             : entry.value >= pill.target_value
                         : false;
-                    const value = entry?.value ?? 0;
 
                     return {
                         id: pill._id,

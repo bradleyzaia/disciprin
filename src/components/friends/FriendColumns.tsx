@@ -1,25 +1,26 @@
+import { useState, useMemo } from "react"
 import { useQuery } from "convex/react"
 import { api } from "../../../convex/_generated/api"
-import { motion } from "framer-motion"
-import { Check, Minus } from "lucide-react"
-
-const CATEGORY_COLORS: Record<string, string> = {
-  PHYSICAL: "bg-green/15 text-green",
-  MENTAL: "bg-blue-400/15 text-blue-400",
-  SOCIAL: "bg-yellow/15 text-yellow",
-  CREATIVE: "bg-purple-400/15 text-purple-400",
-  OTHER: "bg-grayscale25/40 text-grayscale75",
-}
+import { format, addDays, subDays, isSameDay } from "date-fns"
+import { ChevronLeft, ChevronRight, Check } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { ScrambleText } from "@/components/ui/scramble-text"
+import { SFX, playSFX } from "@/lib/sfx"
+import { grid, duration } from "@/styles/tokens"
 
 export function FriendColumns() {
-  const friendsTasks = useQuery(api.friends.getFriendsTodayTasks.default)
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const dateStr = format(currentDate, "yyyy-MM-dd")
+  const isToday = isSameDay(currentDate, new Date())
+
+  const friendsTasks = useQuery(api.friends.getFriendsTodayTasks.default, { date: dateStr })
 
   if (friendsTasks === undefined) {
     return (
-      <div className="border-b border-dark-theme-border bg-grayscale0 py-8">
+      <div className="border-b border-dark-theme-border bg-black py-8">
         <div className="flex items-center justify-center">
-          <span className="text-[10px] tracking-[0.15em] text-grayscale50 animate-pulse">
-            Loading friends…
+          <span className="text-[10px] tracking-[0.15em] text-dark-theme-text animate-pulse font-mono">
+            <ScrambleText text="Loading crew…" />
           </span>
         </div>
       </div>
@@ -29,93 +30,183 @@ export function FriendColumns() {
   if (!friendsTasks || friendsTasks.length === 0) return null
 
   return (
-    <div className="border-b border-dark-theme-border bg-grayscale0 overflow-x-auto scrollbar-hide">
-      <div
-        className="flex min-w-0"
-        style={{ width: friendsTasks.length <= 3 ? "100%" : undefined }}
+    <div className="border-b border-dark-theme-border bg-black overflow-x-auto font-mono text-xs">
+      {/* Day switcher row */}
+      <div className="grid border-b border-dark-theme-border"
+        style={{
+          gridTemplateColumns: `repeat(${friendsTasks.length}, minmax(240px, 1fr))`,
+          minWidth: friendsTasks.length > 3 ? `${friendsTasks.length * 240}px` : undefined,
+        }}
       >
         {friendsTasks.map((friend, i) => (
-          <motion.div
-            key={friend!.clerkId}
-            className={`
-              shrink-0 border-r border-dark-theme-border last:border-r-0
-              flex flex-col
-            `}
-            style={{
-              width: friendsTasks.length <= 3
-                ? `${100 / friendsTasks.length}%`
-                : "33.333%",
-              minWidth: friendsTasks.length <= 3 ? undefined : "33.333%",
-              maxWidth: "33.333%",
-            }}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.06, duration: 0.35 }}
+          <div
+            key={`nav-${friend!.clerkId}`}
+            className={cn(
+              "border-r border-dark-theme-border last:border-r-0",
+              i === 0 ? "" : ""
+            )}
           >
-            {/* Friend header */}
-            <div className="px-3 pt-3 pb-2 border-b border-dark-theme-border/50">
-              <div className="flex items-baseline justify-between gap-1">
-                <span className="text-[11px] font-bold tracking-wider truncate">
-                  {friend!.name}
-                </span>
-                <span
-                  className={`text-[11px] font-bold tabular-nums shrink-0 ${
-                    friend!.completionPct >= 80
-                      ? "text-green"
-                      : friend!.completionPct >= 40
-                        ? "text-yellow"
-                        : "text-red"
-                  }`}
+            {/* Only render nav in first column, span visually */}
+            {i === 0 ? (
+              <div className="flex h-10">
+                <button
+                  onMouseDown={() => playSFX(SFX.ENTER)}
+                  onClick={() => setCurrentDate(subDays(currentDate, 1))}
+                  className="w-10 flex items-center justify-center hover:bg-white hover:text-black transition-colors border-r border-dark-theme-border"
                 >
-                  {friend!.completedCount}/{friend!.totalCount}
-                </span>
+                  <ChevronLeft className="size-4" />
+                </button>
+                <button
+                  onMouseDown={() => playSFX(SFX.ENTER)}
+                  onClick={() => setCurrentDate(new Date())}
+                  className={cn(
+                    "flex-1 flex items-center justify-center hover:bg-white hover:text-black transition-colors uppercase text-[10px]",
+                    isToday ? "text-dark-theme-text/30" : "text-dark-theme-text"
+                  )}
+                >
+                  <ScrambleText text={format(currentDate, "EEE, MMM d")} />
+                </button>
+                <button
+                  onMouseDown={() => playSFX(SFX.ENTER)}
+                  onClick={() => setCurrentDate(addDays(currentDate, 1))}
+                  className="w-10 flex items-center justify-center hover:bg-white hover:text-black transition-colors border-l border-dark-theme-border"
+                >
+                  <ChevronRight className="size-4" />
+                </button>
               </div>
-              <span className="text-[9px] text-grayscale50 tracking-wide">
-                {friend!.handle}
-              </span>
+            ) : (
+              <div className="h-10" />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Friend columns: each friend = header + pill rows */}
+      <div className="grid"
+        style={{
+          gridTemplateColumns: `repeat(${friendsTasks.length}, minmax(240px, 1fr))`,
+          minWidth: friendsTasks.length > 3 ? `${friendsTasks.length * 240}px` : undefined,
+        }}
+      >
+        {friendsTasks.map((friend) => (
+          <div key={friend!.clerkId} className="border-r border-dark-theme-border last:border-r-0 flex flex-col">
+            {/* Friend header */}
+            <div className="border-b border-dark-theme-border px-4 py-3 flex items-center justify-between">
+              <div className="min-w-0">
+                <div className="font-medium truncate">
+                  <ScrambleText text={friend!.name} />
+                </div>
+                <div className="text-[10px] text-dark-theme-text/50">
+                  <ScrambleText text={friend!.handle ?? ""} />
+                </div>
+              </div>
+              <div className={cn(
+                "text-lg font-bold tabular-nums",
+                friend!.completionPct >= 80 ? "text-green" :
+                friend!.completionPct >= 40 ? "text-yellow" : "text-red"
+              )}>
+                <ScrambleText text={`${friend!.completionPct}%`} />
+              </div>
             </div>
 
-            {/* Tasks list */}
-            <div className="flex flex-col px-3 py-2 gap-1.5 flex-1">
-              {friend!.tasks.length === 0 ? (
-                <span className="text-[9px] text-grayscale50 italic py-2">
-                  No tasks
-                </span>
-              ) : (
-                friend!.tasks.map((task) => (
+            {/* Pill rows — mirrors dashboard CalendarGrid layout */}
+            {friend!.tasks.length === 0 ? (
+              <div className="px-4 py-6 text-dark-theme-text/30 text-center">
+                <ScrambleText text="No pills configured." />
+              </div>
+            ) : (
+              friend!.tasks.map((task) => {
+                const percentage = task.targetValue > 0
+                  ? Math.min(100, Math.round((task.value / task.targetValue) * 100))
+                  : (task.completed ? 100 : 0)
+
+                return (
                   <div
                     key={task.id}
-                    className="flex items-center gap-1.5 min-h-[22px]"
+                    className="grid border-b border-dark-theme-border last:border-b-0 min-h-14"
+                    style={{ gridTemplateColumns: "1fr minmax(64px, 80px)" }}
                   >
-                    {/* Completion indicator */}
-                    <div
-                      className={`w-3.5 h-3.5 shrink-0 flex items-center justify-center border ${
-                        task.completed
-                          ? "border-green bg-green/20"
-                          : "border-grayscale25"
-                      }`}
-                    >
-                      {task.completed ? (
-                        <Check className="w-2.5 h-2.5 text-green" strokeWidth={3} />
-                      ) : (
-                        <Minus className="w-2 h-2 text-grayscale25" strokeWidth={2} />
-                      )}
+                    {/* Pill name column */}
+                    <div className="px-4 border-r border-dark-theme-border flex items-center">
+                      <div className="min-w-0">
+                        <div className="font-medium truncate">
+                          <ScrambleText text={task.name} />
+                        </div>
+                        <div className="text-[10px] text-dark-theme-text/50 flex flex-col leading-relaxed">
+                          <div>
+                            <ScrambleText
+                              text={
+                                task.measurementType === "boolean"
+                                  ? "PASS/FAIL"
+                                  : `${task.targetValue}${task.unit ? ` ${task.unit}` : ""}`
+                              }
+                            />
+                            {task.measurementType !== "boolean" && (
+                              <ScrambleText text=" / DAY" className="text-grayscale75" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    {/* Task name */}
-                    <span
-                      className={`text-[10px] leading-tight truncate ${
-                        task.completed
-                          ? "text-grayscale50 line-through"
-                          : "text-grayscale75"
-                      }`}
-                    >
-                      {task.name}
-                    </span>
+
+                    {/* Completion cell — mirrors CalendarDayCell */}
+                    <div className="flex items-center justify-center relative group">
+                      <div
+                        className="absolute inset-0 opacity-0 group-hover:opacity-25 transition-opacity pointer-events-none z-0"
+                        style={{
+                          backgroundImage: grid.pattern,
+                          backgroundSize: grid.patternSize,
+                          transitionDuration: `${duration.moderate}ms`,
+                        }}
+                      />
+                      <div className="relative z-10 w-full h-full flex items-center justify-center">
+                        {task.completed ? (
+                          <>
+                            <ScrambleText
+                              className="absolute top-2 right-2 text-xs leading-none text-green scale-75 origin-top-right"
+                              text={task.measurementType === "boolean" ? "PASS" : `${percentage}%`}
+                              scrambleOnMount={false}
+                            />
+                            <div className="w-8 h-4 rounded-full border border-dark-theme-border bg-green rotate-315 transform origin-center flex items-center justify-center">
+                              <Check className="w-3 h-3 rotate-45 text-black" />
+                            </div>
+                          </>
+                        ) : task.value > 0 ? (
+                          <>
+                            <ScrambleText
+                              className="absolute top-2 right-2 text-xs leading-none text-dark-theme-text/50 scale-75 origin-top-right"
+                              text={`${percentage}%`}
+                              scrambleOnMount={false}
+                            />
+                            <div className="w-6 h-3 rounded-full border border-dark-theme-border bg-transparent rotate-315 transform origin-center overflow-hidden relative">
+                              <div
+                                className={cn(
+                                  "h-full transition-all duration-300 ease-out",
+                                  percentage < 50 ? "bg-red" : "bg-yellow"
+                                )}
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <ScrambleText
+                              className="absolute top-2 right-2 text-xs leading-none text-dark-theme-text/50 scale-75 origin-top-right"
+                              text={task.measurementType === "boolean" ? "FAIL" : "0%"}
+                              scrambleOnMount={false}
+                            />
+                            <div className="w-6 h-3 rounded-full border border-dark-theme-border bg-transparent rotate-315 transform origin-center overflow-hidden relative">
+                              <div className="h-full bg-red" style={{ width: "0%" }} />
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                ))
-              )}
-            </div>
-          </motion.div>
+                )
+              })
+            )}
+          </div>
         ))}
       </div>
     </div>
