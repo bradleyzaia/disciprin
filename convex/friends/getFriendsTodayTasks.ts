@@ -24,12 +24,22 @@ export default query({
                 .first();
             if (!user) return null;
 
-            const pills = await ctx.db
+            let pills = await ctx.db
                 .query("pills")
                 .withIndex("by_user_active", (q) =>
                     q.eq("user_id", clerkId).eq("is_active", true)
                 )
                 .collect();
+
+            // Respect user's custom pill order
+            if (user.pill_order && user.pill_order.length > 0) {
+                const orderMap = new Map(user.pill_order.map((id: string, i: number) => [id, i]));
+                pills = pills.sort((a, b) => {
+                    const ai = orderMap.get(a._id as unknown as string) ?? 999;
+                    const bi = orderMap.get(b._id as unknown as string) ?? 999;
+                    return ai - bi;
+                });
+            }
 
             const dayEntries = await ctx.db
                 .query("pill_entries")
