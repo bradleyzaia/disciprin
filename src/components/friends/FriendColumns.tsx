@@ -44,8 +44,8 @@ export function FriendColumns() {
           onMouseDown={() => playSFX(SFX.ENTER)}
           onClick={() => setCurrentDate(new Date())}
           className={cn(
-            "flex-1 flex items-center justify-center hover:text-green transition-colors uppercase text-[10px]",
-            isToday ? "text-dark-theme-text/30" : "text-dark-theme-text"
+            "flex-1 flex items-center justify-center hover:text-green transition-colors uppercase text-xl font-mono tracking-normal",
+            isToday ? "text-dark-theme-text/30" : "text-primary"
           )}
         >
           <ScrambleText text={format(currentDate, "EEE, MMM d")} />
@@ -81,7 +81,7 @@ export function FriendColumns() {
               </div>
               <div className={cn(
                 "text-lg font-bold tabular-nums",
-                friend!.completionPct >= 80 ? "text-green" :
+                friend!.completionPct >= 90 ? "text-green" :
                 friend!.completionPct >= 40 ? "text-yellow" : "text-red"
               )}>
                 <ScrambleText text={`${friend!.completionPct}%`} />

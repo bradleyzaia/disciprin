@@ -71,7 +71,7 @@ export function getCrewAverage(friends: FriendData[]): number {
 }
 
 export function getCompletionTier(pct: number): 'green' | 'yellow' | 'pink' {
-  if (pct >= 80) return 'green'
+  if (pct >= 90) return 'green'
   if (pct >= 60) return 'yellow'
   return 'pink'
 }

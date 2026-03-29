@@ -14,7 +14,7 @@ export function cn(...inputs: ClassValue[]) {
  * @returns Hex color string from design tokens
  */
 export function getCompletionColor(percentage: number): string {
-    if (percentage >= 100) return colors.green    // Success
+    if (percentage >= 90) return colors.green    // Success
     if (percentage >= 50) return colors.yellow    // In progress
     return colors.magenta                          // Needs attention
 }
