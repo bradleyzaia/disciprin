@@ -105,11 +105,16 @@ export function Friends() {
         </GridCell>
       </GridRow>
 
-      {/* Crew Average + Live Feed — single row, two columns */}
+      {/* Crew Average + Live Feed + Manage — single row, three columns */}
       <GridRow flex="pass">
-        <GridCell className="!p-0" style={{ width: '33%' }}>
+        <GridCell className="!p-0" style={{ width: '25%' }}>
           <HeroCounter value={crewAvg} label="Crew Average" sublabel={weekLabel} />
-          <div className="border-t border-dark-theme-border px-6 py-3 flex items-center justify-between">
+        </GridCell>
+        <GridCell className="flex-1 !p-0 overflow-hidden" style={{ minHeight: '200px' }}>
+          <LiveFeed updates={liveUpdates} />
+        </GridCell>
+        <GridCell className="!p-0 flex flex-col items-center justify-center" style={{ width: '15%' }}>
+          <div className="flex flex-col items-center gap-3 p-4">
             <span className="text-[9px] tracking-[0.3em] text-grayscale50 uppercase font-mono">
               {friends.length} friend{friends.length !== 1 ? "s" : ""}
             </span>
@@ -123,9 +128,6 @@ export function Friends() {
               Manage
             </Button>
           </div>
-        </GridCell>
-        <GridCell className="flex-1 !p-0 overflow-hidden">
-          <LiveFeed updates={liveUpdates} />
         </GridCell>
       </GridRow>
 

@@ -19,7 +19,7 @@ export function FriendManageDrawer({ isOpen, onClose }: FriendManageDrawerProps)
   const [searchQuery, setSearchQuery] = useState("")
 
   return (
-    <Drawer isOpen={isOpen} onClose={onClose}>
+    <Drawer isOpen={isOpen} onClose={onClose} side="right">
       <div className="flex flex-col h-full max-h-[80vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-dark-theme-border shrink-0">
