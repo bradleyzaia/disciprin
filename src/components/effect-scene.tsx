@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 import { colors } from "@/styles/tokens"
 
 function VideoScene() {
-    const texture = useVideoTexture("/test.webm")
+    const texture = useVideoTexture("/test.mp4")
     const { viewport } = useThree()
 
     const videoConfig = useMemo(() => {
