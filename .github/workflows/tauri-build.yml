@@ -54,11 +54,15 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
+      - name: Install Tauri CLI
+        run: npm install -g @tauri-apps/cli@latest
+
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          tauriScript: tauri
           tagName: ${{ github.ref_name }}
           releaseName: 'Disciprin ${{ github.ref_name }}'
           releaseBody: 'Download the installer for your platform below.'
