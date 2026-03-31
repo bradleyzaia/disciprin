@@ -15,6 +15,19 @@ export function Settings() {
                 </GridCell>
             </GridRow>
 
+            {!("__TAURI__" in window) && (
+                <GridRow>
+                    <GridCell span={12} className="backdrop-blur-none bg-black/80">
+                        <a
+                            href="https://github.com/bradleyzaia/disciprin/releases/latest/download/Disciprin_0.1.0_aarch64.dmg"
+                            className="text-dark-theme-text hover:text-white transition-colors uppercase underline underline-offset-4 decoration-white/50"
+                        >
+                            ↓ Download Desktop App
+                        </a>
+                    </GridCell>
+                </GridRow>
+            )}
+
             <UserProfileEditor />
             <HabitManager />
             <DangerZone />
