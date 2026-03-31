@@ -2,13 +2,19 @@
 pub fn run() {
   tauri::Builder::default()
     .setup(|app| {
-      if cfg!(debug_assertions) {
-        app.handle().plugin(
-          tauri_plugin_log::Builder::default()
-            .level(log::LevelFilter::Info)
-            .build(),
-        )?;
+      // Enable devtools in all builds
+      #[cfg(desktop)]
+      {
+        use tauri::Manager;
+        let window = app.get_webview_window("main").unwrap();
+        window.open_devtools();
       }
+
+      app.handle().plugin(
+        tauri_plugin_log::Builder::default()
+          .level(log::LevelFilter::Info)
+          .build(),
+      )?;
       Ok(())
     })
     .run(tauri::generate_context!())
