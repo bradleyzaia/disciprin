@@ -17,6 +17,7 @@ import { ProtectedRoute } from "@/components/layout/ProtectedRoute"
 
 
 
+import { NativeTitlebar } from "@/components/layout/NativeTitlebar"
 import { SmoothScroll } from "@/components/layout/SmoothScroll"
 import { AuthenticateWithRedirectCallback } from "@clerk/clerk-react"
 import { useEffect } from "react"
@@ -30,6 +31,7 @@ function App() {
   return (
     <ToastProvider>
       <BrowserRouter>
+        <NativeTitlebar />
         <SmoothScroll />
         <BackgroundController />
         <Routes>
