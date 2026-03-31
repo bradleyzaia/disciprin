@@ -48,7 +48,7 @@ export function Landing() {
                                         </ScrambleLink>
                                         {!("__TAURI__" in window) && (
                                             <a
-                                                href="https://github.com/bradleyzaia/disciprin/releases/latest/download/Disciprin_aarch64.dmg"
+                                                href="https://github.com/bradleyzaia/disciprin/releases/latest/download/Disciprin_0.1.0_aarch64.dmg"
                                                 className="flex-1 py-4 md:py-6 text-center text-dark-theme-text hover:bg-white hover:text-grayscale0 transition-colors uppercase font-mono text-xs tracking-normal border-l border-dark-theme-border"
                                             >
                                                 ↓ Download
