@@ -22,11 +22,11 @@
         "transparent": true
       }
     ],
+    "macOSPrivateApi": true,
     "security": {
       "csp": null
     }
   },
-  "macOSPrivateApi": true,
   "bundle": {
     "active": true,
     "targets": "all",
