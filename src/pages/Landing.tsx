@@ -49,7 +49,7 @@ export function Landing() {
                                         {!("__TAURI__" in window) && (
                                             <a
                                                 href="https://github.com/bradleyzaia/disciprin/releases/latest/download/Disciprin_aarch64.dmg"
-                                                className="flex-1 py-4 md:py-6 text-center text-dark-theme-text hover:bg-white hover:text-grayscale0 transition-colors uppercase font-mono text-xs tracking-widest border-l border-dark-theme-border"
+                                                className="flex-1 py-4 md:py-6 text-center text-dark-theme-text hover:bg-white hover:text-grayscale0 transition-colors uppercase font-mono text-xs tracking-normal border-l border-dark-theme-border"
                                             >
                                                 ↓ Download
                                             </a>
