@@ -10,18 +10,7 @@
     "beforeBuildCommand": "npm run build"
   },
   "app": {
-    "windows": [
-      {
-        "title": "Disciprin",
-        "width": 1200,
-        "height": 800,
-        "resizable": true,
-        "fullscreen": false,
-        "useHttpsScheme": true,
-        "titleBarStyle": "overlay",
-        "transparent": true
-      }
-    ],
+    "windows": [],
     "macOSPrivateApi": true,
     "security": {
       "csp": null
