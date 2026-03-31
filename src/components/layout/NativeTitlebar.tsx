@@ -4,7 +4,11 @@ export function NativeTitlebar() {
     const [isTauri, setIsTauri] = useState(false)
 
     useEffect(() => {
-        setIsTauri(typeof window !== "undefined" && "__TAURI__" in window)
+        const tauri = typeof window !== "undefined" && "__TAURI__" in window
+        setIsTauri(tauri)
+        if (tauri) {
+            document.documentElement.classList.add("tauri")
+        }
     }, [])
 
     if (!isTauri) return null
@@ -12,7 +16,7 @@ export function NativeTitlebar() {
     return (
         <div
             data-tauri-drag-region
-            className="fixed top-0 left-0 right-0 z-[9999] h-11 flex items-center select-none bg-black/80 backdrop-blur-md border-b border-white/5"
+            className="fixed top-0 left-0 right-0 z-[9999] h-11 flex items-center select-none"
         >
             <span
                 data-tauri-drag-region

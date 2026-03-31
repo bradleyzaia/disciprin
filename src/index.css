@@ -75,6 +75,9 @@
   * {
     @apply border-border;
   }
+  html.tauri, html.tauri body {
+    background: transparent !important;
+  }
   body {
     @apply bg-[#010101] text-dark-theme-text;
     font-family: var(--font-mono);

@@ -13,6 +13,11 @@
     <title>Disciprin</title>
   </head>
   <body>
+    <script>
+      if (window.__TAURI__) {
+        document.documentElement.classList.add('tauri');
+      }
+    </script>
     <div id="root"></div>
     <div id="clerk-captcha"></div>
     <script type="module" src="/src/main.tsx"></script>
