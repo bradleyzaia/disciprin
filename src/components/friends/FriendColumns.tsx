@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { useQuery } from "convex/react"
 import { api } from "../../../convex/_generated/api"
-import { format, addDays, subDays, isSameDay } from "date-fns"
+import { format, addDays, subDays } from "date-fns"
 import { ChevronLeft, ChevronRight, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ScrambleText } from "@/components/ui/scramble-text"
@@ -11,8 +11,6 @@ import { grid, duration } from "@/styles/tokens"
 export function FriendColumns() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const dateStr = format(currentDate, "yyyy-MM-dd")
-  const isToday = isSameDay(currentDate, new Date())
-
   const friendsTasks = useQuery(api.friends.getFriendsTodayTasks.default, { date: dateStr })
 
   if (friendsTasks === undefined) {
