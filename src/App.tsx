@@ -17,19 +17,22 @@ import { ProtectedRoute } from "@/components/layout/ProtectedRoute"
 
 
 
-import { NativeTitlebar } from "@/components/layout/NativeTitlebar"
+import { NativeTitlebar, useIsTauri } from "@/components/layout/NativeTitlebar"
 import { SmoothScroll } from "@/components/layout/SmoothScroll"
 import { AuthenticateWithRedirectCallback } from "@clerk/clerk-react"
 import { useEffect } from "react"
 import { SFX, preloadSFX } from "@/lib/sfx"
 
 function App() {
+  const isTauri = useIsTauri()
+
   useEffect(() => {
     preloadSFX(Object.values(SFX))
   }, [])
 
   return (
     <ToastProvider>
+      <div className={isTauri ? "min-h-screen bg-black/80 backdrop-blur-md" : ""}>
       <BrowserRouter>
         <NativeTitlebar />
         <SmoothScroll />
@@ -53,6 +56,7 @@ function App() {
           <Route path="/ascii" element={<EffectScene />} />
         </Routes>
       </BrowserRouter>
+      </div>
     </ToastProvider>
   )
 }
