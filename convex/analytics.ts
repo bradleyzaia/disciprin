@@ -96,8 +96,10 @@ export const getAnalyticsData = query({
 
         // Habit Performance & Weekly Streak Calculation
         const habitPerformance = pills.map((pill) => {
-            const pillEntriesInRange = entriesInRange.filter((e) => e.pill_id === pill._id);
-            const allPillEntries = allEntries.filter((e) => e.pill_id === pill._id);
+            // Use string comparison for IDs to ensure consistent matching
+            const pillId = String(pill._id);
+            const pillEntriesInRange = entriesInRange.filter((e) => String(e.pill_id) === pillId);
+            const allPillEntries = allEntries.filter((e) => String(e.pill_id) === pillId);
 
             // Calculate Weeks Completed logic
             const weeksMap = new Map<string, number>();
