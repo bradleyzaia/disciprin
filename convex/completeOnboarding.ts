@@ -7,6 +7,7 @@ import { v } from "convex/values";
 export default mutation({
     args: {
         name: v.string(),
+        handle: v.optional(v.string()),
         timezone: v.string(),
         pills: v.array(
             v.object({
@@ -34,11 +35,27 @@ export default mutation({
             .withIndex("by_clerk_id", (q) => q.eq("clerk_id", userId))
             .first();
 
+        // Validate handle uniqueness if provided
+        if (args.handle) {
+            const handleRegex = /^[a-z0-9][a-z0-9_]{1,18}[a-z0-9]$/;
+            if (!handleRegex.test(args.handle)) {
+                throw new Error("Invalid handle format");
+            }
+            const existingHandle = await ctx.db
+                .query("users")
+                .withIndex("by_handle", (q) => q.eq("handle", args.handle!))
+                .first();
+            if (existingHandle && existingHandle.clerk_id !== userId) {
+                throw new Error("Handle already taken");
+            }
+        }
+
         if (existingUser) {
             await ctx.db.patch(existingUser._id, {
                 name: args.name,
                 timezone: args.timezone,
                 onboarding_completed: true,
+                ...(args.handle ? { handle: args.handle } : {}),
             });
         } else {
             await ctx.db.insert("users", {
@@ -48,6 +65,7 @@ export default mutation({
                 timezone: args.timezone,
                 onboarding_completed: true,
                 created_at: Date.now(),
+                ...(args.handle ? { handle: args.handle } : {}),
             });
 
             // System Tempo: Periods are inferred from Date, no initialization needed key.

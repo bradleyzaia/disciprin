@@ -58,7 +58,7 @@ semanticColors.status.missed       // magenta
 
 | Token | Font | Usage |
 |-------|------|-------|
-| `mono` | IBM Plex Mono | Body text, UI elements |
+| `mono` | IBM Plex Mono | Body text, UI elements. **Always `font-normal` (400 weight) — never use bold, semibold, or medium.** |
 | `display` | Cal Sans | Headings, display text |
 
 ### Font Sizes

@@ -378,7 +378,7 @@ export const grid = {
  * Get completion color based on percentage
  */
 export function getCompletionColor(percentage: number): string {
-  if (percentage >= 100) return colors.green;
+  if (percentage >= 90) return colors.green;
   if (percentage >= 50) return colors.yellow;
   return colors.magenta;
 }

@@ -135,7 +135,7 @@ function PillRow({
                 )}
             >
                 <div className="flex-1 min-w-0 pr-4">
-                    <div className="font-medium truncate"><ScrambleText text={row.pill.name} /></div>
+                    <div className="font-normal truncate"><ScrambleText text={row.pill.name} /></div>
                     <div className="text-[10px] text-dark-theme-text flex flex-col leading-relaxed">
                         <div>
                             <ScrambleText text={row.pill.measurement_type === 'boolean' ? 'PASS/FAIL' : `${row.pill.target_value}${row.pill.unit ? ` ${row.pill.unit}` : ''}`} />
@@ -197,7 +197,7 @@ function PillRow({
                         cell.aggregatedStats && (cell.aggregatedStats.completed > 0 ? (
                             <div className={cn(
                                 "w-full h-full flex flex-col items-center justify-center text-[10px]",
-                                cell.aggregatedStats.isMet && "font-bold"
+                                cell.aggregatedStats.isMet && ""
                             )}>
                                 {view === 'week' ? (
                                     <div className={cn(
@@ -208,7 +208,7 @@ function PillRow({
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center">
-                                        <span className="font-bold"><ScrambleText text={Number.isInteger(cell.aggregatedStats.completed) ? cell.aggregatedStats.completed.toString() : cell.aggregatedStats.completed.toFixed(1)} /></span>
+                                        <span className="font-normal"><ScrambleText text={Number.isInteger(cell.aggregatedStats.completed) ? cell.aggregatedStats.completed.toString() : cell.aggregatedStats.completed.toFixed(1)} /></span>
                                     </div>
                                 )}
                             </div>
@@ -461,7 +461,7 @@ export function CalendarGrid({
                                     onClick={() => onViewChange(v)}
                                     className={cn(
                                         "flex-1 h-full flex items-center justify-center hover:bg-white hover:text-black transition-colors uppercase text-[10px] border-r border-dark-theme-border last:border-r-0",
-                                        view === v ? "text-dark-theme-text font-bold bg-white/10" : "text-dark-theme-text/30"
+                                        view === v ? "text-dark-theme-text bg-white/10" : "text-dark-theme-text/30"
                                     )}
                                 >
                                     <ScrambleText text={v[0]} />

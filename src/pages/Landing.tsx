@@ -42,9 +42,19 @@ export function Landing() {
                                 </ScrambleLink>
                             ) : (
                                 <>
-                                    <ScrambleLink to="/login" className="flex-1 py-4 md:py-6 text-center text-dark-theme-text hover:bg-white hover:text-grayscale0 transition-colors uppercase border-b border-dark-theme-border">
-                                        Log in
-                                    </ScrambleLink>
+                                    <div className="flex w-full border-b border-dark-theme-border">
+                                        <ScrambleLink to="/login" className="flex-1 py-4 md:py-6 text-center text-dark-theme-text hover:bg-white hover:text-grayscale0 transition-colors uppercase">
+                                            Log in
+                                        </ScrambleLink>
+                                        {!("__TAURI__" in window) && (
+                                            <a
+                                                href="https://github.com/bradleyzaia/disciprin/releases/latest/download/Disciprin_0.1.0_aarch64.dmg"
+                                                className="flex-1 py-4 md:py-6 text-center text-dark-theme-text hover:bg-white hover:text-grayscale0 transition-colors uppercase font-mono text-xs tracking-normal border-l border-dark-theme-border"
+                                            >
+                                                ↓ Download
+                                            </a>
+                                        )}
+                                    </div>
                                     <ScrambleLink to="/signup" className="flex-1 py-4 md:py-6 text-center bg-white text-grayscale0 hover:bg-grayscale100 hover:text-dark-theme-text transition-colors uppercase">
                                         Lock In
                                     </ScrambleLink>

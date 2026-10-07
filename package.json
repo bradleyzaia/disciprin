@@ -10,13 +10,16 @@
     "preview": "vite preview",
     "cf:dev": "wrangler pages dev",
     "cf:deploy": "bun run build && wrangler pages deploy dist",
-    "ddd": "npx convex deploy && bun run cf:deploy"
+    "ddd": "npx convex deploy && bun run cf:deploy",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.59.4",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@react-three/postprocessing": "^3.0.4",
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/cli": "^2.10.1",
     "clsx": "^2.1.1",
     "convex": "^1.31.5",
     "date-fns": "^4.1.0",

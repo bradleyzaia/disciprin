@@ -9,9 +9,24 @@ interface DrawerProps {
     onClose: () => void
     children: ReactNode
     className?: string
+    side?: "bottom" | "right"
 }
 
-export function Drawer({ isOpen, onClose, children, className }: DrawerProps) {
+export function Drawer({ isOpen, onClose, children, className, side = "bottom" }: DrawerProps) {
+    const isRight = side === "right"
+
+    const motionProps = isRight
+        ? {
+            initial: { x: "100%" },
+            animate: { x: 0 },
+            exit: { x: "100%" },
+        }
+        : {
+            initial: { y: "100%" },
+            animate: { y: 0 },
+            exit: { y: "100%" },
+        }
+
     return createPortal(
         <AnimatePresence>
             {isOpen && (
@@ -31,9 +46,7 @@ export function Drawer({ isOpen, onClose, children, className }: DrawerProps) {
 
                     {/* Drawer Content */}
                     <motion.div
-                        initial={{ y: "100%" }}
-                        animate={{ y: 0 }}
-                        exit={{ y: "100%" }}
+                        {...motionProps}
                         transition={{
                             type: "spring",
                             damping: 30,
@@ -41,7 +54,10 @@ export function Drawer({ isOpen, onClose, children, className }: DrawerProps) {
                             mass: 0.8
                         }}
                         className={cn(
-                            "fixed bottom-0 left-0 right-0 h-auto min-h-[25vh] max-h-[90vh] bg-black border-t border-dark-theme-border z-50 flex flex-col shadow-2xl",
+                            "fixed z-50 flex flex-col shadow-2xl bg-black",
+                            isRight
+                                ? "top-0 right-0 h-full w-[420px] max-w-[90vw] border-l border-dark-theme-border"
+                                : "bottom-0 left-0 right-0 h-auto min-h-[25vh] max-h-[90vh] border-t border-dark-theme-border",
                             className
                         )}
                         onClick={(e) => e.stopPropagation()}

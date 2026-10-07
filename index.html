@@ -2,9 +2,7 @@
 <html lang="en" class="dark">
   <head>
     <script type="module">
-      if (import.meta.env.DEV) {
-        import("react-grab");
-      }
+      import("react-grab");
     </script>
     <meta charset="UTF-8" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,6 +13,11 @@
     <title>Disciprin</title>
   </head>
   <body>
+    <script>
+      if (window.__TAURI__) {
+        document.documentElement.classList.add('tauri');
+      }
+    </script>
     <div id="root"></div>
     <div id="clerk-captcha"></div>
     <script type="module" src="/src/main.tsx"></script>

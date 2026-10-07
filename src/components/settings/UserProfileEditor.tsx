@@ -11,30 +11,62 @@ import { useToast } from "@/lib/toast-context"
 export function UserProfileEditor() {
     const user = useQuery(api.users.getUser)
     const updateUser = useMutation(api.users.updateUser)
+    const updateHandle = useMutation(api.users.updateHandle)
     const { showToast } = useToast()
 
     const [name, setName] = useState("")
     const [timezone, setTimezone] = useState("UTC")
+    const [handle, setHandle] = useState("")
+    const [handleError, setHandleError] = useState<string | null>(null)
     const [isDirty, setIsDirty] = useState(false)
+    const [isHandleDirty, setIsHandleDirty] = useState(false)
+
+    const handleAvailability = useQuery(
+        api.users.checkHandleAvailability,
+        isHandleDirty && handle.length >= 3 ? { handle } : "skip"
+    )
 
     useEffect(() => {
         if (user) {
             setName(user.name || "")
             setTimezone(user.timezone || "UTC")
+            setHandle(user.handle || "")
         }
     }, [user])
 
+    useEffect(() => {
+        if (!isHandleDirty) {
+            setHandleError(null)
+            return
+        }
+        const regex = /^[a-z0-9][a-z0-9_]{1,18}[a-z0-9]$/
+        if (handle.length > 0 && handle.length < 3) {
+            setHandleError("Minimum 3 characters")
+        } else if (handle.length > 20) {
+            setHandleError("Maximum 20 characters")
+        } else if (handle.length >= 3 && !regex.test(handle)) {
+            setHandleError("Lowercase letters, numbers, and underscores only")
+        } else if (handleAvailability && !handleAvailability.available) {
+            setHandleError(handleAvailability.reason)
+        } else {
+            setHandleError(null)
+        }
+    }, [handle, handleAvailability, isHandleDirty])
+
     const handleSaveProfile = async () => {
         try {
-            await updateUser({
-                name,
-                timezone,
-            })
+            await updateUser({ name, timezone })
+
+            if (isHandleDirty && handle && !handleError) {
+                await updateHandle({ handle })
+            }
+
             setIsDirty(false)
+            setIsHandleDirty(false)
             showToast("SUCCESS", "Profile updated")
-        } catch (e) {
+        } catch (e: any) {
             console.error(e)
-            showToast("ERROR", "Failed to update profile")
+            showToast("ERROR", e.message || "Failed to update profile")
         }
     }
 
@@ -53,7 +85,7 @@ export function UserProfileEditor() {
         .map((tz) => ({ label: tz.toUpperCase(), value: tz }))
 
 
-    if (!user) return null // Or skeleton
+    if (!user) return null
 
     return (
         <>
@@ -66,6 +98,30 @@ export function UserProfileEditor() {
                             value={name}
                             onChange={(e) => { setName(e.target.value); setIsDirty(true) }}
                         />
+                    </div>
+                    <div className="mb-8">
+                        <label className="block text-xs mb-2 text-dark-theme-text uppercase"><ScrambleText text="Handle" /></label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-theme-text/50 text-sm">@</span>
+                            <Input
+                                value={handle}
+                                onChange={(e) => {
+                                    const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "")
+                                    setHandle(val)
+                                    setIsDirty(true)
+                                    setIsHandleDirty(true)
+                                }}
+                                className="pl-7"
+                                placeholder="your_handle"
+                                maxLength={20}
+                            />
+                        </div>
+                        {handleError && (
+                            <p className="text-red-500 text-[10px] mt-1 uppercase">{handleError}</p>
+                        )}
+                        {isHandleDirty && !handleError && handle.length >= 3 && handleAvailability?.available && (
+                            <p className="text-green text-[10px] mt-1 uppercase">Handle available</p>
+                        )}
                     </div>
                     <div className="mb-0">
                         <label className="block text-xs mb-2 text-dark-theme-text uppercase"><ScrambleText text="Email Address" /></label>
@@ -94,6 +150,7 @@ export function UserProfileEditor() {
                     <GridCell span={12} className="p-0 border-r-0">
                         <Button
                             onClick={handleSaveProfile}
+                            disabled={!!handleError}
                             className="w-full h-16 rounded-none text-lg hover:bg-white hover:text-black transition-colors uppercase border-none"
                         >
                             Save Changes
