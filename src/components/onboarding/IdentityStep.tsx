@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react"
-import { useQuery } from "convex/react"
-import { api } from "../../../convex/_generated/api"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 
@@ -9,6 +7,7 @@ interface IdentityStepProps {
     handle: string
     onChange: (name: string) => void
     onHandleChange: (handle: string) => void
+    handleAvailability?: { available: boolean; reason: string | null }
 }
 
 const HANDLE_REGEX = /^[a-z0-9][a-z0-9_]{1,18}[a-z0-9]$/
@@ -23,36 +22,28 @@ function suggestHandle(name: string): string {
         .slice(0, 20)
 }
 
-export const IdentityStep = ({ name, handle, onChange, onHandleChange }: IdentityStepProps) => {
-    const [handleTouched, setHandleTouched] = useState(false)
-    const [handleError, setHandleError] = useState<string | null>(null)
-
-    const handleAvailability = useQuery(
-        api.users.checkHandleAvailability,
-        handle.length >= 3 ? { handle } : "skip"
-    )
+export const IdentityStep = ({ name, handle, onChange, onHandleChange, handleAvailability }: IdentityStepProps) => {
+    const [handleTouched, setHandleTouched] = useState(Boolean(handle))
 
     // Auto-suggest handle from name when user hasn't manually edited
     useEffect(() => {
         if (!handleTouched && name) {
-            onHandleChange(suggestHandle(name))
+            const suggestedHandle = suggestHandle(name)
+            if (handle !== suggestedHandle) {
+                onHandleChange(suggestedHandle)
+            }
         }
-    }, [name, handleTouched, onHandleChange])
+    }, [name, handle, handleTouched, onHandleChange])
 
-    // Validate handle
-    useEffect(() => {
-        if (handle.length === 0) {
-            setHandleError(null)
-        } else if (handle.length < 3) {
-            setHandleError("Minimum 3 characters")
-        } else if (!HANDLE_REGEX.test(handle)) {
-            setHandleError("Lowercase letters, numbers, and underscores only")
-        } else if (handleAvailability && !handleAvailability.available) {
-            setHandleError(handleAvailability.reason)
-        } else {
-            setHandleError(null)
-        }
-    }, [handle, handleAvailability])
+    const handleError = handle.length === 0
+        ? null
+        : handle.length < 3
+            ? "Minimum 3 characters"
+            : !HANDLE_REGEX.test(handle)
+                ? "Lowercase letters, numbers, and underscores only"
+                : handleAvailability && !handleAvailability.available
+                    ? handleAvailability.reason
+                    : null
 
     const isValid = handle.length >= 3 && HANDLE_REGEX.test(handle) && handleAvailability?.available
 

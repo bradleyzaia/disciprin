@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { useSignUp, useAuth } from "@clerk/clerk-react"
+import { isClerkAPIResponseError } from "@clerk/clerk-react/errors"
 import { useNavigate, Link } from "react-router-dom"
 import { MasterGrid, GridRow, GridCell } from "@/components/layout/grid"
 import { EffectScene } from "@/components/effect-scene"
@@ -41,8 +42,8 @@ export function Signup() {
 
             await signUp?.prepareEmailAddressVerification({ strategy: "email_code" })
             setVerifying(true)
-        } catch (err: any) {
-            setError(err.errors?.[0]?.message || "Something went wrong")
+        } catch (err) {
+            setError(isClerkAPIResponseError(err) ? err.errors[0]?.longMessage || err.errors[0]?.message || "Something went wrong" : "Something went wrong")
         } finally {
             setLoading(false)
         }
@@ -62,10 +63,10 @@ export function Signup() {
                 await setActive?.({ session: completeSignUp.createdSessionId })
                 navigate("/onboarding")
             } else {
-                console.error(JSON.stringify(completeSignUp, null, 2))
+                setError("Signup could not be completed. Please try again.")
             }
-        } catch (err: any) {
-            setError(err.errors?.[0]?.message || "Invalid code")
+        } catch (err) {
+            setError(isClerkAPIResponseError(err) ? err.errors[0]?.longMessage || err.errors[0]?.message || "Invalid code" : "Invalid code")
         } finally {
             setLoading(false)
         }
@@ -79,9 +80,9 @@ export function Signup() {
                 redirectUrl: "/sso-callback",
                 redirectUrlComplete: "/onboarding",
             })
-        } catch (err: any) {
+        } catch (err) {
             console.error("Social signup error:", err)
-            setError(err.errors?.[0]?.message || "Social signup failed")
+            setError(isClerkAPIResponseError(err) ? err.errors[0]?.longMessage || err.errors[0]?.message || "Social signup failed" : "Social signup failed")
         }
     }
 
@@ -91,12 +92,12 @@ export function Signup() {
                 <EffectScene />
             </div>
             <MasterGrid className="relative z-10 w-full bg-transparent pointer-events-none h-full border-l-0 md:border-l border-r-0 border-dark-theme-border">
-                <GridRow className="flex-1 flex flex-col md:grid">
+                <GridRow className="flex-1 min-h-0 flex flex-col md:grid">
                     {/* Mobile Spacer for Top Half Scene */}
                     <GridCell className="col-span-12 flex-1 md:hidden border-b border-dark-theme-border p-0 backdrop-blur-none bg-transparent" />
 
-                    <GridCell className="col-span-12 md:col-span-6 h-auto md:h-full flex flex-col justify-end md:justify-center items-start pointer-events-auto backdrop-blur-md bg-grayscale0/20 md:bg-transparent p-4 md:p-8">
-                        <div className="w-full max-w-md space-y-8">
+                    <GridCell className="col-span-12 md:col-span-6 h-auto max-h-full md:h-full flex flex-col items-start overflow-y-auto pointer-events-auto backdrop-blur-md bg-grayscale0/20 md:bg-transparent p-4 md:p-8">
+                        <div data-lenis-prevent className="w-full max-w-md shrink-0 my-auto space-y-8">
                             {!verifying ? (
                                 <>
                                     <div className="space-y-2">
@@ -143,6 +144,8 @@ export function Signup() {
                                                 required
                                             />
                                         </div>
+
+                                        <div id="clerk-captcha" data-cl-theme="dark" />
 
                                         {error && (
                                             <p className="text-red font-mono text-[10px] uppercase">{error}</p>

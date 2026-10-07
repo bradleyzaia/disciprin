@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { useMutation } from "convex/react"
+import { useMutation, useQuery } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { Button } from "@/components/ui/Button"
 import { ArrowRight } from "lucide-react"
@@ -25,6 +25,7 @@ export const Onboarding = () => {
     const completeOnboarding = useMutation(api.completeOnboarding.default)
     const [step, setStep] = useState(1)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [submitError, setSubmitError] = useState("")
 
     const [data, setData] = useState<OnboardingData>({
         name: "",
@@ -35,12 +36,25 @@ export const Onboarding = () => {
         ],
     })
 
+    const handleAvailability = useQuery(
+        api.users.checkHandleAvailability,
+        data.handle.length >= 3 ? { handle: data.handle } : "skip"
+    )
+    const isIdentityValid = Boolean(
+        data.name.trim() &&
+        /^[a-z0-9][a-z0-9_]{1,18}[a-z0-9]$/.test(data.handle) &&
+        handleAvailability?.available
+    )
+
     const handleNext = async () => {
+        if (isSubmitting || (step === 1 && !isIdentityValid)) return
+
         if (step < 4) {
             setStep(step + 1)
         } else {
             // Final submit
             setIsSubmitting(true)
+            setSubmitError("")
             try {
                 // Save to local storage as backup/reference
                 localStorage.setItem("disciprin_user", JSON.stringify(data))
@@ -65,7 +79,11 @@ export const Onboarding = () => {
             } catch (error) {
                 console.error("Failed to complete onboarding:", error)
                 setIsSubmitting(false)
-                // Optionally handle error UI here
+                setSubmitError(
+                    error instanceof Error && error.message.includes("Handle already taken")
+                        ? "This handle is already taken. Review your intake to choose another."
+                        : "We couldn't complete your intake. Please try again."
+                )
             }
         }
     }
@@ -108,6 +126,7 @@ export const Onboarding = () => {
                             handle={data.handle}
                             onChange={(name) => setData({ ...data, name })}
                             onHandleChange={(handle) => setData({ ...data, handle })}
+                            handleAvailability={handleAvailability}
                         />
                     )}
 
@@ -127,11 +146,27 @@ export const Onboarding = () => {
                     )}
 
                     {step === 4 && (
-                        <InitializationStep
-                            data={data}
-                            onNext={handleNext}
-                            isSubmitting={isSubmitting}
-                        />
+                        <>
+                            {submitError && (
+                                <div role="alert" className="relative z-10 shrink-0 space-y-4 border-b border-dark-theme-border p-6">
+                                    <p className="text-red-500 text-sm">{submitError}</p>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                            setSubmitError("")
+                                            setStep(1)
+                                        }}
+                                    >
+                                        Review intake
+                                    </Button>
+                                </div>
+                            )}
+                            <InitializationStep
+                                data={data}
+                                onNext={handleNext}
+                                isSubmitting={isSubmitting}
+                            />
+                        </>
                     )}
 
                 </GridCell>
@@ -153,7 +188,7 @@ export const Onboarding = () => {
                     <GridCell span={6} className="p-0">
                         <Button
                             onClick={handleNext}
-                            disabled={(step === 1 && (!data.name || !data.handle || data.handle.length < 3 || !/^[a-z0-9][a-z0-9_]{1,18}[a-z0-9]$/.test(data.handle))) || (step === 3 && data.pills.some(p => !p.name || p.frequency_per_week < 1 || p.frequency_per_week > 7 || (p.measurement_type !== 'boolean' && (p.target_value < 1 || !p.unit))))}
+                            disabled={(step === 1 && !isIdentityValid) || (step === 3 && data.pills.some(p => !p.name || p.frequency_per_week < 1 || p.frequency_per_week > 7 || (p.measurement_type !== 'boolean' && (p.target_value < 1 || !p.unit))))}
                             variant="primary"
                             icon={ArrowRight}
                             className="w-full h-20"

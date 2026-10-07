@@ -51,7 +51,12 @@ function App() {
           {/* Placeholder Login - redirect to dashboard for now until auth is set up */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup/*" element={<Signup />} />
-          <Route path="/sso-callback" element={<AuthenticateWithRedirectCallback />} />
+          <Route path="/sso-callback" element={
+            <div className="min-h-[100dvh] flex items-center justify-center p-4">
+              <AuthenticateWithRedirectCallback />
+              <div id="clerk-captcha" data-cl-theme="dark" />
+            </div>
+          } />
           <Route path="/grid-test" element={<GridTest />} />
           <Route path="/ascii" element={<EffectScene />} />
         </Routes>
